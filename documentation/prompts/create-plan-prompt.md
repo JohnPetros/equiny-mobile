@@ -1,10 +1,17 @@
-# Prompt: Criar Plano
+# Prompt: Criar Plano (Equiny Mobile)
 
-**Objetivo principal** Criar um plano de implementacao a partir de um documento de spec tecnica.
+**Objetivo principal** Criar um plano de implementacao a partir de um documento de spec tecnica, alinhado a arquitetura e regras do Equiny Mobile.
+
+## Contexto do projeto
+
+- **Stack**: Flutter/Dart.
+- **Arquitetura**: camadas inspiradas em Clean Architecture com MVP na UI.
+- **Camadas**: Core (`lib/core`), Rest (`lib/rest`), Drivers (`lib/drivers`), UI (`lib/ui`).
+- **DI/Estado**: Riverpod + Signals.
 
 ## Entrada
 
-- Caminho do arquivo do documento de spec tecnica.
+- Caminho do arquivo do documento de spec tecnica (Markdown).
 
 ## Diretrizes de execucao
 
@@ -23,12 +30,17 @@
 
 3. **Ordem de execucao (bottom-up)**
    - Defina as tarefas seguindo rigorosamente a hierarquia de dependencias, nesta ordem:
-     1. **Core**: `DTOs`, Entidades e Interfaces.
-     2. **Drivers/Infra**: implementacoes de Repositories e Gateways (ex: `Supabase`, `Inngest`).
-     3. **API layer**: Actions (`RPC`) ou Controllers (`REST`).
-     4. **UI**: Widgets e Paginas.
+     1. **Core (`lib/core`)**: `DTOs`, Entidades, Interfaces e Tipos de resposta.
+     2. **Rest (`lib/rest`)**: RestClient, Services, Mappers e Adapters (ex.: Dio).
+     3. **Drivers (`lib/drivers`)**: infra externa e configuracoes (ex.: env, storage).
+     4. **UI (`lib/ui`)**: Presenters (MVP), Widgets e Telas.
 
-> ⚠️ **Regra** Se uma tarefa exige outra (ex: um Controller depende de um Use Case), a tarefa dependente deve aparecer depois e referenciar explicitamente a dependencia.
+4. **Dependencias explicitas**
+   - Se uma tarefa exige outra (ex.: Presenter depende de Interface/Core), a tarefa dependente deve aparecer depois e referenciar explicitamente a dependencia.
+
+5. **Tracking de progresso**
+   - Adicione um checklist para cada tarefa para facilitar o tracking do progresso da implementação.
+
 
 ## Saida esperada
 
