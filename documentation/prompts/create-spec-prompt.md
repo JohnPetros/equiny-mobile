@@ -1,13 +1,14 @@
 # Prompt: Criar Documento de Spec
 
 ## Objetivo
-Detalhar a implementacao tecnica de uma feature, fix ou refatoracao atuando como Tech Lead Senior.
+Detalhar a implementacao técnica de uma feature, fix ou refatoracao atuando como Tech Lead Senior.
 O documento deve ser a ponte entre o PRD (Product Requirements Document) e o codigo, com nivel de detalhe suficiente para implementacao direta, sem ambiguidades.
 
 ## Entradas
 - Esboco da spec ou solicitacao de mudanca.
 - PRD associado (nivel superior).
 - Acesso a codebase atual.
+- Id da tela no Google Stitch
 
 ## Diretrizes de Execucao
 
@@ -15,9 +16,11 @@ O documento deve ser a ponte entre o PRD (Product Requirements Document) e o cod
 - **Entender o PRD**: Acesse o link do PRD associado (nivel superior) e entenda o objetivo da tarefa usando Github ClI.
 - **Mapear fluxo:** entender origem e destino dos dados (`UI -> Store -> Service -> API`) antes de escrever.
 - **Verificar existencia:** identificar recursos existentes (widgets, DTOs, services) que devem ser reutilizados ou estendidos; evitar duplicidade.
-- **Consultar guidelines:** revisar padroes das camadas (`core`, `rest`, `ui`, `drivers`) e da stack (Riverpod, Signals) conforme escopo.
+- **Consultar rules:** revisar padroes das camadas (`core`, `rest`, `ui`, `drivers`) e da stack (Riverpod, Signals) conforme escopo.
+- **Consultar Stitch:** revisar a tela no Google Stitch usando o MCP do Google Stitch.
 - **Identificar referencias:** localizar exemplos similares na codebase para reaproveitamento inteligente.
 - **Questionar:** Caso necessario, me faça perguntas para entender melhor o contexto da tarefa ou decidir questões técnicas usando sua tool `question`.
+
 
 ### 2) Estruturacao da spec
 Gerar um arquivo Markdown seguindo exatamente a estrutura abaixo.

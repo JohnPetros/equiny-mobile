@@ -29,6 +29,9 @@ Este documento estabelece as convenções de código adotadas no projeto Sertton
     *   Sempre separe a lógica de visualização (View) da lógica de estado (Presenter).
     *   Utilize `signals` para estados reativos dentro do Presenter.
     *   Utilize `Riverpod` para injeção de dependências e gerenciamento de estado global.
+*   **Widgets internos:**
+    *   Widgets internos devem ser criados em uma pasta dentro do widget pai.
+    *   Widgets internos devem seguir o padrão MVP (Model-View-Presenter).
 
 ## 4. Organização de Importações
 As importações devem ser organizadas em blocos separados por uma linha em branco, seguindo a hierarquia de camadas:

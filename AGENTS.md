@@ -8,3 +8,4 @@ MCPs:
 
 - Use o MCP do Context7 para obter documentação e exemplos de uso de bibliotecas/frameworks específicos caso seja necessário.
 - Use o MCP do Serena para buscar arquivos do projeto de forma mais eficiente.
+- Use o MCP do Google Stitch para buscar detalhes de uma tela no Google Stitch.

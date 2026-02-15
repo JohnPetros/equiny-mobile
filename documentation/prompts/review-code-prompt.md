@@ -14,12 +14,11 @@ Realizar uma revisão técnica rigorosa da base de código para assegurar confor
     *   **Escaneamento Manual:** Procure por erros de digitação, erros de lógica, problemas de nomenclatura e erros de sintaxe óbvios.
 
 2.  **Análise de Qualidade Estática:**
-    *   **Diagnóstico:** Execute a ferramenta **Dart MCP** `analyze_files` para listar erros, alertas (warnings) e inconsistências de codificação.
+    *   **Diagnóstico:** Use o `flutter analyze` para listar erros, alertas (warnings) e inconsistências de codificação.
     *   **Priorização:** Examine a severidade dos problemas reportados para planejar a ordem de correção, priorizando erros de compilação críticos.
 
 3.  **Correção Automatizada:**
-    *   **Quick Fixes:** Aplique a ferramenta **Dart MCP** `dart_fix` para resolver automaticamente violações de regras que possuam correções rápidas.
-    *   **Verificação:** Analise as alterações realizadas pelo `dart_fix` para garantir que a semântica do código foi preservada.
+    *   **Quick Fixes:** Aplique o `dart format .` para resolver automaticamente violações de regras que possuam correções rápidas.
 
 4.  **Refatoração e Alinhamento com Protocolos:**
     *   **Manual:** Corrija manualmente os problemas persistentes que as ferramentas automatizadas não puderam resolver.
@@ -34,7 +33,7 @@ Realizar uma revisão técnica rigorosa da base de código para assegurar confor
 
 5.  **Validação Final:**
     *   **Testes:** Execute o `flutter test` para validar que as alterações não impactaram o comportamento funcional do sistema.
-    *   **Certificação:** Realize uma rodada final de `analyze_files` para confirmar o estado "limpo" do código.
+    *   **Certificação:** Realize uma rodada final de `flutter analyze` para confirmar o estado "limpo" do código.
 
 **Critério de Sucesso:**
 A revisão é considerada concluída quando a análise estática retornar **"No issues found"** e todos os testes automatizados relevantes passarem sem falhas.

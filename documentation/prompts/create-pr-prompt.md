@@ -10,6 +10,7 @@ Padronizar a criação de Pull Requests (PRs), garantindo descrições claras qu
 * Uma Spec (especificação) devidamente implementada e validada.
 * Uma Bug Report (relatório de bug) devidamente implementada e validada.
 * Uma branch de funcionalidade (`feature/`), correção (`fix/`) ou refatoração (`refactor/`) com as alterações comitadas.
+* Issue relacionada ao PR
 
 ---
 
@@ -81,6 +82,15 @@ closes #456
 ## 🐛 Causa do bug (opcional — apenas fix)
 
 Descreva a causa técnica raiz.
+
+---
+
+## #️⃣ Issues relacionadas (opcional)
+
+Lista de issues relacionadas ao PR:
+
+* resolve JohnPeterson/equiny#<issue-number>
+* resolve JohnPeterson/equiny#<issue-number>
 
 ---
 
