@@ -30,10 +30,6 @@ A funcionalidade geralmente pode cabe em uma só issue, porém se a funcionalida
 <!-- Links do Figma, prints, comportamento esperado -->
 
 ## 🔃 Fluxo de usuário (se aplicável)
-<!-- Links do Figma, prints, comportamento esperado -->
-
-## 🔃 Fluxo de usuário (se aplicável)
 <!-- Lista de passos para o usuário realizar a funcionalidade -->
-
 
 > link a issue a uma milestone fornecida
