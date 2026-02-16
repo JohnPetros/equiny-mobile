@@ -59,7 +59,9 @@ void main() {
     testWidgets('should render general error when presenter has one', (
       WidgetTester tester,
     ) async {
-      when(() => presenter.generalError).thenReturn(signal('Erro de autenticacao'));
+      when(
+        () => presenter.generalError,
+      ).thenReturn(signal('Erro de autenticacao'));
 
       await tester.pumpWidget(createWidget());
 
@@ -90,19 +92,20 @@ void main() {
       verify(() => presenter.goToSignUp()).called(1);
     });
 
-    testWidgets('should call togglePasswordVisibility when visibility icon is tapped', (
-      WidgetTester tester,
-    ) async {
-      await tester.pumpWidget(createWidget());
+    testWidgets(
+      'should call togglePasswordVisibility when visibility icon is tapped',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
 
-      final Finder visibilityButton = find.byIcon(Icons.visibility);
-      expect(visibilityButton, findsOneWidget);
+        final Finder visibilityButton = find.byIcon(Icons.visibility);
+        expect(visibilityButton, findsOneWidget);
 
-      await tester.tap(visibilityButton);
-      await tester.pump();
+        await tester.tap(visibilityButton);
+        await tester.pump();
 
-      verify(() => presenter.togglePasswordVisibility()).called(1);
-    });
+        verify(() => presenter.togglePasswordVisibility()).called(1);
+      },
+    );
 
     testWidgets('should show loading indicator when isLoading is true', (
       WidgetTester tester,
