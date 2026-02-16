@@ -36,6 +36,7 @@ description: Criar spec tecnica detalhada para implementacao no equiny_mobile
    - Use Serena para localizar arquivos e referencias na codebase.
    - Use Context7 apenas quando precisar de documentacao/exemplos de biblioteca especifica.
    - Use Google Stitch para validar layout e hierarquia visual quando houver `screen_id`.
+   - Use a tool `question` para me fazer perguntas caso precise de mais informacoes para continuar.
 
 3. **Qualidade e densidade:**
    - Seja direto; prefira listas e blocos curtos.
