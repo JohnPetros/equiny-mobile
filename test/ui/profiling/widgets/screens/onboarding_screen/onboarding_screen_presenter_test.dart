@@ -17,7 +17,6 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../../../../fakers/profiling/gallery_faker.dart';
 import '../../../../../fakers/profiling/horses_faker.dart';
-import '../../../../../fakers/profiling/gallery_faker.dart';
 import '../../../../../fakers/profiling/image_faker.dart';
 
 class MockProfilingService extends Mock implements ProfilingService {}
@@ -57,6 +56,8 @@ void main() {
       navigationDriver,
       cacheDriver,
     );
+
+    when(() => cacheDriver.set(any(), any())).thenAnswer((_) async {});
   });
 
   void fillValidForm() {
@@ -68,6 +69,7 @@ void main() {
     presenter.form.value.control('height').value = 1.7;
     presenter.form.value.control('city').value = ' Sao Paulo ';
     presenter.form.value.control('state').value = 'sp';
+    presenter.form.value.markAllAsTouched();
   }
 
   group('OnboardingScreenPresenter', () {

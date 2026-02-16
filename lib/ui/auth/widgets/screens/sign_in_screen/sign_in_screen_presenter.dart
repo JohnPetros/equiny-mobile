@@ -12,11 +12,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 import 'package:signals/signals.dart';
 
-class SignUpScreenPresenter {
+class SignInScreenPresenter {
   final AuthService _authService;
   final NavigationDriver _navigationDriver;
   final CacheDriver _cacheDriver;
   final ProfilingService _profilingService;
+  final String? initialEmail;
+  final String? initialPassword;
 
   final Signal<FormGroup> form = signal(
     FormGroup(<String, AbstractControl<Object?>>{}),
@@ -24,18 +26,19 @@ class SignUpScreenPresenter {
   final Signal<bool> isLoading = signal(false);
   final Signal<String?> generalError = signal(null);
   final Signal<bool> isPasswordVisible = signal(false);
-  final Signal<bool> isPasswordConfirmationVisible = signal(false);
   final Signal<bool> submitAttempted = signal(false);
 
   late final ReadonlySignal<bool> canSubmit;
   late final ReadonlySignal<bool> hasAnyFieldError;
 
-  SignUpScreenPresenter(
+  SignInScreenPresenter(
     this._authService,
     this._profilingService,
     this._navigationDriver,
-    this._cacheDriver,
-  ) {
+    this._cacheDriver, {
+    this.initialEmail,
+    this.initialPassword,
+  }) {
     form.value = buildForm();
     canSubmit = computed(() => form.value.valid && !isLoading.value);
     hasAnyFieldError = computed(() {
@@ -50,65 +53,43 @@ class SignUpScreenPresenter {
 
   void applyServerFieldErrors(RestResponse response) {
     final String message = response.errorMessage.toLowerCase();
-    if (message.contains('email')) {
-      form.value.control('email').setErrors(<String, Object>{
-        'server': 'E-mail ja esta em uso.',
-      });
+    if (message.contains('email') || message.contains('credenciais')) {
+      generalError.value = message;
       return;
     }
     generalError.value = response.errorMessage;
   }
 
   FormGroup buildForm() {
-    return FormGroup(
-      <String, AbstractControl<Object?>>{
-        'name': FormControl<String>(
-          validators: <Validator<dynamic>>[
-            Validators.required,
-            Validators.minLength(3),
-            Validators.maxLength(80),
-          ],
-        ),
-        'email': FormControl<String>(
-          validators: <Validator<dynamic>>[
-            Validators.required,
-            Validators.email,
-            Validators.maxLength(120),
-          ],
-        ),
-        'password': FormControl<String>(
-          validators: <Validator<dynamic>>[
-            Validators.required,
-            Validators.minLength(8),
-            Validators.maxLength(32),
-          ],
-        ),
-        'passwordConfirmation': FormControl<String>(
-          validators: <Validator<dynamic>>[
-            Validators.required,
-            Validators.minLength(8),
-            Validators.maxLength(32),
-          ],
-        ),
-      },
-      validators: <Validator<dynamic>>[
-        Validators.mustMatch('password', 'passwordConfirmation'),
-      ],
-    );
+    return FormGroup(<String, AbstractControl<Object?>>{
+      'email': FormControl<String>(
+        value: initialEmail,
+        validators: <Validator<dynamic>>[
+          Validators.required,
+          Validators.email,
+          Validators.maxLength(120),
+        ],
+      ),
+      'password': FormControl<String>(
+        value: initialPassword,
+        validators: <Validator<dynamic>>[
+          Validators.required,
+          Validators.minLength(8),
+          Validators.maxLength(32),
+        ],
+      ),
+    });
   }
 
-  void goToSignIn() {
-    _navigationDriver.goTo(Routes.signIn);
+  void goToSignUp() {
+    _navigationDriver.goTo(Routes.signUp);
   }
 
   void normalizeBeforeSubmit() {
-    final String normalizedName =
-        (form.value.control('name').value as String? ?? '').trim();
     final String normalizedEmail =
         (form.value.control('email').value as String? ?? '')
             .trim()
             .toLowerCase();
-    form.value.control('name').updateValue(normalizedName);
     form.value.control('email').updateValue(normalizedEmail);
   }
 
@@ -124,8 +105,7 @@ class SignUpScreenPresenter {
     normalizeBeforeSubmit();
     isLoading.value = true;
 
-    final response = await _authService.signUp(
-      ownerName: form.value.control('name').value as String,
+    final response = await _authService.signIn(
       accountEmail: form.value.control('email').value as String,
       accountPassword: form.value.control('password').value as String,
     );
@@ -136,7 +116,7 @@ class SignUpScreenPresenter {
       return;
     }
 
-    _cacheDriver.set(CacheKeys.accessToken, response.body.accessToken);
+    await _cacheDriver.set(CacheKeys.accessToken, response.body.accessToken);
 
     final ownerResponse = await _profilingService.fetchOwner();
     if (ownerResponse.isFailure) {
@@ -148,7 +128,7 @@ class SignUpScreenPresenter {
     final bool hasCompletedOnboarding =
         ownerResponse.body.hasCompletedOnboarding;
 
-    _cacheDriver.set(
+    await _cacheDriver.set(
       CacheKeys.onboardingCompleted,
       hasCompletedOnboarding.toString(),
     );
@@ -158,18 +138,14 @@ class SignUpScreenPresenter {
     );
   }
 
-  void togglePasswordConfirmationVisibility() {
-    isPasswordConfirmationVisible.value = !isPasswordConfirmationVisible.value;
-  }
-
   void togglePasswordVisibility() {
     isPasswordVisible.value = !isPasswordVisible.value;
   }
 }
 
-final signUpScreenPresenterProvider =
-    Provider.autoDispose<SignUpScreenPresenter>((ref) {
-      return SignUpScreenPresenter(
+final signInScreenPresenterProvider =
+    Provider.autoDispose<SignInScreenPresenter>((ref) {
+      return SignInScreenPresenter(
         ref.watch(authServiceProvider),
         ref.watch(profilingServiceProvider),
         ref.watch(navigationDriverProvider),

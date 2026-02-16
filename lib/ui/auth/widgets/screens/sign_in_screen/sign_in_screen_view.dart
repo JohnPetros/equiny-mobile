@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 
+import 'package:equiny/ui/auth/widgets/screens/sign_in_screen/sign_in_form/index.dart';
+import 'package:equiny/ui/auth/widgets/screens/sign_in_screen/sign_in_screen_presenter.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/sign_up_footer/index.dart';
-import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/sign_up_form/index.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/sign_up_header/index.dart';
-import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/sign_up_screen_presenter.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 
-class SignUpScreenView extends ConsumerWidget {
-  const SignUpScreenView({super.key});
+class SignInScreenView extends ConsumerWidget {
+  const SignInScreenView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final presenter = ref.watch(signUpScreenPresenterProvider);
+    final presenter = ref.watch(signInScreenPresenterProvider);
 
     return Scaffold(
       backgroundColor: AppThemeColors.background,
@@ -59,9 +59,9 @@ class SignUpScreenView extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
                         const SignUpHeader(
-                          title: 'Criar conta',
-                          subtitle: 'Crie sua conta para comecar.',
-                          iconData: Icons.pets,
+                          title: 'Entrar',
+                          subtitle: 'Acesse sua conta para continuar.',
+                          iconData: Icons.login,
                         ),
                         const SizedBox(height: AppSpacing.xxxl),
                         if (presenter.generalError.value != null)
@@ -88,24 +88,20 @@ class SignUpScreenView extends ConsumerWidget {
                               ),
                             ),
                           ),
-                        SignUpForm(
+                        SignInForm(
                           form: presenter.form.value,
                           submitAttempted: presenter.submitAttempted.value,
                           isPasswordVisible: presenter.isPasswordVisible.value,
-                          isPasswordConfirmationVisible:
-                              presenter.isPasswordConfirmationVisible.value,
                           onTogglePasswordVisibility:
                               presenter.togglePasswordVisibility,
-                          onTogglePasswordConfirmationVisibility:
-                              presenter.togglePasswordConfirmationVisibility,
                           onSubmit: presenter.submit,
                           isLoading: presenter.isLoading.value,
                         ),
                         const SizedBox(height: AppSpacing.xxl),
                         SignUpFooter(
-                          promptText: 'Já tem uma conta? ',
-                          actionText: 'Entrar',
-                          onTapAction: presenter.goToSignIn,
+                          promptText: 'Não tem uma conta? ',
+                          actionText: 'Criar conta',
+                          onTapAction: presenter.goToSignUp,
                         ),
                       ],
                     ),

@@ -3,11 +3,11 @@ import 'package:equiny/core/profiling/interfaces/profiling_service.dart'
     as profiling_service;
 import 'package:equiny/core/storage/interfaces/file_storage_service.dart'
     as file_storage_service;
-import 'package:equiny/rest/auth/services/auth_service.dart';
-import 'package:equiny/rest/profiling/services/profiling_service.dart'
+import 'package:equiny/rest/services/auth_service.dart';
+import 'package:equiny/rest/services/profiling_service.dart'
     as profiling_service_impl;
 import 'package:equiny/rest/rest_client.dart';
-import 'package:equiny/rest/storage/services/file_storage_service.dart'
+import 'package:equiny/rest/services/file_storage_service.dart'
     as file_storage_service_impl;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

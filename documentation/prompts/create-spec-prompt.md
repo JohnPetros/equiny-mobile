@@ -26,16 +26,17 @@ description: Criar spec tecnica detalhada para implementacao no equiny_mobile
    - Mapeie o fluxo principal antes de escrever: `View -> Presenter/Store -> Provider -> Service -> RestClient -> API`.
    - Reuse/extenda componentes existentes; evite duplicidade de `Presenter`, `Store`, `Widget`, `DTO`, `Service` e `Driver`.
    - Consulte regras especificas conforme escopo:
-     - Mudanca em UI/MVP/widgets -> `documentation/guidelines/ui-layer-rules.md`
-     - Mudanca em contratos/entidades -> `documentation/guidelines/core-layer-rules.md`
-     - Mudanca em integracao HTTP -> `documentation/guidelines/rest-layer-rules.md`
-     - Mudanca em infraestrutura/adapters -> `documentation/guidelines/drivers-layer-rules.md`
-     - Convencoes gerais -> `documentation/guidelines/code-conventions-guidelines.md`
+     - Mudanca em UI/MVP/widgets -> `documentation/rules/ui-layer-rules.md`
+     - Mudanca em contratos/entidades -> `documentation/rules/core-layer-rules.md`
+     - Mudanca em integracao HTTP -> `documentation/rules/rest-layer-rules.md`
+     - Mudanca em infraestrutura/adapters -> `documentation/rules/drivers-layer-rules.md`
+     - Regras gerais -> `documentation/rules/code-conventions-rules.md`
 
 2. **Ferramentas auxiliares:**
    - Use Serena para localizar arquivos e referencias na codebase.
    - Use Context7 apenas quando precisar de documentacao/exemplos de biblioteca especifica.
    - Use Google Stitch para validar layout e hierarquia visual quando houver `screen_id`.
+   - Use sua tool de `question` para me fazer perguntas sobre a implementação caso precise de mais informações.
 
 3. **Qualidade e densidade:**
    - Seja direto; prefira listas e blocos curtos.
