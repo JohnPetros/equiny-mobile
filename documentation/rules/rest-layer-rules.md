@@ -1,6 +1,8 @@
-# Diretrizes da Camada REST
+# Regras da Camada REST
 
 A camada **REST** (`lib/rest/`) implementa a comunicação HTTP com APIs externas.
+
+Documentação da API, contendo os schemas de todas as rotas separados por módulo: http://localhost:8080/openapi.json
 
 ---
 

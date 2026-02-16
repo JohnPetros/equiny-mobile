@@ -1,6 +1,7 @@
 import 'package:equiny/core/shared/constants/routes.dart';
 import 'package:equiny/core/shared/constants/cache_keys.dart';
 import 'package:equiny/drivers/cache-driver/index.dart';
+import 'package:equiny/ui/auth/widgets/screens/sign_in_screen/index.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/index.dart';
 import 'package:equiny/ui/home/widgets/screens/home_screen/index.dart';
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/index.dart';
@@ -17,7 +18,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (BuildContext context, GoRouterState state) {
       final String currentRoute = state.matchedLocation;
       final bool isAuthenticated =
-          (cacheDriver.get(CacheKeys.authToken) ?? '').isNotEmpty;
+          (cacheDriver.get(CacheKeys.accessToken) ?? '').isNotEmpty;
       final bool isOnboardingCompleted =
           cacheDriver.get(CacheKeys.onboardingCompleted) == 'true';
 
@@ -51,7 +52,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.signIn,
         builder: (BuildContext context, GoRouterState state) {
-          return const Scaffold(body: Center(child: Text('Entrar')));
+          return const SignInScreen();
         },
       ),
       GoRoute(

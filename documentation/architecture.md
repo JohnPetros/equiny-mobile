@@ -73,3 +73,7 @@ lib/
 ├── drivers/
 └── ui/
 ```
+
+## Equiny Server
+
+A API RESTful principal do Equiny é a Equiny Server, construinda com FastAPI, logo todos as respostas da API sao JSON, cujo atributos são sempre em snake_case.

@@ -3,9 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 
 class SignUpFooterView extends StatelessWidget {
-  final VoidCallback onTapSignIn;
+  final String promptText;
+  final String actionText;
+  final VoidCallback onTapAction;
 
-  const SignUpFooterView({required this.onTapSignIn, super.key});
+  const SignUpFooterView({
+    required this.promptText,
+    required this.actionText,
+    required this.onTapAction,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,19 +20,19 @@ class SignUpFooterView extends StatelessWidget {
       child: Wrap(
         crossAxisAlignment: WrapCrossAlignment.center,
         children: <Widget>[
-          const Text(
-            'Ja tem uma conta? ',
-            style: TextStyle(
+          Text(
+            promptText,
+            style: const TextStyle(
               color: AppThemeColors.textSecondary,
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
           ),
           GestureDetector(
-            onTap: onTapSignIn,
-            child: const Text(
-              'Entrar',
-              style: TextStyle(
+            onTap: onTapAction,
+            child: Text(
+              actionText,
+              style: const TextStyle(
                 color: AppThemeColors.primary,
                 fontSize: 14,
                 fontWeight: FontWeight.w700,

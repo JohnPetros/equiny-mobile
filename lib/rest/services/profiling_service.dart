@@ -3,21 +3,20 @@ import 'package:equiny/core/profiling/dtos/structures/gallery_dto.dart';
 import 'package:equiny/core/profiling/dtos/entities/owner_dto.dart';
 import 'package:equiny/core/profiling/interfaces/profiling_service.dart'
     as profiling_service;
-import 'package:equiny/core/shared/interfaces/rest_client.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/core/shared/types/json.dart';
-import 'package:equiny/rest/auth/mappers/owner_mapper.dart';
-import 'package:equiny/rest/profiling/mappers/gallery_mapper.dart';
-import 'package:equiny/rest/profiling/mappers/horse_mapper.dart';
+import 'package:equiny/rest/mappers/auth/owner_mapper.dart';
+import 'package:equiny/rest/services/service.dart';
+import 'package:equiny/rest/mappers/profiling/gallery_mapper.dart';
+import 'package:equiny/rest/mappers/profiling/horse_mapper.dart';
 
-class ProfilingService implements profiling_service.ProfilingService {
-  final RestClient _restClient;
-
-  ProfilingService(this._restClient);
+class ProfilingService extends Service
+    implements profiling_service.ProfilingService {
+  ProfilingService(super.restClient);
 
   @override
   Future<RestResponse<OwnerDto>> fetchOwner() async {
-    final RestResponse<Json> response = await _restClient.get(
+    final RestResponse<Json> response = await super.restClient.get(
       '/profiling/owners/me',
     );
 
@@ -61,7 +60,7 @@ class ProfilingService implements profiling_service.ProfilingService {
 
   @override
   Future<RestResponse<HorseDto>> createHorse({required HorseDto horse}) async {
-    final RestResponse<Json> response = await _restClient.post(
+    final RestResponse<Json> response = await super.restClient.post(
       '/profiling/horses',
       body: HorseMapper.toPayload(horse),
     );
@@ -81,7 +80,7 @@ class ProfilingService implements profiling_service.ProfilingService {
     required String horseId,
     required GalleryDto gallery,
   }) async {
-    final RestResponse<Json> response = await _restClient.post(
+    final RestResponse<Json> response = await super.restClient.post(
       '/profiling/horses/$horseId/gallery',
       body: GalleryMapper.toPayload(gallery),
     );

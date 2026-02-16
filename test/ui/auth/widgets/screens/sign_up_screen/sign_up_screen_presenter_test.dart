@@ -39,6 +39,8 @@ void main() {
       navigationDriver,
       cacheDriver,
     );
+
+    when(() => cacheDriver.set(any(), any())).thenAnswer((_) async {});
   });
 
   group('SignUpScreenPresenter', () {
@@ -171,7 +173,9 @@ void main() {
         ),
       ).called(1);
       verify(() => profilingService.fetchOwner()).called(1);
-      verify(() => cacheDriver.set(CacheKeys.authToken, 'token-123')).called(1);
+      verify(
+        () => cacheDriver.set(CacheKeys.accessToken, 'token-123'),
+      ).called(1);
       verify(
         () => cacheDriver.set(CacheKeys.onboardingCompleted, 'false'),
       ).called(1);
@@ -212,7 +216,9 @@ void main() {
       await presenter.submit();
 
       verify(() => profilingService.fetchOwner()).called(1);
-      verify(() => cacheDriver.set(CacheKeys.authToken, 'token-456')).called(1);
+      verify(
+        () => cacheDriver.set(CacheKeys.accessToken, 'token-456'),
+      ).called(1);
       verify(
         () => cacheDriver.set(CacheKeys.onboardingCompleted, 'true'),
       ).called(1);

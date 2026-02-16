@@ -136,7 +136,7 @@ class SignUpScreenPresenter {
       return;
     }
 
-    _cacheDriver.set(CacheKeys.authToken, response.body.accessToken);
+    _cacheDriver.set(CacheKeys.accessToken, response.body.accessToken);
 
     final ownerResponse = await _profilingService.fetchOwner();
     if (ownerResponse.isFailure) {
