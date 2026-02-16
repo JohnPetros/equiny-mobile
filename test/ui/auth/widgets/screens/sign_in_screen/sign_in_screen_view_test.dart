@@ -52,7 +52,7 @@ void main() {
       expect(find.text('E-mail'), findsOneWidget);
       expect(find.text('Senha'), findsOneWidget);
       expect(find.byType(ElevatedButton), findsOneWidget);
-      expect(find.text('Nao tem uma conta? '), findsOneWidget);
+      expect(find.text('Não tem uma conta? '), findsOneWidget);
       expect(find.text('Criar conta'), findsOneWidget);
     });
 

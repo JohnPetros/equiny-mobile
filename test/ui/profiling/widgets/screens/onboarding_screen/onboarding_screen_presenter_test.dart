@@ -17,7 +17,6 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../../../../fakers/profiling/gallery_faker.dart';
 import '../../../../../fakers/profiling/horses_faker.dart';
-import '../../../../../fakers/profiling/gallery_faker.dart';
 import '../../../../../fakers/profiling/image_faker.dart';
 
 class MockProfilingService extends Mock implements ProfilingService {}

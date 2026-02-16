@@ -38,6 +38,8 @@ void main() {
       profilingService,
       navigationDriver,
       cacheDriver,
+      initialEmail: 'test@equiny.com',
+      initialPassword: '12345678',
     );
 
     when(() => cacheDriver.set(any(), any())).thenAnswer((_) async {});
