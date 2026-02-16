@@ -16,7 +16,7 @@ class DioRestClient implements RestClient {
   @override
   Future<RestResponse<Json>> post(
     String path, {
-    Json? body,
+    Object? body,
     Json? queryParams,
   }) async {
     return _send(
@@ -27,7 +27,7 @@ class DioRestClient implements RestClient {
   @override
   Future<RestResponse<Json>> put(
     String path, {
-    Json? body,
+    Object? body,
     Json? queryParams,
   }) async {
     return _send(
@@ -38,7 +38,7 @@ class DioRestClient implements RestClient {
   @override
   Future<RestResponse<Json>> delete(
     String path, {
-    Json? body,
+    Object? body,
     Json? queryParams,
   }) async {
     return _send(
