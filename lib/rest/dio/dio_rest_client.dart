@@ -66,15 +66,10 @@ class DioRestClient implements RestClient {
     _dio.options.headers[key] = value;
   }
 
-  void setAuthorizationHeader(String token) {
-    _dio.options.headers['Authorization'] = 'Bearer $token';
-  }
-
   Future<RestResponse<Json>> _send(
     Future<Response<dynamic>> Function() request,
   ) async {
     final accessToken = _cacheDriver.get(CacheKeys.accessToken);
-    print('accessToken: $accessToken');
     if (accessToken != null) {
       _dio.options.headers['Authorization'] = 'Bearer $accessToken';
     }
