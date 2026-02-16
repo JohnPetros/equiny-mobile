@@ -6,6 +6,7 @@ class GalleryMapper {
   static Json toPayload(GalleryDto gallery) {
     return <String, dynamic>{
       'horse_id': gallery.horseId,
+      'horseId': gallery.horseId,
       'images': gallery.images
           .map(
             (ImageDto image) => <String, dynamic>{
@@ -18,8 +19,10 @@ class GalleryMapper {
   }
 
   static GalleryDto toDto(Json body) {
-    final List<dynamic> imagesRaw =
-        (body['images'] as List<dynamic>?) ?? <dynamic>[];
+    final dynamic imagesSource = body['images'] ?? body['data'];
+    final List<dynamic> imagesRaw = imagesSource is List<dynamic>
+        ? imagesSource
+        : <dynamic>[];
 
     return GalleryDto(
       horseId:
