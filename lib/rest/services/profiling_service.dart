@@ -32,7 +32,7 @@ class ProfilingService extends Service
 
   @override
   Future<RestResponse<List<HorseDto>>> fetchOwnerHorses() async {
-    final RestResponse<Json> response = await _restClient.get(
+    final RestResponse<Json> response = await super.restClient.get(
       '/profiling/owners/me/horses',
     );
 
@@ -43,18 +43,11 @@ class ProfilingService extends Service
       );
     }
 
-    return response.mapBody((Json body) {
-      final dynamic rawList = body['horses'] ?? body['data'] ?? body['items'];
-      if (rawList is! List<dynamic>) {
-        return <HorseDto>[];
-      }
-
-      return rawList.map((dynamic horseRaw) {
-        final Json horseBody = horseRaw is Json
-            ? horseRaw
-            : <String, dynamic>{};
-        return HorseMapper.toDto(horseBody);
-      }).toList();
+    return response.mapBody((dynamic body) {
+      final List<dynamic> list = body['data'] as List<dynamic>;
+      return list
+          .map((dynamic horseRaw) => HorseMapper.toDto(horseRaw as Json))
+          .toList();
     });
   }
 
@@ -62,7 +55,7 @@ class ProfilingService extends Service
   Future<RestResponse<HorseDto>> createHorse({required HorseDto horse}) async {
     final RestResponse<Json> response = await super.restClient.post(
       '/profiling/horses',
-      body: HorseMapper.toPayload(horse),
+      body: HorseMapper.toJson(horse),
     );
 
     if (response.isFailure) {
@@ -82,7 +75,7 @@ class ProfilingService extends Service
   }) async {
     final RestResponse<Json> response = await super.restClient.post(
       '/profiling/horses/$horseId/gallery',
-      body: GalleryMapper.toPayload(gallery),
+      body: GalleryMapper.toJson(gallery),
     );
 
     if (response.isFailure) {
@@ -105,9 +98,9 @@ class ProfilingService extends Service
       );
     }
 
-    final RestResponse<Json> response = await _restClient.put(
+    final RestResponse<Json> response = await super.restClient.put(
       '/profiling/horses/$horseId',
-      body: HorseMapper.toPayload(horse),
+      body: HorseMapper.toJson(horse),
     );
 
     if (response.isFailure) {
@@ -124,7 +117,7 @@ class ProfilingService extends Service
   Future<RestResponse<GalleryDto>> fetchHorseGallery({
     required String horseId,
   }) async {
-    final RestResponse<Json> response = await _restClient.get(
+    final RestResponse<Json> response = await super.restClient.get(
       '/profiling/horses/$horseId/gallery',
     );
 
@@ -157,9 +150,9 @@ class ProfilingService extends Service
     required String horseId,
     required GalleryDto gallery,
   }) async {
-    final RestResponse<Json> response = await _restClient.put(
+    final RestResponse<Json> response = await super.restClient.put(
       '/profiling/horses/$horseId/gallery',
-      body: GalleryMapper.toPayload(gallery),
+      body: GalleryMapper.toJson(gallery),
     );
 
     if (response.isFailure) {

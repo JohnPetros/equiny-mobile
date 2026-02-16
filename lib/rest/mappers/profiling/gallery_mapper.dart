@@ -3,13 +3,11 @@ import 'package:equiny/core/profiling/dtos/structures/image_dto.dart';
 import 'package:equiny/core/shared/types/json.dart';
 
 class GalleryMapper {
-  static Json toPayload(GalleryDto gallery) {
+  static Json toJson(GalleryDto gallery) {
     return <String, dynamic>{
-      'horse_id': gallery.horseId,
-      'horseId': gallery.horseId,
       'images': gallery.images
           .map(
-            (ImageDto image) => <String, dynamic>{
+            (ImageDto image) => <String, String>{
               'key': image.key,
               'name': image.name,
             },

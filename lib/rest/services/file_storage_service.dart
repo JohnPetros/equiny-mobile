@@ -10,7 +10,8 @@ import 'package:equiny/core/storage/interfaces/file_storage_service.dart'
 import 'package:equiny/rest/mappers/profiling/image_mapper.dart';
 import 'package:equiny/rest/services/service.dart';
 
-class FileStorageService extends Service implements file_storage_service.FileStorageService {
+class FileStorageService extends Service
+    implements file_storage_service.FileStorageService {
   FileStorageService(super.restClient);
 
   @override
@@ -46,14 +47,6 @@ class FileStorageService extends Service implements file_storage_service.FileSto
       return RestResponse<List<ImageDto>>(
         statusCode: response.statusCode,
         errorMessage: response.errorMessage,
-      );
-    }
-
-    if (response.statusCode != HttpStatusCode.created &&
-        response.statusCode != HttpStatusCode.ok) {
-      return RestResponse<List<ImageDto>>(
-        statusCode: response.statusCode,
-        errorMessage: 'Nao foi possivel enviar as imagens.',
       );
     }
 

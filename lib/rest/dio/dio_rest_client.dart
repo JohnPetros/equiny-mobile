@@ -77,7 +77,7 @@ class DioRestClient implements RestClient {
       final Response<dynamic> response = await request();
       final dynamic body = response.data;
       return RestResponse<Json>(
-        body: body is Json ? body : <String, dynamic>{},
+        body: body is Json ? body : {"data": body},
         statusCode: response.statusCode,
       );
     } on DioException catch (error) {

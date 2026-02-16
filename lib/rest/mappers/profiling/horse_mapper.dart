@@ -3,7 +3,7 @@ import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
 import 'package:equiny/core/shared/types/json.dart';
 
 class HorseMapper {
-  static Json toPayload(HorseDto horse) {
+  static Json toJson(HorseDto horse) {
     return <String, dynamic>{
       'name': horse.name,
       'birth_month': horse.birthMonth,
