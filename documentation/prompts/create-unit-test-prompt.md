@@ -12,7 +12,7 @@ Orientar a criação de testes unitários e de widget padronizados e eficientes,
 
 ### 1. Adesão às Normas do Projeto
 *   **Obrigatório:** Siga rigorosamente as diretrizes em [unit-tests-guidelines.md](../unit-tests-guidelines.md).
-*   **Contexto de UI:** Ao testar Widgets, aplique as boas práticas descritas em [ui-layer-guidelines.md](../ui-layer-guidelines.md).
+*   **Contexto de UI:** Ao testar Widgets, aplique as boas práticas descritas em [ui-layer-rules.md](../ui-layer-rules.md).
 
 ### 2. Estrutura e Nomenclatura 📁
 *   **Organização:** Crie os testes no diretório `test/` espelhando a estrutura original em `lib/`.

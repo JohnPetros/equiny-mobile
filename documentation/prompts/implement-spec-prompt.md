@@ -14,10 +14,10 @@ Executar o plano de implementação técnica de forma iterativa, organizada e va
     *   **Arquitetura:** `documentation\architecture.md`
     *   **Padronização de Código:** `documentation\code-conventions-guidelines.md`
     *   **Diretrizes de Camadas:**
-        *   **Core:** `documentation\core-layer-guidelines.md`
-        *   **UI:** `documentation\ui-layer-guidelines.md`
-        *   **REST:** `documentation\rest-layer-guidelines.md`
-        *   **Drivers:** `documentation\drivers-layer-guidelines.md`
+        *   **Core:** `documentation\core-layer-rules.md`
+        *   **UI:** `documentation\ui-layer-rules.md`
+        *   **REST:** `documentation\rest-layer-rules.md`
+        *   **Drivers:** `documentation\drivers-layer-rules.md`
 
 2.  **Planejamento e Tarefas:**
     *   Caso já tenha sido realizado o planejamento e a definição de tarefas prévias, leve-as em consideração durante a implementação e ignore os passos 3 e 4.

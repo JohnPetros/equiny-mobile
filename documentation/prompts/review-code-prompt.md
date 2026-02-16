@@ -25,9 +25,9 @@ Realizar uma revisão técnica rigorosa da base de código para assegurar confor
     *   **Diretrizes:** Siga rigorosamente os padrões de projeto conforme documentado em:
     *   **Convenções de codificação:** [code-conventions-guidelines.md](../code-conventions-guidelines.md)
         *   **Arquitetura:** [architecture.md](../architecture.md)
-        *   **Core:** [core-layer-guidelines.md](../core-layer-guidelines.md)
-        *   **Rest:** [rest-layer-guidelines.md](../rest-layer-guidelines.md)
-        *   **UI:** [ui-layer-guidelines.md](../ui-layer-guidelines.md)
+        *   **Core:** [core-layer-rules.md](../core-layer-rules.md)
+        *   **Rest:** [rest-layer-rules.md](../rest-layer-rules.md)
+        *   **UI:** [ui-layer-rules.md](../ui-layer-rules.md)
         *   **Testes:** [unit-tests-guidelines.md](../unit-tests-guidelines.md)
     *   **Padrões:** Garanta o uso correto de MVP, injeção de dependência com Riverpod e reatividade com Signals.
 

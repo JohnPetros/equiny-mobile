@@ -7,7 +7,7 @@ Manter atualizado o documento de arquitetura do projeto (`documentation/architec
 1.  Documentos de Requisitos de Produto (PRDs) e Especificações Técnicas (Specs).
     *   *Nota:* todos os arquivos de Spec possuem a extensão `-spec.md`.
 2.  Documentos de Diretrizes (Guidelines).
-    *   Exemplo: `documentation/*-guidelines.md` (como `ui-layer-guidelines.md`, `core-layer-guidelines.md`, etc.).
+    *   Exemplo: `documentation/*-guidelines.md` (como `ui-layer-rules.md`, `core-layer-rules.md`, etc.).
 3.  Alterações significativas no código fonte (novas camadas, refatorações, introdução de pacotes).
 4.  O arquivo atual `documentation/architecture.md`.
 

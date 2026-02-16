@@ -1,107 +1,190 @@
-# Prompt: Criar Documento de Spec
+---
+description: Criar spec tecnica detalhada para implementacao no equiny_mobile
+---
 
-## Objetivo
-Detalhar a implementacao técnica de uma feature, fix ou refatoracao atuando como Tech Lead Senior.
-O documento deve ser a ponte entre o PRD (Product Requirements Document) e o codigo, com nivel de detalhe suficiente para implementacao direta, sem ambiguidades.
+# Prompt: Criar Spec
 
-## Entradas
-- Esboco da spec ou solicitacao de mudanca.
-- PRD associado (nivel superior).
-- Acesso a codebase atual.
-- Id da tela no Google Stitch
+**Objetivo:** detalhar a implementacao tecnica de uma `feature`, `fix` ou `refactor` no `equiny_mobile`, atuando como Tech Lead Senior. A `spec` deve ser a ponte entre contexto de produto, layout e implementacao, com nivel de detalhe suficiente para execucao sem ambiguidades.
 
-## Diretrizes de Execucao
+**Contexto do projeto (leitura minima obrigatoria):**
 
-### 1) Pesquisa e contextualizacao
-- **Entender o PRD**: Acesse o link do PRD associado (nivel superior) e entenda o objetivo da tarefa usando Github ClI.
-- **Mapear fluxo:** entender origem e destino dos dados (`UI -> Store -> Service -> API`) antes de escrever.
-- **Verificar existencia:** identificar recursos existentes (widgets, DTOs, services) que devem ser reutilizados ou estendidos; evitar duplicidade.
-- **Consultar rules:** revisar padroes das camadas (`core`, `rest`, `ui`, `drivers`) e da stack (Riverpod, Signals) conforme escopo.
-- **Consultar Stitch:** revisar a tela no Google Stitch usando o MCP do Google Stitch.
-- **Identificar referencias:** localizar exemplos similares na codebase para reaproveitamento inteligente.
-- **Questionar:** Caso necessario, me faça perguntas para entender melhor o contexto da tarefa ou decidir questões técnicas usando sua tool `question`.
+- Produto (alto nivel): PRD em `documentation/overview.md` (fonte externa)
+- Arquitetura: `documentation/architecture.md`
+- Regras por camada: `documentation/rules/rules.md` (e os docs acionados por ele)
 
+## Entrada
 
-### 2) Estruturacao da spec
-Gerar um arquivo Markdown seguindo exatamente a estrutura abaixo.
+- Enunciado da mudanca (1-3 paragrafos) e motivacao.
+- Links para PRD/issue/discussao (se existirem).
+- Acesso a codebase atual para validar caminhos e exemplos similares.
+- Id da tela no Google Stitch (quando houver impacto visual).
 
-## Modelo Obrigatorio
+## Diretrizes de execucao
 
-### 1. Cabecalho (Frontmatter)
-```yaml
-title: [Titulo da Spec]
-status: [concluido|concluida|em progresso]
-lastUpdatedAt: [AAAA-MM-DD]
+1. **Pesquisa e contextualizacao (sem expor `chain-of-thought`):**
+   - Identifique **objetivo**, **escopo**, **risco** e **camadas impactadas**.
+   - Mapeie o fluxo principal antes de escrever: `View -> Presenter/Store -> Provider -> Service -> RestClient -> API`.
+   - Reuse/extenda componentes existentes; evite duplicidade de `Presenter`, `Store`, `Widget`, `DTO`, `Service` e `Driver`.
+   - Consulte regras especificas conforme escopo:
+     - Mudanca em UI/MVP/widgets -> `documentation/guidelines/ui-layer-rules.md`
+     - Mudanca em contratos/entidades -> `documentation/guidelines/core-layer-rules.md`
+     - Mudanca em integracao HTTP -> `documentation/guidelines/rest-layer-rules.md`
+     - Mudanca em infraestrutura/adapters -> `documentation/guidelines/drivers-layer-rules.md`
+     - Convencoes gerais -> `documentation/guidelines/code-conventions-guidelines.md`
+
+2. **Ferramentas auxiliares:**
+   - Use Serena para localizar arquivos e referencias na codebase.
+   - Use Context7 apenas quando precisar de documentacao/exemplos de biblioteca especifica.
+   - Use Google Stitch para validar layout e hierarquia visual quando houver `screen_id`.
+
+3. **Qualidade e densidade:**
+   - Seja direto; prefira listas e blocos curtos.
+   - Use **negrito** para decisoes e `code` para termos tecnicos (ex: `Riverpod`, `Signals`, `GoRouter`, `Dio`, `shadcn_flutter`).
+   - Escreva em PT-BR; mantenha termos de programacao em Ingles e em `code`.
+
+## Estrutura do documento (modelo obrigatorio)
+
+Use frontmatter e a hierarquia de cabecalhos sem pular niveis.
+
+```md
+---
+title: <Titulo claro>
+status: <em progresso|concluido>
+last_updated_at: <AAAA-MM-DD>
+---
+
+# 1. Objetivo
+<1 paragrafo: o que sera entregue funcionalmente e tecnicamente.>
+
+# 2. Escopo
+
+## 2.1 In-scope
+- ...
+
+## 2.2 Out-of-scope
+- ...
+
+# 3. Requisitos
+
+## 3.1 Funcionais
+- ...
+
+## 3.2 Nao funcionais
+- ...
+
+# 4. O que ja existe (inventario)
+
+> Inclua apenas itens realmente relevantes para implementar a mudanca.
+
+## 4.1 UI (`lib/ui/`)
+- **`NomeDaClasseOuWidget`** (`lib/ui/...`) - <como sera reutilizado>
+
+## 4.2 Core (`lib/core/`)
+- **`NomeDaClasse`** (`lib/core/...`) - ...
+
+## 4.3 REST (`lib/rest/`)
+- **`NomeDaClasse`** (`lib/rest/...`) - ...
+
+## 4.4 Drivers (`lib/drivers/`)
+- **`NomeDaClasse`** (`lib/drivers/...`) - ...
+
+# 5. O que deve ser criado
+
+> Liste apenas arquivos novos. Para cada arquivo, detalhe assinatura, responsabilidade, dependencias e estado quando aplicavel.
+
+## 5.1 UI
+
+### 5.1.1 Presenters/Stores
+- **Arquivo:** `lib/ui/.../..._presenter.dart` ou `..._store.dart`
+  - **Responsabilidade:** ...
+  - **Dependencias:** ...
+  - **Estado (`signals`/providers):** ...
+  - **Computeds:** ...
+  - **Metodos:** ...
+
+### 5.1.2 Views
+- **Arquivo:** `lib/ui/.../..._view.dart`
+  - **Responsabilidade:** ...
+  - **Props:** ...
+  - **Dependencias de UI:** `shadcn_flutter`, tema, etc.
+
+### 5.1.3 Widgets
+- **Arquivo/Pasta:** `lib/ui/.../widgets/...`
+  - **Responsabilidade:** ...
+  - **Props:** ...
+  - **Widgets internos:** ...
+  - **Estrutura de pastas (ASCII):**
+```text
+widgets/
+  <widget_pai>/
+    <widget_pai>.dart
+    widgets/
+      <widget_filho>.dart
 ```
 
-### 2. Objetivo (Obrigatorio)
-Resumo em um paragrafo do que sera entregue, funcional e tecnicamente.
+## 5.2 Core
+- **Arquivo:** `lib/core/...`
+  - **Tipo:** `dto` | `interface` | `entity` | `value_object`
+  - **Contratos/assinaturas:** ...
+  - **Responsabilidade:** ...
 
-### 3. O que ja existe? (Obrigatorio)
-Para cada camada impactada, listar recursos existentes da codebase.
+## 5.3 REST
+- **Arquivo:** `lib/rest/...`
+  - **Service/Client:** ...
+  - **Metodos:** ...
+  - **Entrada/Saida:** ...
 
-Formato:
-- **`NomeDaClasse`** (`caminho/relativo/do/arquivo.dart`) - *Breve descricao do uso (ex.: metodo a chamar, store a consumir).*
+## 5.4 Drivers
+- **Arquivo:** `lib/drivers/...`
+  - **Adapter/Driver:** ...
+  - **Responsabilidade:** ...
+  - **Dependencias:** ...
 
-### 4. O que deve ser criado? (Quando aplicavel)
-Descrever novos componentes por camada. Para cada arquivo novo, detalhar:
+# 6. O que deve ser modificado
 
-#### UI (Presenters, Stores)
-- **Localizacao:** `caminho/do/arquivo.dart`
-- **Dependencias:** o que deve ser injetado.
-- **Signals/Estado:** variaveis reativas (ex.: `isLoading`, `items`).
-- **Computeds:** variaveis derivadas (ex.: `isEmpty`, `totalPrice`).
-- **Metodos:** assinatura e responsabilidade.
+> Liste apenas arquivos existentes. Mudancas em arquivo novo ficam na secao 5.
 
-#### UI (Views)
-- **Localizacao:** `caminho/do/arquivo.dart`
-- **Bibliotecas de UI:** o que deve ser usado/injetado.
-- **Props:** parametros recebidos no construtor.
+- **Arquivo:** `lib/...`
+  - **Mudanca:** ...
+  - **Justificativa:** ...
+  - **Impacto:** `ui` | `core` | `rest` | `drivers`
 
-#### UI (Widgets)
-- **Localizacao:** `caminho/da/pasta`
-- **Props:** parametros recebidos no construtor.
-- **Widgets internos:** listar seguindo a mesma estrutura.
-- **Estrutura de pastas:** representar em ASCII quando houver widgets internos.
+# 7. O que deve ser removido
 
-> Todo widget deve seguir MVP: View e, quando houver estado/providers, Presenter.
-> Se o widget tiver widgets internos, aplicar o mesmo padrao (Widgets, Views e Presenters).
+> Remocoes precisam ser seguras (sem quebrar fluxo, import ou contrato publico). Se houver substituicao, aponte o novo caminho.
 
-#### REST (Services)
-- **Localizacao:** `caminho/do/arquivo.dart`
-- **Dependencias:** o que deve ser injetado.
-- **Metodos:** assinatura e responsabilidade.
+- **Arquivo:** `lib/...`
+  - **Remocao:** ...
+  - **Motivo:** ...
+  - **Substituir por (se aplicavel):** `lib/...`
 
-#### Drivers
-- **Localizacao:** `caminho/do/arquivo.dart`
-- **Dependencias:** o que deve ser injetado.
-- **Metodos:** assinatura e responsabilidade.
+# 8. Diagramas e referencias
 
-> Nem todas as camadas sao obrigatorias. Escolha somente as necessarias para a tarefa.
+## 8.1 Fluxo de dados (ASCII)
+```text
+View -> Presenter/Store -> Provider -> Service -> RestClient -> API
+```
 
-### 5. O que deve ser modificado? (Quando aplicavel)
-Para alteracoes em codigo existente:
+## 8.2 Layout/hierarquia visual (ASCII)
+```text
+Screen
+  |- Header
+  |- Content
+  |   |- Section A
+  |   `- Section B
+  `- Footer CTA
+```
 
-#### [Nome da Camada]
-- **Arquivo:** `caminho/do/arquivo.dart`
-- **Mudanca:** descrever alteracao especifica (ex.: adicionar prop `onTap`, injetar novo service).
+## 8.3 Referencias internas
+- `lib/...` (arquivo similar usado como base)
 
-### 6. O que deve ser removido? (Quando aplicavel)
+## 8.4 Referencias de tela (quando houver)
+- **Google Stitch screen id:** `<id>`
+- **Decisoes de UI extraidas:** <bullet points curtos>
+```
 
-#### [Nome da Camada]
-- **Arquivo:** `caminho/do/arquivo.dart`
-- **Motivo:** explicar remocao e impacto.
+**Regras**
 
-### 7. Usar como referencia (Opcional)
-- Links/caminhos para arquivos similares na codebase.
-
-### 8. Diagramas e referencias
-- **Fluxo de dados:** diagrama ASCII/texto com interacao entre camadas.
-- **Layout:** ASCII da hierarquia visual para telas/widgets complexos.
-- **Referencias:** caminhos de arquivos similares usados como base.
-
-## Checklist de Validacao
-- Estrutura obrigatoria seguida integralmente.
-- Caminhos de arquivos conferidos na codebase.
-- Sem duplicacao de componentes ja existentes.
-- Decisoes alinhadas com guidelines da camada.
+- Nao inclua testes automatizados na `spec`.
+- Todos os caminhos citados devem existir no projeto (ou estar explicitamente marcados como **novo arquivo**).
+- Se uma decisao tecnica depender de informacao ausente, registre em `Perguntas em aberto` no fim do documento.

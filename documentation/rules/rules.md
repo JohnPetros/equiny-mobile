@@ -3,7 +3,7 @@
 Este arquivo serve como índice para as diretrizes de documentação do projeto. Consulte os arquivos específicos abaixo com base na tarefa em questão.
 
 ## Diretrizes de Interface de Usuário (ui)
-**Arquivo:** `/documentation/guidelines/ui-layer-guidelines.md`
+**Arquivo:** `/documentation/guidelines/ui-layer-rules.md`
 **Quando consultar:**
 - Ao criar um documento relacionado a UI.
 - Ao criar ou modificar Widgets Flutter (MVP Pattern).
@@ -20,7 +20,7 @@ Este arquivo serve como índice para as diretrizes de documentação do projeto.
 - Para entender a estrutura de diretórios e organização geral.
 
 ## Diretrizes da Camada de Drivers
-**Arquivo:** `/documentation/guidelines/drivers-layer-guidelines.md`
+**Arquivo:** `/documentation/guidelines/drivers-layer-rules.md`
 **Quando consultar:**
 - Ao criar um documento relacionado a drivers.
 - Ao implementar adaptadores para bibliotecas externas (Env, Navegação, Armazenamento Loal, etc.).
@@ -28,7 +28,7 @@ Este arquivo serve como índice para as diretrizes de documentação do projeto.
 - Ao configurar inicializações de ferramentas de terceiros.
 
 ## Diretrizes do Pacote Core (core)
-**Arquivo:** `/documentation/guidelines/core-layer-guidelines.md`
+**Arquivo:** `/documentation/guidelines/core-layer-rules.md`
 **Quando consultar:**
 - Ao criar um documento relacionado à camada core.
 - Para entender a arquitetura de Domínio (Clean Architecture).
@@ -36,7 +36,7 @@ Este arquivo serve como índice para as diretrizes de documentação do projeto.
 - Para contratos de abstração que serão implementados por Drivers ou Repositórios.
 
 ## Diretrizes da Camada REST
-**Arquivo:** `/documentation/guidelines/rest-layer-guidelines.md`
+**Arquivo:** `/documentation/guidelines/rest-layer-rules.md`
 **Quando consultar:**
 - Ao criar um documento relacionado à camada rest.
 - Ao realizar requisições HTTP para APIs externas.
