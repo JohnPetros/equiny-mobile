@@ -1,4 +1,6 @@
 import 'package:equiny/core/profiling/dtos/structures/image_dto.dart';
+import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_horse_gallery/gallery_skeleton/index.dart';
+import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_horse_gallery/gallery_slot/index.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
@@ -28,112 +30,85 @@ class ProfileHorseGalleryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool shouldShowSkeleton = isUploading || isSyncing;
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppThemeColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppThemeColors.border),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Row(
             children: <Widget>[
-              const Expanded(
-                child: Text(
-                  'Galeria do cavalo',
-                  style: TextStyle(
-                    color: AppThemeColors.textMain,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 18,
-                  ),
+              const Text(
+                'GALERIA',
+                style: TextStyle(
+                  color: AppThemeColors.textSecondary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                  letterSpacing: 0.8,
                 ),
               ),
-              Text(
-                '${images.length}/$maxImages',
-                style: const TextStyle(color: AppThemeColors.textSecondary),
+              const Spacer(),
+              TextButton.icon(
+                onPressed: isUploading || images.length >= maxImages
+                    ? null
+                    : onAddImages,
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                ),
+                icon: const Icon(Icons.add_circle_outline, size: 18),
+                label: Text(
+                  isUploading ? 'Enviando...' : 'Adicionar',
+                  style: const TextStyle(fontSize: 13),
+                ),
               ),
             ],
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          OutlinedButton.icon(
-            onPressed: isUploading || images.length >= maxImages
-                ? null
-                : onAddImages,
-            icon: const Icon(Icons.add_photo_alternate_outlined),
-            label: Text(isUploading ? 'Enviando...' : 'Adicionar imagens'),
           ),
           if (isSyncing) ...<Widget>[
             const SizedBox(height: AppSpacing.xs),
             const Text(
               'Sincronizando galeria...',
-              style: TextStyle(color: AppThemeColors.textSecondary),
+              style: TextStyle(
+                color: AppThemeColors.textSecondary,
+                fontSize: 12,
+              ),
             ),
           ],
           if (errorMessage != null) ...<Widget>[
             const SizedBox(height: AppSpacing.xs),
             Text(
               errorMessage!,
-              style: const TextStyle(color: AppThemeColors.errorText),
+              style: const TextStyle(
+                color: AppThemeColors.errorText,
+                fontSize: 12,
+              ),
             ),
             TextButton(
               onPressed: onRetrySync,
               child: const Text('Tentar novamente'),
             ),
           ],
-          const SizedBox(height: AppSpacing.sm),
-          if (images.isEmpty)
-            const Text(
-              'Nenhuma imagem cadastrada.',
-              style: TextStyle(color: AppThemeColors.textSecondary),
-            )
+          const SizedBox(height: AppSpacing.md),
+          if (shouldShowSkeleton)
+            GallerySkeleton(maxImages: maxImages)
           else
-            Column(
-              children: images.asMap().entries.map((
-                MapEntry<int, ImageDto> entry,
-              ) {
-                final int index = entry.key;
-                final ImageDto image = entry.value;
-                return Container(
-                  margin: const EdgeInsets.only(bottom: AppSpacing.xs),
-                  padding: const EdgeInsets.all(AppSpacing.sm),
-                  decoration: BoxDecoration(
-                    color: AppThemeColors.backgroundAlt,
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                    border: Border.all(color: AppThemeColors.border),
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                      Icon(
-                        index == 0 ? Icons.star : Icons.image_outlined,
-                        color: index == 0
-                            ? AppThemeColors.primary
-                            : AppThemeColors.textSecondary,
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                      Expanded(
-                        child: Text(
-                          image.name.isEmpty ? image.key : image.name,
-                          style: const TextStyle(
-                            color: AppThemeColors.textMain,
-                          ),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: index == 0
-                            ? null
-                            : () => onSetPrimary(image),
-                        child: const Text('Principal'),
-                      ),
-                      IconButton(
-                        onPressed: () => onRemoveImage(image),
-                        icon: const Icon(Icons.delete_outline),
-                      ),
-                    ],
-                  ),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: List<Widget>.generate(maxImages, (int index) {
+                return GallerySlot(
+                  slotIndex: index,
+                  images: images,
+                  maxImages: maxImages,
+                  isUploading: isUploading,
+                  onAdd: onAddImages,
+                  onSetPrimary: onSetPrimary,
+                  onRemove: onRemoveImage,
                 );
-              }).toList(),
+              }),
             ),
         ],
       ),

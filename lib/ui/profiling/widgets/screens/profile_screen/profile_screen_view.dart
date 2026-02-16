@@ -1,4 +1,5 @@
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_horse_tab/index.dart';
+import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_horse_tab/profile_horse_tab_presenter.dart';
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_owner_tab_placeholder/index.dart';
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_screen_presenter.dart';
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_tab_selector/index.dart';
@@ -12,15 +13,16 @@ class ProfileScreenView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final presenter = ref.watch(profileScreenPresenterProvider);
+    final screenPresenter = ref.watch(profileScreenPresenterProvider);
+    final horseTabPresenter = ref.watch(profileHorseTabPresenterProvider);
 
     return Scaffold(
       backgroundColor: AppThemeColors.background,
       appBar: AppBar(
         backgroundColor: AppThemeColors.background,
-        title: const Text('Perfil'),
+        title: const Text('Perfil do Cavalo'),
         leading: IconButton(
-          onPressed: presenter.goBack,
+          onPressed: screenPresenter.goBack,
           icon: const Icon(Icons.arrow_back),
         ),
       ),
@@ -32,10 +34,10 @@ class ProfileScreenView extends ConsumerWidget {
               padding: const EdgeInsets.all(AppSpacing.md),
               child: Watch((BuildContext context) {
                 final String syncStatus =
-                    presenter.isSyncingHorse.value ||
-                        presenter.isSyncingGallery.value
+                    horseTabPresenter.isSyncingHorse.value ||
+                        horseTabPresenter.isSyncingGallery.value
                     ? 'Sincronizando...'
-                    : presenter.lastSyncAt.value != null
+                    : horseTabPresenter.lastSyncAt.value != null
                     ? 'Sincronizado'
                     : 'Aguardando sincronizacao';
 
@@ -50,29 +52,36 @@ class ProfileScreenView extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     ProfileTabSelector(
-                      activeTab: presenter.activeTab.value,
-                      onTabChanged: presenter.switchTab,
+                      activeTab: screenPresenter.activeTab.value,
+                      onTabChanged: screenPresenter.switchTab,
                     ),
                     const SizedBox(height: AppSpacing.md),
                     Expanded(
-                      child: presenter.isHorseTab.value
+                      child: screenPresenter.isHorseTab.value
                           ? ProfileHorseTab(
-                              form: presenter.horseForm.value,
-                              images: presenter.horseImages.value,
-                              isHorseActive: presenter.isHorseActive.value,
-                              isLoading: presenter.isLoadingInitialData.value,
-                              isUploading: presenter.isUploadingImages.value,
+                              form: horseTabPresenter.horseForm.value,
+                              images: horseTabPresenter.horseImages.value,
+                              isHorseActive:
+                                  horseTabPresenter.isHorseActive.value,
+                              isLoading:
+                                  horseTabPresenter.isLoadingInitialData.value,
+                              isUploading:
+                                  horseTabPresenter.isUploadingImages.value,
                               isSyncingGallery:
-                                  presenter.isSyncingGallery.value,
-                              feedReadinessChecklist:
-                                  presenter.feedReadinessChecklist.value,
-                              errorMessage: presenter.generalError.value,
-                              onAddImages: presenter.pickAndUploadImages,
-                              onSetPrimary: presenter.setPrimaryImage,
-                              onRemoveImage: presenter.removeImage,
-                              onRetryGallerySync: () => presenter.syncGallery(),
+                                  horseTabPresenter.isSyncingGallery.value,
+                              feedReadinessChecklist: horseTabPresenter
+                                  .feedReadinessChecklist
+                                  .value,
+                              errorMessage:
+                                  horseTabPresenter.generalError.value,
+                              onAddImages:
+                                  horseTabPresenter.pickAndUploadImages,
+                              onSetPrimary: horseTabPresenter.setPrimaryImage,
+                              onRemoveImage: horseTabPresenter.removeImage,
+                              onRetryGallerySync: () =>
+                                  horseTabPresenter.syncGallery(),
                               onToggleHorseActive: (bool value) =>
-                                  presenter.toggleHorseActive(value),
+                                  horseTabPresenter.toggleHorseActive(value),
                             )
                           : const ProfileOwnerTabPlaceholder(),
                     ),
