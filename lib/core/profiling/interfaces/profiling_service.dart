@@ -5,8 +5,15 @@ import 'package:equiny/core/shared/responses/rest_response.dart';
 
 abstract class ProfilingService {
   Future<RestResponse<OwnerDto>> fetchOwner();
+  Future<RestResponse<List<HorseDto>>> fetchOwnerHorses();
   Future<RestResponse<HorseDto>> createHorse({required HorseDto horse});
   Future<RestResponse<GalleryDto>> createHorseGallery({
+    required String horseId,
+    required GalleryDto gallery,
+  });
+  Future<RestResponse<HorseDto>> updateHorse({required HorseDto horse});
+  Future<RestResponse<GalleryDto>> fetchHorseGallery({required String horseId});
+  Future<RestResponse<GalleryDto>> updateHorseGallery({
     required String horseId,
     required GalleryDto gallery,
   });

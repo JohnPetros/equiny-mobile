@@ -9,6 +9,8 @@ class HorseDto {
   final String sex;
   final double height;
   final LocationDto location;
+  final String description;
+  final bool isActive;
 
   const HorseDto({
     this.id,
@@ -19,5 +21,7 @@ class HorseDto {
     required this.sex,
     required this.height,
     required this.location,
+    this.description = '',
+    this.isActive = false,
   });
 }
