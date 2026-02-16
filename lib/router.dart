@@ -3,6 +3,7 @@ import 'package:equiny/core/shared/constants/cache_keys.dart';
 import 'package:equiny/drivers/cache-driver/index.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/index.dart';
 import 'package:equiny/ui/home/widgets/screens/home_screen/index.dart';
+import 'package:equiny/ui/profiling/widgets/screens/profile_screen/index.dart';
 import 'package:equiny/ui/profiling/widgets/screens/onboarding_screen/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,6 +24,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final bool isSignIn = currentRoute == Routes.signIn;
       final bool isSignUp = currentRoute == Routes.signUp;
       final bool isOnboarding = currentRoute == Routes.onboarding;
+      final bool isProfile = currentRoute == Routes.profile;
 
       if (!isAuthenticated) {
         if (isSignIn || isSignUp) {
@@ -36,7 +38,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       if (isSignIn || isSignUp || isOnboarding) {
-        return Routes.home;
+        return Routes.profile;
+      }
+
+      if (isProfile) {
+        return null;
       }
 
       return null;
@@ -64,6 +70,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.home,
         builder: (BuildContext context, GoRouterState state) {
           return const HomeScreen();
+        },
+      ),
+      GoRoute(
+        path: Routes.profile,
+        builder: (BuildContext context, GoRouterState state) {
+          return const ProfileScreen();
         },
       ),
     ],
