@@ -130,8 +130,6 @@ Passo a passo claro para o revisor validar:
 ⚠️ Não usar APIs MCP.
 Usar exclusivamente **gh**.
 
-> Repositorio: https://github.com/JohnPetros/equiny
-
 Comando padrão:
 
 ```
