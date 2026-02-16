@@ -3,17 +3,15 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:equiny/core/profiling/dtos/structures/image_dto.dart';
 import 'package:equiny/core/shared/constants/http_status_code.dart';
-import 'package:equiny/core/shared/interfaces/rest_client.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/core/shared/types/json.dart';
 import 'package:equiny/core/storage/interfaces/file_storage_service.dart'
     as file_storage_service;
-import 'package:equiny/rest/storage/mappers/image_mapper.dart';
+import 'package:equiny/rest/mappers/profiling/image_mapper.dart';
+import 'package:equiny/rest/services/service.dart';
 
-class FileStorageService implements file_storage_service.FileStorageService {
-  final RestClient _restClient;
-
-  FileStorageService(this._restClient);
+class FileStorageService extends Service implements file_storage_service.FileStorageService {
+  FileStorageService(super.restClient);
 
   @override
   Future<RestResponse<List<ImageDto>>> uploadImageFiles({
@@ -39,7 +37,7 @@ class FileStorageService implements file_storage_service.FileStorageService {
       );
     }
 
-    final RestResponse<Json> response = await _restClient.post(
+    final RestResponse<Json> response = await super.restClient.post(
       '/storage/images/upload',
       body: formData,
     );

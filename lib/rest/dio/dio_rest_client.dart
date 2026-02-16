@@ -1,12 +1,17 @@
 import 'package:dio/dio.dart';
+import 'package:equiny/core/shared/constants/cache_keys.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/core/shared/types/json.dart';
 import 'package:equiny/core/shared/interfaces/rest_client.dart';
+import 'package:equiny/core/shared/interfaces/cache_driver.dart';
 
 class DioRestClient implements RestClient {
   final Dio _dio;
+  final CacheDriver _cacheDriver;
 
-  DioRestClient([Dio? dio]) : _dio = dio ?? Dio();
+  DioRestClient(CacheDriver cacheDriver)
+    : _dio = Dio(),
+      _cacheDriver = cacheDriver;
 
   @override
   Future<RestResponse<Json>> get(String path, {Json? queryParams}) async {
@@ -61,9 +66,18 @@ class DioRestClient implements RestClient {
     _dio.options.headers[key] = value;
   }
 
+  void setAuthorizationHeader(String token) {
+    _dio.options.headers['Authorization'] = 'Bearer $token';
+  }
+
   Future<RestResponse<Json>> _send(
     Future<Response<dynamic>> Function() request,
   ) async {
+    final accessToken = _cacheDriver.get(CacheKeys.accessToken);
+    print('accessToken: $accessToken');
+    if (accessToken != null) {
+      _dio.options.headers['Authorization'] = 'Bearer $accessToken';
+    }
     try {
       final Response<dynamic> response = await request();
       final dynamic body = response.data;

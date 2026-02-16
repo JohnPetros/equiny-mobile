@@ -222,7 +222,7 @@ lib/ui/profiling/widgets/screens/onboarding_screen/
 # 6. O que deve ser modificado
 
 - **Arquivo:** `lib/router.dart`
-  - **Mudanca:** trocar placeholder da rota `Routes.onboarding` pela `OnboardingScreenView` e adicionar guard de redirecionamento por `authToken` + `onboardingCompleted`.
+  - **Mudanca:** trocar placeholder da rota `Routes.onboarding` pela `OnboardingScreenView` e adicionar guard de redirecionamento por `accessToken` + `onboardingCompleted`.
   - **Justificativa:** garantir obrigatoriedade do onboarding antes da experiencia principal.
   - **Impacto:** `ui`
 
