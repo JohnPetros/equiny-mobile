@@ -14,7 +14,7 @@ Finalizar e consolidar a correção de um erro reportado, garantindo que o bug f
     *   **Cenários de Erro:** Certifique-se de que foram adicionados testes unitários para o caso específico do bug, garantindo que ele não retorne (test-first approach para bugs).
 
 2.  **Verificação de Padrões e Arquitetura:**
-    *   **Respeito às Camadas:** Valide se a correção respeita as guidelines (`core-layer-guidelines.md`, `ui-layer-guidelines.md`, etc.) e se está na camada correta identificada no diagnóstico.
+    *   **Respeito às Camadas:** Valide se a correção respeita as guidelines (`core-layer-rules.md`, `ui-layer-rules.md`, etc.) e se está na camada correta identificada no diagnóstico.
 
 3.  **Atualização do Bug Report:**
     *   Atualize o estado do Bug Report ou adicione notas sobre a resolução final.

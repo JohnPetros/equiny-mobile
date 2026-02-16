@@ -1,19 +1,47 @@
 import 'package:equiny/core/shared/constants/routes.dart';
-import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/sign_up_screen_view.dart';
+import 'package:equiny/core/shared/constants/cache_keys.dart';
+import 'package:equiny/drivers/cache-driver/index.dart';
+import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/index.dart';
+import 'package:equiny/ui/home/widgets/screens/home_screen/index.dart';
+import 'package:equiny/ui/profiling/widgets/screens/onboarding_screen/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
+  final cacheDriver = ref.watch(cacheDriverProvider);
+
   return GoRouter(
-    initialLocation: Routes.signUp,
+    initialLocation: Routes.signIn,
+    redirect: (BuildContext context, GoRouterState state) {
+      final String currentRoute = state.matchedLocation;
+      final bool isAuthenticated =
+          (cacheDriver.get(CacheKeys.authToken) ?? '').isNotEmpty;
+      final bool isOnboardingCompleted =
+          cacheDriver.get(CacheKeys.onboardingCompleted) == 'true';
+
+      final bool isSignIn = currentRoute == Routes.signIn;
+      final bool isSignUp = currentRoute == Routes.signUp;
+      final bool isOnboarding = currentRoute == Routes.onboarding;
+
+      if (!isAuthenticated) {
+        if (isSignIn || isSignUp) {
+          return null;
+        }
+        return Routes.signIn;
+      }
+
+      if (!isOnboardingCompleted) {
+        return isOnboarding ? null : Routes.onboarding;
+      }
+
+      if (isSignIn || isSignUp || isOnboarding) {
+        return Routes.home;
+      }
+
+      return null;
+    },
     routes: <RouteBase>[
-      GoRoute(
-        path: Routes.signUp,
-        builder: (BuildContext context, GoRouterState state) {
-          return const SignUpScreenView();
-        },
-      ),
       GoRoute(
         path: Routes.signIn,
         builder: (BuildContext context, GoRouterState state) {
@@ -21,9 +49,21 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: Routes.createHorse,
+        path: Routes.signUp,
         builder: (BuildContext context, GoRouterState state) {
-          return const Scaffold(body: Center(child: Text('Criar cavalo')));
+          return const SignUpScreen();
+        },
+      ),
+      GoRoute(
+        path: Routes.onboarding,
+        builder: (BuildContext context, GoRouterState state) {
+          return const OnboardingScreen();
+        },
+      ),
+      GoRoute(
+        path: Routes.home,
+        builder: (BuildContext context, GoRouterState state) {
+          return const HomeScreen();
         },
       ),
     ],

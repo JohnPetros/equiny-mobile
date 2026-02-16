@@ -12,7 +12,7 @@ Entregar a implementacao completa da tela de Sign Up do Equiny (UI + orquestraca
 
 - Tela de cadastro implementada em `lib/ui/auth/widgets/screens/sign_up_screen/` com composicao por subwidgets (`sign_up_header`, `sign_up_form`, `sign_up_footer`) e presenter dedicado.
 - Integracao de cadastro implementada em `lib/rest/auth/services/auth_service.dart` com mapeamento para `JwtDto`.
-- Sessao persistida via `CacheDriver` (`CacheKeys.authToken`) e redirecionamento para `Routes.createHorse` apos sucesso.
+- Sessao persistida via `CacheDriver` (`CacheKeys.authToken`) e redirecionamento para `Routes.onboarding` apos sucesso.
 - Bootstrap do app atualizado em `lib/main.dart` + `lib/app.dart` + `lib/router.dart`.
 - Ajuste final de UX/testabilidade no footer: link `Entrar` renderizado em `Wrap` + `GestureDetector` (evita miss hit-test em ambiente de teste).
 
@@ -75,7 +75,7 @@ Entregar a implementacao completa da tela de Sign Up do Equiny (UI + orquestraca
   - `void togglePasswordVisibility()` - alterna visualizacao da senha.
   - `void togglePasswordConfirmationVisibility()` - alterna visualizacao da confirmacao.
   - `void applyServerFieldErrors(RestResponse response)` - injeta erros de servidor nos `FormControl`s corretos quando aplicavel.
-  - `Future<void> submit()` - marca `submitAttempted`, valida `form`, bloqueia double tap, normaliza dados, chama `AuthService.signUp`, persiste sessao via `CacheDriver`, navega para `Routes.createHorse` e mapeia erros de campo/gerais.
+  - `Future<void> submit()` - marca `submitAttempted`, valida `form`, bloqueia double tap, normaliza dados, chama `AuthService.signUp`, persiste sessao via `CacheDriver`, navega para `Routes.onboarding` e mapeia erros de campo/gerais.
   - `void goToSignIn()` - navega para `Routes.signIn`.
 
 ##### Provider do Presenter
@@ -279,7 +279,7 @@ SignUpScreenView
           -> POST /auth/sign-up (API)
         <- RestResponse<JwtDto>
     -> CacheDriver.set(authToken)
-    -> NavigationDriver.goTo(Routes.createHorse)
+    -> NavigationDriver.goTo(Routes.onboarding)
 ```
 
 - **Layout:**

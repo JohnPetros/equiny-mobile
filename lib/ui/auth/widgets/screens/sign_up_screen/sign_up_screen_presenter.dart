@@ -1,4 +1,5 @@
 import 'package:equiny/core/auth/interfaces/auth_service.dart';
+import 'package:equiny/core/profiling/interfaces/profiling_service.dart';
 import 'package:equiny/core/shared/constants/cache_keys.dart';
 import 'package:equiny/core/shared/constants/routes.dart';
 import 'package:equiny/core/shared/interfaces/cache_driver.dart';
@@ -15,6 +16,7 @@ class SignUpScreenPresenter {
   final AuthService _authService;
   final NavigationDriver _navigationDriver;
   final CacheDriver _cacheDriver;
+  final ProfilingService _profilingService;
 
   final Signal<FormGroup> form = signal(
     FormGroup(<String, AbstractControl<Object?>>{}),
@@ -30,6 +32,7 @@ class SignUpScreenPresenter {
 
   SignUpScreenPresenter(
     this._authService,
+    this._profilingService,
     this._navigationDriver,
     this._cacheDriver,
   ) {
@@ -134,8 +137,25 @@ class SignUpScreenPresenter {
     }
 
     _cacheDriver.set(CacheKeys.authToken, response.body.accessToken);
+
+    final ownerResponse = await _profilingService.fetchOwner();
+    if (ownerResponse.isFailure) {
+      isLoading.value = false;
+      generalError.value = ownerResponse.errorMessage;
+      return;
+    }
+
+    final bool hasCompletedOnboarding =
+        ownerResponse.body.hasCompletedOnboarding;
+
+    _cacheDriver.set(
+      CacheKeys.onboardingCompleted,
+      hasCompletedOnboarding.toString(),
+    );
     isLoading.value = false;
-    _navigationDriver.goTo(Routes.createHorse);
+    _navigationDriver.goTo(
+      hasCompletedOnboarding ? Routes.home : Routes.onboarding,
+    );
   }
 
   void togglePasswordConfirmationVisibility() {
@@ -151,6 +171,7 @@ final signUpScreenPresenterProvider =
     Provider.autoDispose<SignUpScreenPresenter>((ref) {
       return SignUpScreenPresenter(
         ref.watch(authServiceProvider),
+        ref.watch(profilingServiceProvider),
         ref.watch(navigationDriverProvider),
         ref.watch(cacheDriverProvider),
       );
