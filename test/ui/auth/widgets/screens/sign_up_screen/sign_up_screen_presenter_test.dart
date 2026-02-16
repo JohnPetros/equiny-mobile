@@ -1,5 +1,7 @@
 import 'package:equiny/core/auth/interfaces/auth_service.dart';
+import 'package:equiny/core/profiling/interfaces/profiling_service.dart';
 import 'package:equiny/core/auth/dtos/jwt_dto.dart';
+import 'package:equiny/core/profiling/dtos/entities/owner_dto.dart';
 import 'package:equiny/core/shared/constants/cache_keys.dart';
 import 'package:equiny/core/shared/constants/routes.dart';
 import 'package:equiny/core/shared/interfaces/cache_driver.dart';
@@ -13,22 +15,27 @@ import '../../../../../fakers/auth/jwt_dto_faker.dart';
 
 class MockAuthService extends Mock implements AuthService {}
 
+class MockProfilingService extends Mock implements ProfilingService {}
+
 class MockNavigationDriver extends Mock implements NavigationDriver {}
 
 class MockCacheDriver extends Mock implements CacheDriver {}
 
 void main() {
   late MockAuthService authService;
+  late MockProfilingService profilingService;
   late MockNavigationDriver navigationDriver;
   late MockCacheDriver cacheDriver;
   late SignUpScreenPresenter presenter;
 
   setUp(() {
     authService = MockAuthService();
+    profilingService = MockProfilingService();
     navigationDriver = MockNavigationDriver();
     cacheDriver = MockCacheDriver();
     presenter = SignUpScreenPresenter(
       authService,
+      profilingService,
       navigationDriver,
       cacheDriver,
     );
@@ -140,7 +147,18 @@ void main() {
         ),
       ).thenAnswer(
         (_) async =>
-            RestResponse(body: JwtDtoFaker.create(accessToken: 'token-123')),
+            RestResponse(body: JwtDtoFaker.fakeDto(accessToken: 'token-123')),
+      );
+      when(() => profilingService.fetchOwner()).thenAnswer(
+        (_) async => RestResponse<OwnerDto>(
+          body: const OwnerDto(
+            id: 'owner-1',
+            name: 'John Doe',
+            email: 'john@mail.com',
+            accountId: 'acc-1',
+            hasCompletedOnboarding: false,
+          ),
+        ),
       );
 
       await presenter.submit();
@@ -152,8 +170,53 @@ void main() {
           accountPassword: 'password123',
         ),
       ).called(1);
+      verify(() => profilingService.fetchOwner()).called(1);
       verify(() => cacheDriver.set(CacheKeys.authToken, 'token-123')).called(1);
-      verify(() => navigationDriver.goTo(Routes.createHorse)).called(1);
+      verify(
+        () => cacheDriver.set(CacheKeys.onboardingCompleted, 'false'),
+      ).called(1);
+      verify(() => navigationDriver.goTo(Routes.onboarding)).called(1);
+      expect(presenter.isLoading.value, isFalse);
+      expect(presenter.generalError.value, isNull);
+    });
+
+    test('should navigate home when onboarding is already completed', () async {
+      presenter.form.value.control('name').value = 'John Doe';
+      presenter.form.value.control('email').value = 'john@mail.com';
+      presenter.form.value.control('password').value = 'password123';
+      presenter.form.value.control('passwordConfirmation').value =
+          'password123';
+
+      when(
+        () => authService.signUp(
+          ownerName: any(named: 'ownerName'),
+          accountEmail: any(named: 'accountEmail'),
+          accountPassword: any(named: 'accountPassword'),
+        ),
+      ).thenAnswer(
+        (_) async =>
+            RestResponse(body: JwtDtoFaker.fakeDto(accessToken: 'token-456')),
+      );
+      when(() => profilingService.fetchOwner()).thenAnswer(
+        (_) async => RestResponse<OwnerDto>(
+          body: const OwnerDto(
+            id: 'owner-1',
+            name: 'John Doe',
+            email: 'john@mail.com',
+            accountId: 'acc-1',
+            hasCompletedOnboarding: true,
+          ),
+        ),
+      );
+
+      await presenter.submit();
+
+      verify(() => profilingService.fetchOwner()).called(1);
+      verify(() => cacheDriver.set(CacheKeys.authToken, 'token-456')).called(1);
+      verify(
+        () => cacheDriver.set(CacheKeys.onboardingCompleted, 'true'),
+      ).called(1);
+      verify(() => navigationDriver.goTo(Routes.home)).called(1);
       expect(presenter.isLoading.value, isFalse);
       expect(presenter.generalError.value, isNull);
     });
@@ -186,7 +249,8 @@ void main() {
         isTrue,
       );
       verifyNever(() => cacheDriver.set(any(), any()));
-      verifyNever(() => navigationDriver.goTo(Routes.createHorse));
+      verifyNever(() => navigationDriver.goTo(Routes.onboarding));
+      verifyNever(() => profilingService.fetchOwner());
     });
 
     test('should not submit when already loading', () async {
