@@ -17,6 +17,8 @@ class SignInScreenPresenter {
   final NavigationDriver _navigationDriver;
   final CacheDriver _cacheDriver;
   final ProfilingService _profilingService;
+  final String? initialEmail;
+  final String? initialPassword;
 
   final Signal<FormGroup> form = signal(
     FormGroup(<String, AbstractControl<Object?>>{}),
@@ -33,8 +35,10 @@ class SignInScreenPresenter {
     this._authService,
     this._profilingService,
     this._navigationDriver,
-    this._cacheDriver,
-  ) {
+    this._cacheDriver, {
+    this.initialEmail,
+    this.initialPassword,
+  }) {
     form.value = buildForm();
     canSubmit = computed(() => form.value.valid && !isLoading.value);
     hasAnyFieldError = computed(() {
@@ -59,6 +63,7 @@ class SignInScreenPresenter {
   FormGroup buildForm() {
     return FormGroup(<String, AbstractControl<Object?>>{
       'email': FormControl<String>(
+        value: initialEmail,
         validators: <Validator<dynamic>>[
           Validators.required,
           Validators.email,
@@ -66,6 +71,7 @@ class SignInScreenPresenter {
         ],
       ),
       'password': FormControl<String>(
+        value: initialPassword,
         validators: <Validator<dynamic>>[
           Validators.required,
           Validators.minLength(8),

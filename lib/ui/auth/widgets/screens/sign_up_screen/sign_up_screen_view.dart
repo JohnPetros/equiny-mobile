@@ -103,7 +103,7 @@ class SignUpScreenView extends ConsumerWidget {
                         ),
                         const SizedBox(height: AppSpacing.xxl),
                         SignUpFooter(
-                          promptText: 'Ja tem uma conta? ',
+                          promptText: 'Já tem uma conta? ',
                           actionText: 'Entrar',
                           onTapAction: presenter.goToSignIn,
                         ),

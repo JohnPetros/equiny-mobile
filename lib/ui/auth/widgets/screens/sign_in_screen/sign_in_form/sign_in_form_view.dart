@@ -78,7 +78,7 @@ class SignInFormView extends StatelessWidget {
             cursorColor: AppThemeColors.primary,
             decoration: buildDecoration(
               label: 'E-mail',
-              hint: 'voce@email.com',
+              hint: 'você@email.com',
             ),
             validationMessages: _validationMessages,
             showErrors: _showErrors,
@@ -127,10 +127,10 @@ bool _showErrors(AbstractControl<Object> control) {
 
 Map<String, String Function(Object)> get _validationMessages {
   return <String, String Function(Object)>{
-    ValidationMessage.required: (_) => 'Campo obrigatorio.',
-    ValidationMessage.email: (_) => 'Informe um e-mail valido.',
-    ValidationMessage.minLength: (_) => 'Valor abaixo do minimo permitido.',
-    ValidationMessage.maxLength: (_) => 'Valor acima do maximo permitido.',
+    ValidationMessage.required: (_) => 'Campo obrigatório.',
+    ValidationMessage.email: (_) => 'Informe um e-mail válido.',
+    ValidationMessage.minLength: (_) => 'Valor abaixo do mínimo permitido.',
+    ValidationMessage.maxLength: (_) => 'Valor acima do máximo permitido.',
     'server': (Object error) => error.toString(),
   };
 }

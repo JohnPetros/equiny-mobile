@@ -99,7 +99,7 @@ class SignInScreenView extends ConsumerWidget {
                         ),
                         const SizedBox(height: AppSpacing.xxl),
                         SignUpFooter(
-                          promptText: 'Nao tem uma conta? ',
+                          promptText: 'Não tem uma conta? ',
                           actionText: 'Criar conta',
                           onTapAction: presenter.goToSignUp,
                         ),
