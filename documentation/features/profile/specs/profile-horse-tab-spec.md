@@ -1,6 +1,6 @@
 ---
 title: Tab de cavalo do perfil do usuario
-status: em progresso
+status: concluido
 last_updated_at: 2026-02-16
 ---
 
@@ -15,7 +15,7 @@ Entregar a primeira iteracao da tela de perfil com foco na tab `Cavalo`, permiti
 - Editar dados do cavalo com validacao de formulario, feedback inline e persistencia automatica por campo alterado.
 - Gerenciar galeria com limite de 6 imagens, definicao de imagem principal e fluxo de retry de upload.
 - Implementar toggle `Ativo/Inativo` com bloqueio de ativacao quando o cavalo estiver inelegivel para feed.
-- Remover CTA de salvar e operar em modo autosave chamando service correspondente sempre que houver alteracao de `HorseDto`.
+- Remover CTA de salvar e operar em modo autosave com `debounce`, validacao do formulario e envio apenas quando houver mudanca efetiva em relacao ao ultimo payload sincronizado.
 
 ## 2.2 Out-of-scope
 - Implementacao completa da aba `Dono` (campos, validacoes e persistencia).
@@ -29,8 +29,10 @@ Entregar a primeira iteracao da tela de perfil com foco na tab `Cavalo`, permiti
 - A tela deve exibir estrutura com abas `Cavalo` e `Dono` conforme referencia visual do Stitch.
 - Ao abrir a tab `Cavalo`, o app deve hidratar formulario e galeria com dados vindos da API.
 - Campos do cavalo devem permitir edicao de `nome`, `sexo`, `nascimento/idade`, `raca`, `altura`, `localizacao` e `descricao` (quando suportado pelo contrato atual).
-- Ao alterar qualquer dado de `HorseDto`, o presenter deve acionar imediatamente `ProfilingService.updateHorse` (com `debounce` curto para evitar excesso de chamadas).
+- Ao alterar qualquer dado de `HorseDto`, o presenter deve acionar `ProfilingService.updateHorse` com `debounce` curto, validacao previa e deduplicacao de payload para evitar chamadas redundantes.
 - A galeria deve suportar adicionar, remover e reordenar imagens para definir a principal, respeitando maximo de 6.
+- Durante upload de imagens e sincronizacao da galeria, a UI deve exibir skeleton loading nos slots de imagem.
+- A remocao de imagem deve exigir confirmacao explicita do usuario antes de persistir a alteracao.
 - O toggle `Ativo/Inativo` deve validar requisitos minimos antes de ativar e exibir pendencias quando bloqueado.
 - Mudancas de galeria devem chamar `ProfilingService.updateHorseGallery` sem dependencia de botao de confirmacao.
 
@@ -219,6 +221,8 @@ ProfileScreen
   |- ProfileTabSelector (Cavalo | Dono)
   |- HorseTabContent
   |   |- ProfileHorseGallery (widget interno dedicado)
+  |   |   |- GallerySkeleton (upload/sync)
+  |   |   `- Confirm dialog antes de remover imagem
   |   |- HorseFormSection
   |   |   |- Nome
   |   |   |- Sexo
@@ -247,6 +251,34 @@ ProfileScreen
   - Bloco de galeria no topo com slots de imagem e acao clara de adicionar.
   - Secao `Pronto para o Feed` com checklist de criterios e feedback de pendencias.
   - Toggle destacado para `Ativar Cavalo` com texto de ajuda contextual.
+
+# 10. Consolidacao da implementacao
+
+## 10.1 Itens implementados
+- `ProfileHorseGallery` atualizado com skeleton interno (`gallery_skeleton/`) exibido enquanto `isUploadingImages` ou `isSyncingGallery` estiver `true`.
+- Fluxo de remocao de imagem atualizado com dialogo de confirmacao antes de chamar `removeImage`.
+- `ProfileHorseFormSection` refatorado com widgets internos (`field_label/` e `sex_button/`) seguindo padrao MVP para componentes internos.
+- Campo `raca` alterado de texto livre para select com opcoes fechadas (`quarto de milha`, `mangalarga marchador`, `criolo`, `puro sangue ingles`, `arabe`, `campolina`, `outra`).
+- Campo `ano de nascimento` alterado para select; `mes` e `ano` exibidos na mesma linha; `raca` ocupando largura total da secao.
+- `ProfileHorseTabPresenter` atualizado para validar formulario antes de enviar ao service e para deduplicar autosave por assinatura do payload (`_lastSyncedHorseSignature`).
+
+## 10.2 Fluxo final (ASCII)
+```ASCII
+Usuario altera campo
+  -> valueChanges (horseForm)
+    -> debounce 600ms
+      -> syncHorsePatch()
+        -> valida formulario
+        -> gera assinatura do HorseDto
+        -> assinatura mudou?
+             |- nao -> encerra (sem chamada REST)
+             `- sim -> PUT /profiling/horses/{horseId}
+                      -> sucesso: atualiza assinatura e lastSyncAt
+```
+
+## 10.3 Divergencias controladas em relacao ao plano inicial
+- A regra inicial de chamar `updateHorse` a cada alteracao foi ajustada para evitar flood no backend (mantido autosave com deduplicacao).
+- `raca` deixou de ser texto livre na UI e passou para enum de opcoes predefinidas, com normalizacao para dados legados.
 
 # 9. Observações
 - Endpoint de listagem confirmado: `GET /profiling/owners/me/horses`.
