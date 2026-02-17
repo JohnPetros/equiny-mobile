@@ -13,6 +13,8 @@ class HorsesFaker {
     String? sex,
     double? height,
     LocationDto? location,
+    String? description,
+    bool? isActive,
   }) {
     return HorseDto(
       id: id,
@@ -23,6 +25,8 @@ class HorsesFaker {
       sex: sex ?? 'Macho',
       height: height ?? 1.6,
       location: location ?? LocationFaker.fakeDto(),
+      description: description ?? 'Descricao do cavalo',
+      isActive: isActive ?? false,
     );
   }
 
