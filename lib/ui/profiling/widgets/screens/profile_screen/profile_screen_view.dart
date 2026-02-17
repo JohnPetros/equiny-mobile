@@ -23,10 +23,6 @@ class ProfileScreenView extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppThemeColors.background,
         title: const Text('Perfil'),
-        leading: IconButton(
-          onPressed: screenPresenter.goBack,
-          icon: const Icon(Icons.arrow_back),
-        ),
       ),
       body: SafeArea(
         child: Center(
