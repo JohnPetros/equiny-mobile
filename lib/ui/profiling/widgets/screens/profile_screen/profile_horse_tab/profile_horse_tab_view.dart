@@ -3,6 +3,7 @@ import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_horse
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_horse_tab/profile_horse_feed_readiness_section/index.dart';
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_horse_tab/profile_horse_form_section/index.dart';
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_horse_gallery/index.dart';
+import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_horse_tab/profile_horse_tab_presenter.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:reactive_forms/reactive_forms.dart';
@@ -14,8 +15,10 @@ class ProfileHorseTabView extends StatelessWidget {
   final bool isLoading;
   final bool isUploading;
   final bool isSyncingGallery;
+  final int maxImages;
   final List<String> feedReadinessChecklist;
-  final String? errorMessage;
+  final String? horseErrorMessage;
+  final String? galleryErrorMessage;
   final VoidCallback onAddImages;
   final void Function(ImageDto image) onSetPrimary;
   final void Function(ImageDto image) onRemoveImage;
@@ -29,8 +32,10 @@ class ProfileHorseTabView extends StatelessWidget {
     required this.isLoading,
     required this.isUploading,
     required this.isSyncingGallery,
+    this.maxImages = ProfileHorseTabPresenter.maxImages,
     required this.feedReadinessChecklist,
-    required this.errorMessage,
+    required this.horseErrorMessage,
+    required this.galleryErrorMessage,
     required this.onAddImages,
     required this.onSetPrimary,
     required this.onRemoveImage,
@@ -55,13 +60,23 @@ class ProfileHorseTabView extends StatelessWidget {
               images: images,
               isUploading: isUploading,
               isSyncing: isSyncingGallery,
-              maxImages: 6,
-              errorMessage: errorMessage,
+              maxImages: maxImages,
+              errorMessage: galleryErrorMessage,
               onAddImages: onAddImages,
               onSetPrimary: onSetPrimary,
               onRemoveImage: onRemoveImage,
               onRetrySync: onRetryGallerySync,
             ),
+            if ((horseErrorMessage ?? '').isNotEmpty) ...<Widget>[
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                horseErrorMessage!,
+                style: const TextStyle(
+                  color: AppThemeColors.errorText,
+                  fontSize: 12,
+                ),
+              ),
+            ],
             const SizedBox(height: AppSpacing.md),
             const ProfileHorseFormSection(),
             const SizedBox(height: AppSpacing.md),

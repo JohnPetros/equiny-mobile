@@ -139,7 +139,7 @@ class GallerySlotView extends ConsumerWidget {
                     ),
             ),
           ),
-          if (isPrimary)
+          if (isPrimary && hasImage)
             Positioned(
               top: 8,
               left: 8,
