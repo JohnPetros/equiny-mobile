@@ -31,6 +31,23 @@ class ProfilingService extends Service
   }
 
   @override
+  Future<RestResponse<OwnerDto>> updateOwner({required OwnerDto owner}) async {
+    final RestResponse<Json> response = await super.restClient.put(
+      '/profiling/owners/',
+      body: OwnerMapper.toJson(owner),
+    );
+
+    if (response.isFailure) {
+      return RestResponse<OwnerDto>(
+        statusCode: response.statusCode,
+        errorMessage: response.errorMessage,
+      );
+    }
+
+    return response.mapBody(OwnerMapper.toDto);
+  }
+
+  @override
   Future<RestResponse<List<HorseDto>>> fetchOwnerHorses() async {
     final RestResponse<Json> response = await super.restClient.get(
       '/profiling/owners/me/horses',
