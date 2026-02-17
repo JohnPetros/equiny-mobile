@@ -17,97 +17,81 @@ class SignInScreenView extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppThemeColors.background,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: <Color>[
-              AppThemeColors.background,
-              AppThemeColors.backgroundAlt,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.xl,
-              ),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 400),
-                child: Watch((BuildContext context) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.xl,
-                      vertical: AppSpacing.xxl,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppThemeColors.surface,
-                      borderRadius: BorderRadius.circular(AppRadius.xl),
-                      border: Border.all(color: AppThemeColors.border),
-                      boxShadow: const <BoxShadow>[
-                        BoxShadow(
-                          color: Color(0x80000000),
-                          blurRadius: 40,
-                          offset: Offset(0, 20),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        const SignUpHeader(
-                          title: 'Entrar',
-                          subtitle: 'Acesse sua conta para continuar.',
-                          iconData: Icons.login,
-                        ),
-                        const SizedBox(height: AppSpacing.xxxl),
-                        if (presenter.generalError.value != null)
-                          Container(
-                            margin: const EdgeInsets.only(
-                              bottom: AppSpacing.sm,
-                            ),
-                            padding: const EdgeInsets.all(AppSpacing.xs),
-                            decoration: BoxDecoration(
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.xl,
+            ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Watch((BuildContext context) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xl,
+                    vertical: AppSpacing.xxl,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppThemeColors.surface,
+                    borderRadius: BorderRadius.circular(AppRadius.xl),
+                    border: Border.all(color: AppThemeColors.border),
+                    boxShadow: const <BoxShadow>[
+                      BoxShadow(
+                        color: Color(0x80000000),
+                        blurRadius: 40,
+                        offset: Offset(0, 20),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      const SignUpHeader(
+                        title: 'Entrar',
+                        subtitle: 'Acesse sua conta para continuar.',
+                        iconData: Icons.login,
+                      ),
+                      const SizedBox(height: AppSpacing.xxxl),
+                      if (presenter.generalError.value != null)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                          padding: const EdgeInsets.all(AppSpacing.xs),
+                          decoration: BoxDecoration(
+                            color: AppThemeColors.error.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(AppRadius.sm),
+                            border: Border.all(
                               color: AppThemeColors.error.withValues(
-                                alpha: 0.15,
-                              ),
-                              borderRadius: BorderRadius.circular(AppRadius.sm),
-                              border: Border.all(
-                                color: AppThemeColors.error.withValues(
-                                  alpha: 0.4,
-                                ),
-                              ),
-                            ),
-                            child: Text(
-                              presenter.generalError.value!,
-                              style: const TextStyle(
-                                color: AppThemeColors.errorText,
+                                alpha: 0.4,
                               ),
                             ),
                           ),
-                        SignInForm(
-                          form: presenter.form.value,
-                          submitAttempted: presenter.submitAttempted.value,
-                          isPasswordVisible: presenter.isPasswordVisible.value,
-                          onTogglePasswordVisibility:
-                              presenter.togglePasswordVisibility,
-                          onSubmit: presenter.submit,
-                          isLoading: presenter.isLoading.value,
+                          child: Text(
+                            presenter.generalError.value!,
+                            style: const TextStyle(
+                              color: AppThemeColors.errorText,
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: AppSpacing.xxl),
-                        SignUpFooter(
-                          promptText: 'Não tem uma conta? ',
-                          actionText: 'Criar conta',
-                          onTapAction: presenter.goToSignUp,
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-              ),
+                      SignInForm(
+                        form: presenter.form.value,
+                        submitAttempted: presenter.submitAttempted.value,
+                        isPasswordVisible: presenter.isPasswordVisible.value,
+                        onTogglePasswordVisibility:
+                            presenter.togglePasswordVisibility,
+                        onSubmit: presenter.submit,
+                        isLoading: presenter.isLoading.value,
+                      ),
+                      const SizedBox(height: AppSpacing.xxl),
+                      SignUpFooter(
+                        promptText: 'Não tem uma conta? ',
+                        actionText: 'Criar conta',
+                        onTapAction: presenter.goToSignUp,
+                      ),
+                    ],
+                  ),
+                );
+              }),
             ),
           ),
         ),
