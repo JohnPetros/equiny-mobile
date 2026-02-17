@@ -31,7 +31,8 @@ void main() {
             feedReadinessChecklist: const <String>[
               'Adicionar pelo menos 1 foto',
             ],
-            errorMessage: null,
+            horseErrorMessage: null,
+            galleryErrorMessage: null,
             onAddImages: onAddImages,
             onSetPrimary: (_) {},
             onRemoveImage: (_) {},

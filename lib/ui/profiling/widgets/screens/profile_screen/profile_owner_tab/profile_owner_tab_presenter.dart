@@ -160,7 +160,7 @@ class ProfileOwnerTabPresenter {
       name: normalizedName,
       email: normalizedEmail,
       accountId: owner.accountId,
-      phone: normalizedPhone.isEmpty ? owner.phone : normalizedPhone,
+      phone: normalizedPhone,
       bio: normalizedBio,
       hasCompletedOnboarding: owner.hasCompletedOnboarding,
     );
@@ -171,16 +171,6 @@ class ProfileOwnerTabPresenter {
   }
 
   String _buildOwnerSignature() {
-    final OwnerDto owner =
-        _owner ??
-        const OwnerDto(
-          name: '',
-          email: '',
-          accountId: '',
-          phone: '',
-          bio: '',
-          hasCompletedOnboarding: false,
-        );
     final String name = normalizeBeforeSync(
       ownerForm.value.control('name').value as String? ?? '',
     );
@@ -190,11 +180,10 @@ class ProfileOwnerTabPresenter {
     final String phoneRaw = normalizeBeforeSync(
       ownerForm.value.control('phone').value as String? ?? '',
     );
-    final String phone = phoneRaw.isEmpty ? (owner.phone ?? '') : phoneRaw;
     final String bio = normalizeBeforeSync(
       ownerForm.value.control('bio').value as String? ?? '',
     );
-    return <String>[name, email, phone, bio].join('|');
+    return <String>[name, email, phoneRaw, bio].join('|');
   }
 
   bool _isOwnerFormValidNow() {

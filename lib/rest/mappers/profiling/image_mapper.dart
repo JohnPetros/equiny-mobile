@@ -3,8 +3,15 @@ import 'package:equiny/core/shared/types/json.dart';
 
 class ImageMapper {
   static List<ImageDto> toDtoList(Json body) {
-    final List<dynamic> imagesRaw =
-        (body['data'] as List<dynamic>?) ?? <dynamic>[];
+    final dynamic data = body['data'];
+    final List<dynamic> imagesRaw;
+    if (data is List<dynamic>) {
+      imagesRaw = data;
+    } else if (data is Map<String, dynamic>) {
+      imagesRaw = (data['images'] as List<dynamic>?) ?? <dynamic>[];
+    } else {
+      imagesRaw = (body['images'] as List<dynamic>?) ?? <dynamic>[];
+    }
 
     if (imagesRaw.isEmpty && body['key'] != null) {
       return <ImageDto>[

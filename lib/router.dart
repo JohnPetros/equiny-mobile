@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:equiny/core/shared/constants/routes.dart';
 import 'package:equiny/core/shared/constants/cache_keys.dart';
 import 'package:equiny/drivers/cache-driver/index.dart';
@@ -16,7 +18,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final profilingService = ref.watch(profilingServiceProvider);
 
   return GoRouter(
-    initialLocation: Routes.profile,
+    initialLocation: Routes.signIn,
     redirect: (BuildContext context, GoRouterState state) async {
       final String currentRoute = state.matchedLocation;
       final bool isAuthenticated =
@@ -24,6 +26,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       final bool isSignIn = currentRoute == Routes.signIn;
       final bool isSignUp = currentRoute == Routes.signUp;
+      final bool isOnboarding = currentRoute == Routes.onboarding;
 
       if (!isAuthenticated) {
         if (isSignIn || isSignUp) {
@@ -32,14 +35,41 @@ final routerProvider = Provider<GoRouter>((ref) {
         return Routes.signIn;
       }
 
-      final ownerResponse = await profilingService.fetchOwner();
-      if (ownerResponse.isFailure) {
-        return Routes.signIn;
+      bool? hasCompletedOnboarding;
+      final String? onboardingCache = cacheDriver.get(
+        CacheKeys.onboardingCompleted,
+      );
+      if (onboardingCache == 'true') {
+        hasCompletedOnboarding = true;
       }
-      final bool hasCompletedOnboarding =
-          ownerResponse.body.hasCompletedOnboarding;
+      if (onboardingCache == 'false') {
+        hasCompletedOnboarding = false;
+      }
+
+      if (hasCompletedOnboarding == null) {
+        final ownerResponse = await profilingService.fetchOwner();
+        if (ownerResponse.isFailure) {
+          if (isSignIn || isSignUp) {
+            return Routes.home;
+          }
+          return null;
+        }
+
+        hasCompletedOnboarding = ownerResponse.body.hasCompletedOnboarding;
+        unawaited(
+          cacheDriver.set(
+            CacheKeys.onboardingCompleted,
+            hasCompletedOnboarding.toString(),
+          ),
+        );
+      }
+
       if (!hasCompletedOnboarding) {
-        return Routes.onboarding;
+        return isOnboarding ? null : Routes.onboarding;
+      }
+
+      if (isSignIn || isSignUp || isOnboarding) {
+        return Routes.home;
       }
 
       return null;

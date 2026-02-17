@@ -76,11 +76,14 @@ class ProfileScreenView extends ConsumerWidget {
                                   horseTabPresenter.isUploadingImages.value,
                               isSyncingGallery:
                                   horseTabPresenter.isSyncingGallery.value,
+                              maxImages: ProfileHorseTabPresenter.maxImages,
                               feedReadinessChecklist: horseTabPresenter
                                   .feedReadinessChecklist
                                   .value,
-                              errorMessage:
+                              horseErrorMessage:
                                   horseTabPresenter.generalError.value,
+                              galleryErrorMessage:
+                                  horseTabPresenter.galleryError.value,
                               onAddImages:
                                   horseTabPresenter.pickAndUploadImages,
                               onSetPrimary: horseTabPresenter.setPrimaryImage,

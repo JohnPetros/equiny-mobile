@@ -46,6 +46,7 @@ class ProfileHorseTabPresenter {
   final Signal<bool> isUploadingImages = signal(false);
   final Signal<bool> isHorseActive = signal(false);
   final Signal<String?> generalError = signal(null);
+  final Signal<String?> galleryError = signal(null);
   final Signal<DateTime?> lastSyncAt = signal(null);
 
   final Signal<String?> _horseId = signal(null);
@@ -91,6 +92,7 @@ class ProfileHorseTabPresenter {
   Future<void> loadHorseProfile() async {
     isLoadingInitialData.value = true;
     generalError.value = null;
+    galleryError.value = null;
 
     try {
       final horsesResponse = await _profilingService.fetchOwnerHorses();
@@ -114,12 +116,14 @@ class ProfileHorseTabPresenter {
         final galleryResponse = await _profilingService.fetchHorseGallery(
           horseId: horse.id!,
         );
-        if (galleryResponse.isSuccessful) {
+        if (!galleryResponse.isFailure) {
           horseImages.value = galleryResponse.body.images;
+        } else {
+          galleryError.value = galleryResponse.errorMessage;
         }
       }
-    } catch (error) {
-      generalError.value = error.toString();
+    } catch (_) {
+      generalError.value = 'Erro inesperado ao carregar dados do cavalo.';
     } finally {
       isLoadingInitialData.value = false;
     }
@@ -271,6 +275,7 @@ class ProfileHorseTabPresenter {
     }
 
     generalError.value = null;
+    galleryError.value = null;
     isUploadingImages.value = true;
 
     try {
@@ -283,17 +288,17 @@ class ProfileHorseTabPresenter {
 
       final response = await _fileStorageService.uploadImageFiles(files: files);
       if (response.isFailure) {
-        generalError.value = response.errorMessage;
+        galleryError.value = response.errorMessage;
         return;
       }
 
       horseImages.value = <ImageDto>[...horseImages.value, ...response.body];
       await syncGallery();
     } on UnsupportedError {
-      generalError.value =
+      galleryError.value =
           'Selecao de imagem nao suportada nesta plataforma/dispositivo.';
     } catch (_) {
-      generalError.value = 'Erro inesperado ao enviar imagens.';
+      galleryError.value = 'Erro inesperado ao enviar imagens.';
     } finally {
       isUploadingImages.value = false;
     }
@@ -324,6 +329,7 @@ class ProfileHorseTabPresenter {
     }
 
     isSyncingGallery.value = true;
+    galleryError.value = null;
     try {
       final response = await _profilingService.updateHorseGallery(
         horseId: horseId,
@@ -331,14 +337,14 @@ class ProfileHorseTabPresenter {
       );
 
       if (response.isFailure) {
-        generalError.value = response.errorMessage;
+        galleryError.value = response.errorMessage;
         return;
       }
 
       horseImages.value = response.body.images;
       lastSyncAt.value = DateTime.now();
     } catch (_) {
-      generalError.value = 'Erro inesperado ao sincronizar galeria.';
+      galleryError.value = 'Erro inesperado ao sincronizar galeria.';
     } finally {
       isSyncingGallery.value = false;
     }
