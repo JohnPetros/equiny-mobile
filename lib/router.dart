@@ -4,6 +4,8 @@ import 'package:equiny/drivers/cache-driver/index.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_in_screen/index.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/index.dart';
 import 'package:equiny/ui/home/widgets/screens/home_screen/index.dart';
+import 'package:equiny/rest/services.dart';
+import 'package:equiny/ui/profiling/widgets/screens/profile_screen/index.dart';
 import 'package:equiny/ui/profiling/widgets/screens/onboarding_screen/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,19 +13,17 @@ import 'package:go_router/go_router.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final cacheDriver = ref.watch(cacheDriverProvider);
+  final profilingService = ref.watch(profilingServiceProvider);
 
   return GoRouter(
-    initialLocation: Routes.signIn,
-    redirect: (BuildContext context, GoRouterState state) {
+    initialLocation: Routes.profile,
+    redirect: (BuildContext context, GoRouterState state) async {
       final String currentRoute = state.matchedLocation;
       final bool isAuthenticated =
           (cacheDriver.get(CacheKeys.accessToken) ?? '').isNotEmpty;
-      final bool isOnboardingCompleted =
-          cacheDriver.get(CacheKeys.onboardingCompleted) == 'true';
 
       final bool isSignIn = currentRoute == Routes.signIn;
       final bool isSignUp = currentRoute == Routes.signUp;
-      final bool isOnboarding = currentRoute == Routes.onboarding;
 
       if (!isAuthenticated) {
         if (isSignIn || isSignUp) {
@@ -32,12 +32,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         return Routes.signIn;
       }
 
-      if (!isOnboardingCompleted) {
-        return isOnboarding ? null : Routes.onboarding;
+      final ownerResponse = await profilingService.fetchOwner();
+      if (ownerResponse.isFailure) {
+        return Routes.signIn;
       }
-
-      if (isSignIn || isSignUp || isOnboarding) {
-        return Routes.home;
+      final bool hasCompletedOnboarding =
+          ownerResponse.body.hasCompletedOnboarding;
+      if (!hasCompletedOnboarding) {
+        return Routes.onboarding;
       }
 
       return null;
@@ -65,6 +67,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.home,
         builder: (BuildContext context, GoRouterState state) {
           return const HomeScreen();
+        },
+      ),
+      GoRoute(
+        path: Routes.profile,
+        builder: (BuildContext context, GoRouterState state) {
+          return const ProfileScreen();
         },
       ),
     ],

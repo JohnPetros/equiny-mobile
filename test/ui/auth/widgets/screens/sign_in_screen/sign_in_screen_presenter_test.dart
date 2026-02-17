@@ -139,9 +139,8 @@ void main() {
             accountPassword: any(named: 'accountPassword'),
           ),
         ).thenAnswer(
-          (_) async => RestResponse(
-            body: JwtDtoFaker.fakeDto(accessToken: 'token-123'),
-          ),
+          (_) async =>
+              RestResponse(body: JwtDtoFaker.fakeDto(accessToken: 'token-123')),
         );
         when(() => profilingService.fetchOwner()).thenAnswer(
           (_) async => RestResponse<OwnerDto>(
@@ -150,6 +149,8 @@ void main() {
               name: 'John Doe',
               email: 'john@mail.com',
               accountId: 'acc-1',
+              phone: '',
+              bio: '',
               hasCompletedOnboarding: false,
             ),
           ),
@@ -188,9 +189,8 @@ void main() {
             accountPassword: any(named: 'accountPassword'),
           ),
         ).thenAnswer(
-          (_) async => RestResponse(
-            body: JwtDtoFaker.fakeDto(accessToken: 'token-456'),
-          ),
+          (_) async =>
+              RestResponse(body: JwtDtoFaker.fakeDto(accessToken: 'token-456')),
         );
         when(() => profilingService.fetchOwner()).thenAnswer(
           (_) async => RestResponse<OwnerDto>(
@@ -199,6 +199,8 @@ void main() {
               name: 'John Doe',
               email: 'john@mail.com',
               accountId: 'acc-1',
+              phone: '',
+              bio: '',
               hasCompletedOnboarding: true,
             ),
           ),
@@ -254,9 +256,8 @@ void main() {
           accountPassword: any(named: 'accountPassword'),
         ),
       ).thenAnswer(
-        (_) async => RestResponse(
-          body: JwtDtoFaker.fakeDto(accessToken: 'token-123'),
-        ),
+        (_) async =>
+            RestResponse(body: JwtDtoFaker.fakeDto(accessToken: 'token-123')),
       );
       when(() => profilingService.fetchOwner()).thenAnswer(
         (_) async => RestResponse<OwnerDto>(
@@ -269,10 +270,10 @@ void main() {
 
       expect(presenter.isLoading.value, isFalse);
       expect(presenter.generalError.value, 'Erro ao buscar dados do usuario');
-      verify(() => cacheDriver.set(CacheKeys.accessToken, 'token-123')).called(1);
-      verifyNever(
-        () => cacheDriver.set(CacheKeys.onboardingCompleted, any()),
-      );
+      verify(
+        () => cacheDriver.set(CacheKeys.accessToken, 'token-123'),
+      ).called(1);
+      verifyNever(() => cacheDriver.set(CacheKeys.onboardingCompleted, any()));
       verifyNever(() => navigationDriver.goTo(any()));
     });
 
@@ -309,12 +310,14 @@ void main() {
       expect(presenter.hasAnyFieldError.value, isFalse);
     });
 
-    test('hasAnyFieldError should be true when submit attempted and invalid',
-        () {
-      presenter.form.value.control('email').value = '';
-      presenter.submitAttempted.value = true;
+    test(
+      'hasAnyFieldError should be true when submit attempted and invalid',
+      () {
+        presenter.form.value.control('email').value = '';
+        presenter.submitAttempted.value = true;
 
-      expect(presenter.hasAnyFieldError.value, isTrue);
-    });
+        expect(presenter.hasAnyFieldError.value, isTrue);
+      },
+    );
   });
 }

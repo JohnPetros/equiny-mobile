@@ -1,0 +1,3 @@
+import 'feed_readiness_checklist_done_tile_view.dart';
+
+typedef FeedReadinessChecklistDoneTile = FeedReadinessChecklistDoneTileView;

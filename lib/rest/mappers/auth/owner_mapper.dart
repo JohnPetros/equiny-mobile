@@ -8,8 +8,19 @@ class OwnerMapper {
       name: body['name']?.toString() ?? '',
       email: body['email']?.toString() ?? '',
       accountId: body['account_id']?.toString() ?? '',
+      phone: body['phone']?.toString(),
+      bio: body['bio']?.toString(),
       hasCompletedOnboarding: _readBool(body['has_completed_onboarding']),
     );
+  }
+
+  static Json toJson(OwnerDto owner) {
+    return <String, dynamic>{
+      'name': owner.name,
+      'email': owner.email,
+      'phone': owner.phone,
+      'bio': owner.bio,
+    };
   }
 
   static bool _readBool(dynamic value) {

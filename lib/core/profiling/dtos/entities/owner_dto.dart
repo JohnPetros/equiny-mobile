@@ -4,6 +4,8 @@ class OwnerDto {
   final String email;
   final String accountId;
   final bool hasCompletedOnboarding;
+  final String? phone;
+  final String? bio;
 
   const OwnerDto({
     this.id,
@@ -11,5 +13,7 @@ class OwnerDto {
     required this.email,
     required this.accountId,
     required this.hasCompletedOnboarding,
+    this.phone,
+    this.bio,
   });
 }

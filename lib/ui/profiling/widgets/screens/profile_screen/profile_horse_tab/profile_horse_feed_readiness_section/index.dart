@@ -1,0 +1,3 @@
+import 'profile_horse_feed_readiness_section_view.dart';
+
+typedef ProfileHorseFeedReadinessSection = ProfileHorseFeedReadinessSectionView;
