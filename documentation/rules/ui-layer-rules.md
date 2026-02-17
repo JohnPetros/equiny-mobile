@@ -121,7 +121,7 @@ lib/ui/
 - Criar arquivos index.dart para exportação
 - Componentizar widgets complexos
 - Ao criar um widget interno de um widget maior, crie uma pasta para ele dentro da pasta do widget maior.
-- Se precisou criar métodos do tipo _builder para contruir widgets internos, crie um arquivo dentro da pasta do widget maior e aplique o padrão MVP (Model-View-Presenter) para ele.
+- Se precisou criar métodos do tipo _builder para construir widgets internos, crie um arquivo dentro da pasta do widget maior e aplique o padrão MVP (Model-View-Presenter) para ele.
 
 ### ❌ Evitar
 
