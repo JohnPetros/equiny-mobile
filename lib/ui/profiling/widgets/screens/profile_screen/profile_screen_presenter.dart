@@ -10,9 +10,11 @@ class ProfileScreenPresenter {
 
   final Signal<ProfileTab> activeTab = signal(ProfileTab.horse);
   late final ReadonlySignal<bool> isHorseTab;
+  late final ReadonlySignal<bool> isOwnerTab;
 
   ProfileScreenPresenter(this._navigationDriver) {
     isHorseTab = computed(() => activeTab.value == ProfileTab.horse);
+    isOwnerTab = computed(() => activeTab.value == ProfileTab.owner);
   }
 
   void switchTab(ProfileTab tab) {
