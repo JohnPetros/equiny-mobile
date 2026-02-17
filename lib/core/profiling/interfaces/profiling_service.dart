@@ -5,7 +5,7 @@ import 'package:equiny/core/shared/responses/rest_response.dart';
 
 abstract class ProfilingService {
   Future<RestResponse<OwnerDto>> fetchOwner();
-  // Future<RestResponse<OwnerDto>> updateOwner({required OwnerDto owner});
+  Future<RestResponse<OwnerDto>> updateOwner({required OwnerDto owner});
   Future<RestResponse<List<HorseDto>>> fetchOwnerHorses();
   Future<RestResponse<HorseDto>> createHorse({required HorseDto horse});
   Future<RestResponse<GalleryDto>> createHorseGallery({
