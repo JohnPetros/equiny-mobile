@@ -11,9 +11,9 @@ class ProfileHorseGalleryView extends StatelessWidget {
   final int maxImages;
   final String? errorMessage;
   final VoidCallback onAddImages;
+  final VoidCallback onRetrySync;
   final void Function(ImageDto image) onSetPrimary;
   final void Function(ImageDto image) onRemoveImage;
-  final VoidCallback onRetrySync;
 
   const ProfileHorseGalleryView({
     required this.images,
