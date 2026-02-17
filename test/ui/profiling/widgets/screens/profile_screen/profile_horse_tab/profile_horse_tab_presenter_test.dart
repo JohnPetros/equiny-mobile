@@ -286,6 +286,7 @@ void main() {
       ).called(1);
       expect(presenter.horseImages.value, uploadedImages);
       expect(presenter.generalError.value, isNull);
+      expect(presenter.galleryError.value, isNull);
     });
 
     test('should set error when upload fails', () async {
@@ -303,7 +304,7 @@ void main() {
 
       await presenter.pickAndUploadImages();
 
-      expect(presenter.generalError.value, 'Falha no upload');
+      expect(presenter.galleryError.value, 'Falha no upload');
       expect(presenter.isUploadingImages.value, isFalse);
     });
 
@@ -315,7 +316,7 @@ void main() {
       await presenter.pickAndUploadImages();
 
       expect(
-        presenter.generalError.value,
+        presenter.galleryError.value,
         'Selecao de imagem nao suportada nesta plataforma/dispositivo.',
       );
       expect(presenter.isUploadingImages.value, isFalse);
