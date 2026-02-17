@@ -3,9 +3,12 @@ import 'dart:async';
 import 'package:equiny/core/shared/constants/routes.dart';
 import 'package:equiny/core/shared/constants/cache_keys.dart';
 import 'package:equiny/drivers/cache-driver/index.dart';
+import 'package:equiny/shared/widgets/components/tab_navigation/index.dart';
+import 'package:equiny/ui/conversations/widgets/screens/conversations_screen/index.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_in_screen/index.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/index.dart';
-import 'package:equiny/ui/home/widgets/screens/home_screen/index.dart';
+import 'package:equiny/ui/feed/widgets/screens/feed_screen/index.dart';
+import 'package:equiny/ui/matches/widgets/screens/matches_screen/index.dart';
 import 'package:equiny/rest/services.dart';
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/index.dart';
 import 'package:equiny/ui/profiling/widgets/screens/onboarding_screen/index.dart';
@@ -26,7 +29,6 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       final bool isSignIn = currentRoute == Routes.signIn;
       final bool isSignUp = currentRoute == Routes.signUp;
-      final bool isOnboarding = currentRoute == Routes.onboarding;
 
       if (!isAuthenticated) {
         if (isSignIn || isSignUp) {
@@ -35,41 +37,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         return Routes.signIn;
       }
 
-      bool? hasCompletedOnboarding;
-      final String? onboardingCache = cacheDriver.get(
-        CacheKeys.onboardingCompleted,
-      );
-      if (onboardingCache == 'true') {
-        hasCompletedOnboarding = true;
-      }
-      if (onboardingCache == 'false') {
-        hasCompletedOnboarding = false;
-      }
-
-      if (hasCompletedOnboarding == null) {
-        final ownerResponse = await profilingService.fetchOwner();
-        if (ownerResponse.isFailure) {
-          if (isSignIn || isSignUp) {
-            return Routes.home;
-          }
-          return null;
-        }
-
-        hasCompletedOnboarding = ownerResponse.body.hasCompletedOnboarding;
-        unawaited(
-          cacheDriver.set(
-            CacheKeys.onboardingCompleted,
-            hasCompletedOnboarding.toString(),
-          ),
-        );
-      }
-
-      if (!hasCompletedOnboarding) {
-        return isOnboarding ? null : Routes.onboarding;
-      }
-
-      if (isSignIn || isSignUp || isOnboarding) {
-        return Routes.home;
+      final ownerResponse = await profilingService.fetchOwner();
+      if (ownerResponse.isFailure) {
+        unawaited(cacheDriver.set(CacheKeys.accessToken, ''));
+        unawaited(cacheDriver.set(CacheKeys.onboardingCompleted, ''));
+        return isSignIn || isSignUp ? null : Routes.signIn;
       }
 
       return null;
@@ -93,17 +65,41 @@ final routerProvider = Provider<GoRouter>((ref) {
           return const OnboardingScreen();
         },
       ),
-      GoRoute(
-        path: Routes.home,
-        builder: (BuildContext context, GoRouterState state) {
-          return const HomeScreen();
+      ShellRoute(
+        builder: (BuildContext context, GoRouterState state, Widget child) {
+          return Scaffold(
+            body: child,
+            bottomNavigationBar: TabNavigation(
+              activeRoute: state.matchedLocation,
+            ),
+          );
         },
-      ),
-      GoRoute(
-        path: Routes.profile,
-        builder: (BuildContext context, GoRouterState state) {
-          return const ProfileScreen();
-        },
+        routes: <RouteBase>[
+          GoRoute(
+            path: Routes.feed,
+            builder: (BuildContext context, GoRouterState state) {
+              return const FeedScreen();
+            },
+          ),
+          GoRoute(
+            path: Routes.matches,
+            builder: (BuildContext context, GoRouterState state) {
+              return const MatchesScreen();
+            },
+          ),
+          GoRoute(
+            path: Routes.conversations,
+            builder: (BuildContext context, GoRouterState state) {
+              return const ConversationsScreen();
+            },
+          ),
+          GoRoute(
+            path: Routes.profile,
+            builder: (BuildContext context, GoRouterState state) {
+              return const ProfileScreen();
+            },
+          ),
+        ],
       ),
     ],
   );
