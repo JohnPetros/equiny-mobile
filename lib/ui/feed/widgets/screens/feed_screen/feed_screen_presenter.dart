@@ -241,9 +241,8 @@ class FeedScreenPresenter {
       return;
     }
 
-    final List<FeedHorseDto> updatedCards = <FeedHorseDto>[
-      ...cards.value,
-    ]..removeAt(currentIndex.value);
+    final List<FeedHorseDto> updatedCards = <FeedHorseDto>[...cards.value]
+      ..removeAt(currentIndex.value);
     cards.value = updatedCards;
 
     if (cards.value.isEmpty && nextCursor.value.isNotEmpty) {

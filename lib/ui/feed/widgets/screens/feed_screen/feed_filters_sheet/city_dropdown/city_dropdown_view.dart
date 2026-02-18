@@ -97,10 +97,8 @@ class _CityDropdownViewState extends ConsumerState<CityDropdownView> {
       onTap: () async {
         final result = await showDialog<String>(
           context: context,
-          builder: (context) => CitySelectionDialog(
-            cities: _cities!,
-            selectedCity: widget.value,
-          ),
+          builder: (context) =>
+              CitySelectionDialog(cities: _cities!, selectedCity: widget.value),
         );
         if (result != null) {
           widget.onChanged(result);
@@ -157,7 +155,9 @@ class _CityDropdownViewState extends ConsumerState<CityDropdownView> {
       decoration: BoxDecoration(
         color: AppThemeColors.inputBackground.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppThemeColors.inputBorder.withValues(alpha: 0.5)),
+        border: Border.all(
+          color: AppThemeColors.inputBorder.withValues(alpha: 0.5),
+        ),
       ),
       child: Row(
         children: [

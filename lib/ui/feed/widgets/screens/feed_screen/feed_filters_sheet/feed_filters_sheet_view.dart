@@ -272,10 +272,8 @@ class _FeedFiltersSheetViewState extends ConsumerState<FeedFiltersSheetView> {
               final List<String> filteredBreeds = query.isEmpty
                   ? _breeds
                   : _breeds
-                      .where(
-                        (String b) => b.toLowerCase().contains(query),
-                      )
-                      .toList();
+                        .where((String b) => b.toLowerCase().contains(query))
+                        .toList();
 
               return Wrap(
                 spacing: AppSpacing.xs,

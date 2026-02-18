@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class FeedScreenEmptyStateView extends StatelessWidget {
   final VoidCallback onClearFilters;
 
-  const FeedScreenEmptyStateView({
-    required this.onClearFilters,
-    super.key,
-  });
+  const FeedScreenEmptyStateView({required this.onClearFilters, super.key});
 
   @override
   Widget build(BuildContext context) {

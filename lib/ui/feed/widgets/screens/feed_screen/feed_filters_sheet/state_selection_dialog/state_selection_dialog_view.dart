@@ -12,7 +12,8 @@ class StateSelectionDialogView extends StatefulWidget {
   });
 
   @override
-  State<StateSelectionDialogView> createState() => _StateSelectionDialogViewState();
+  State<StateSelectionDialogView> createState() =>
+      _StateSelectionDialogViewState();
 }
 
 class _StateSelectionDialogViewState extends State<StateSelectionDialogView> {
@@ -81,9 +82,14 @@ class _StateSelectionDialogViewState extends State<StateSelectionDialogView> {
                           title: Text(stateUF),
                           selected: isSelected,
                           selectedColor: AppThemeColors.primary,
-                          selectedTileColor: AppThemeColors.primary.withValues(alpha: 0.1),
+                          selectedTileColor: AppThemeColors.primary.withValues(
+                            alpha: 0.1,
+                          ),
                           trailing: isSelected
-                              ? const Icon(Icons.check, color: AppThemeColors.primary)
+                              ? const Icon(
+                                  Icons.check,
+                                  color: AppThemeColors.primary,
+                                )
                               : null,
                           onTap: () => Navigator.of(context).pop(stateUF),
                         );
