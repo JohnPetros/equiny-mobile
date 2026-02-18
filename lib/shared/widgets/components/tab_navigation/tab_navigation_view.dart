@@ -21,7 +21,10 @@ class TabNavigationView extends StatelessWidget {
       showUnselectedLabels: false,
       items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Feed'),
-        BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: 'Matches'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.favorite_border),
+          label: 'Matches',
+        ),
         BottomNavigationBarItem(
           icon: Icon(Icons.chat_bubble_outline),
           label: 'Conversations',
