@@ -1,7 +1,8 @@
 ---
 title: Feed screen de descoberta de cavalos
-status: em progresso
-last_updated_at: 2026-02-17
+status: concluido
+prd: documentation\features\profiling\feed\prd.md
+last_updated_at: 2026-02-18
 ---
 
 # 1. Objetivo
