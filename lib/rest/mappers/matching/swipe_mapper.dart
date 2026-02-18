@@ -12,13 +12,18 @@ class SwipeMapper {
 
   static SwipeDto toDto(Json body) {
     return SwipeDto(
-      toHorseId: _firstNonNull(body, <String>['to_horse_id', 'toHorseId'])
-              ?.toString() ??
+      toHorseId:
+          _firstNonNull(body, <String>[
+            'to_horse_id',
+            'toHorseId',
+          ])?.toString() ??
           '',
       fromHorseId:
-          _firstNonNull(body, <String>['from_horse_id', 'fromHorseId'])
-                  ?.toString() ??
-              '',
+          _firstNonNull(body, <String>[
+            'from_horse_id',
+            'fromHorseId',
+          ])?.toString() ??
+          '',
       decision: _firstNonNull(body, <String>['decision'])?.toString() ?? '',
     );
   }

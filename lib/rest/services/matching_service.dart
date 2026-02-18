@@ -6,11 +6,14 @@ import 'package:equiny/core/shared/types/json.dart';
 import 'package:equiny/rest/mappers/matching/swipe_mapper.dart';
 import 'package:equiny/rest/services/service.dart';
 
-class MatchingService extends Service implements matching_service.MatchingService {
+class MatchingService extends Service
+    implements matching_service.MatchingService {
   MatchingService(super.restClient);
 
   @override
-  Future<RestResponse<SwipeDto>> swipeHorse({required SwipeDto swipeDto}) async {
+  Future<RestResponse<SwipeDto>> swipeHorse({
+    required SwipeDto swipeDto,
+  }) async {
     final RestResponse<Json> response = await super.restClient.post(
       '/matching/swipes',
       body: SwipeMapper.toJson(swipeDto),

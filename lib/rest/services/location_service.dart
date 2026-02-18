@@ -45,4 +45,3 @@ class LocationService extends Service
     return response.mapBody(LocationMapper.toCityList);
   }
 }
-
