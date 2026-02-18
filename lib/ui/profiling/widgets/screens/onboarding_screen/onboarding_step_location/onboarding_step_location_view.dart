@@ -98,7 +98,7 @@ class _OnboardingStepLocationViewState
             Watch((context) {
               final isLoading = presenter.isLoadingStates.value;
               final states = presenter.states.value;
-              
+
               return Autocomplete<String>(
                 optionsBuilder: (TextEditingValue textEditingValue) {
                   if (textEditingValue.text.isEmpty) {
@@ -111,52 +111,53 @@ class _OnboardingStepLocationViewState
                   widget.form.control('state').value = selection;
                   presenter.loadCities(selection);
                 },
-                fieldViewBuilder: (
-                  BuildContext context,
-                  TextEditingController fieldTextEditingController,
-                  FocusNode focusNode,
-                  VoidCallback onFieldSubmitted,
-                ) {
-                  fieldTextEditingController.text = _stateController.text;
-                  fieldTextEditingController.selection =
-                      _stateController.selection;
-                  
-                  return TextField(
-                    controller: fieldTextEditingController,
-                    focusNode: focusNode,
-                    textCapitalization: TextCapitalization.characters,
-                    style: const TextStyle(color: AppThemeColors.textMain),
-                    decoration: InputDecoration(
-                      labelText: 'Estado',
-                      suffixIcon: isLoading
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                fieldViewBuilder:
+                    (
+                      BuildContext context,
+                      TextEditingController fieldTextEditingController,
+                      FocusNode focusNode,
+                      VoidCallback onFieldSubmitted,
+                    ) {
+                      fieldTextEditingController.text = _stateController.text;
+                      fieldTextEditingController.selection =
+                          _stateController.selection;
+
+                      return TextField(
+                        controller: fieldTextEditingController,
+                        focusNode: focusNode,
+                        textCapitalization: TextCapitalization.characters,
+                        style: const TextStyle(color: AppThemeColors.textMain),
+                        decoration: InputDecoration(
+                          labelText: 'Estado',
+                          suffixIcon: isLoading
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.map,
+                                  color: AppThemeColors.primary,
                                 ),
-                              ),
-                            )
-                          : const Icon(
-                              Icons.map,
-                              color: AppThemeColors.primary,
-                            ),
-                    ),
-                    onChanged: (value) {
-                      _stateController.text = value;
-                      _stateController.selection =
-                          fieldTextEditingController.selection;
+                        ),
+                        onChanged: (value) {
+                          _stateController.text = value;
+                          _stateController.selection =
+                              fieldTextEditingController.selection;
+                        },
+                      );
                     },
-                  );
-                },
               );
             }),
             const SizedBox(height: AppSpacing.sm),
             Watch((context) {
               final isLoading = presenter.isLoadingCities.value;
               final cities = presenter.cities.value;
-              
+
               return Autocomplete<String>(
                 optionsBuilder: (TextEditingValue textEditingValue) {
                   if (textEditingValue.text.isEmpty) {
@@ -168,44 +169,45 @@ class _OnboardingStepLocationViewState
                   _cityController.text = selection;
                   widget.form.control('city').value = selection;
                 },
-                fieldViewBuilder: (
-                  BuildContext context,
-                  TextEditingController fieldTextEditingController,
-                  FocusNode focusNode,
-                  VoidCallback onFieldSubmitted,
-                ) {
-                  fieldTextEditingController.text = _cityController.text;
-                  fieldTextEditingController.selection =
-                      _cityController.selection;
-                  
-                  return TextField(
-                    controller: fieldTextEditingController,
-                    focusNode: focusNode,
-                    style: const TextStyle(color: AppThemeColors.textMain),
-                    decoration: InputDecoration(
-                      labelText: 'Cidade',
-                      suffixIcon: isLoading
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                fieldViewBuilder:
+                    (
+                      BuildContext context,
+                      TextEditingController fieldTextEditingController,
+                      FocusNode focusNode,
+                      VoidCallback onFieldSubmitted,
+                    ) {
+                      fieldTextEditingController.text = _cityController.text;
+                      fieldTextEditingController.selection =
+                          _cityController.selection;
+
+                      return TextField(
+                        controller: fieldTextEditingController,
+                        focusNode: focusNode,
+                        style: const TextStyle(color: AppThemeColors.textMain),
+                        decoration: InputDecoration(
+                          labelText: 'Cidade',
+                          suffixIcon: isLoading
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.location_city,
+                                  color: AppThemeColors.primary,
                                 ),
-                              ),
-                            )
-                          : const Icon(
-                              Icons.location_city,
-                              color: AppThemeColors.primary,
-                            ),
-                    ),
-                    onChanged: (value) {
-                      _cityController.text = value;
-                      _cityController.selection =
-                          fieldTextEditingController.selection;
+                        ),
+                        onChanged: (value) {
+                          _cityController.text = value;
+                          _cityController.selection =
+                              fieldTextEditingController.selection;
+                        },
+                      );
                     },
-                  );
-                },
               );
             }),
             const SizedBox(height: AppSpacing.xs),
@@ -233,9 +235,5 @@ class _OnboardingStepLocationViewState
         ),
       ),
     );
-  }
-
-  bool _showErrors(AbstractControl<Object> control) {
-    return control.invalid && (control.touched || widget.submitAttempted);
   }
 }

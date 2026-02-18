@@ -19,8 +19,8 @@ class OnboardingStepLocationPresenter {
     isLoadingStates.value = true;
     errorMessage.value = null;
 
-    final RestResponse<List<String>> response =
-        await _locationService.fetchStates();
+    final RestResponse<List<String>> response = await _locationService
+        .fetchStates();
 
     if (response.isSuccessful) {
       states.value = response.body;
@@ -40,8 +40,8 @@ class OnboardingStepLocationPresenter {
     isLoadingCities.value = true;
     errorMessage.value = null;
 
-    final RestResponse<List<String>> response =
-        await _locationService.fetchCities(state);
+    final RestResponse<List<String>> response = await _locationService
+        .fetchCities(state);
 
     if (response.isSuccessful) {
       cities.value = response.body;
@@ -54,7 +54,7 @@ class OnboardingStepLocationPresenter {
 
   List<String> filterStates(String query) {
     if (query.isEmpty) return states.value;
-    
+
     final String normalizedQuery = query.toLowerCase().trim();
     return states.value
         .where((String state) => state.toLowerCase().contains(normalizedQuery))
@@ -63,7 +63,7 @@ class OnboardingStepLocationPresenter {
 
   List<String> filterCities(String query) {
     if (query.isEmpty) return cities.value;
-    
+
     final String normalizedQuery = query.toLowerCase().trim();
     return cities.value
         .where((String city) => city.toLowerCase().contains(normalizedQuery))
@@ -81,11 +81,11 @@ class OnboardingStepLocationPresenter {
 
 final onboardingStepLocationPresenterProvider =
     Provider.autoDispose<OnboardingStepLocationPresenter>((ref) {
-  final presenter = OnboardingStepLocationPresenter(
-    ref.watch(locationServiceProvider),
-  );
+      final presenter = OnboardingStepLocationPresenter(
+        ref.watch(locationServiceProvider),
+      );
 
-  ref.onDispose(presenter.dispose);
+      ref.onDispose(presenter.dispose);
 
-  return presenter;
-});
+      return presenter;
+    });
