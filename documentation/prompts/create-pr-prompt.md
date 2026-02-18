@@ -1,16 +1,22 @@
+---
+description: Criar pull request padronizado usando GitHub CLI
+---
+
 # Prompt: Criar PRD
 
-**Objetivo:**
-Padronizar a criação de Pull Requests (PRs), garantindo descrições claras que facilitem a revisão de código e o rastreamento de tarefas. O foco é utilizar exclusivamente a **GitHub CLI (gh)** para manter a integridade do fluxo de trabalho.
+**Objetivo:** Padronizar a criação de Pull Requests (PRs), garantindo descrições
+claras que facilitem a revisão de código e o rastreamento de tarefas. O foco é
+utilizar exclusivamente a **GitHub CLI (gh)** para manter a integridade do fluxo
+de trabalho.
 
 ---
 
 ## Entrada
 
-* Uma Spec (especificação) devidamente implementada e validada.
-* Uma Bug Report (relatório de bug) devidamente implementada e validada.
-* Uma branch de funcionalidade (`feature/`), correção (`fix/`) ou refatoração (`refactor/`) com as alterações comitadas.
-* Issue relacionada ao PR
+- Uma Spec (especificação) devidamente implementada e validada.
+- Uma Bug Report (relatório de bug) devidamente implementada e validada.
+- Uma branch de funcionalidade (`feature/`), correção (`fix/`) ou refatoração
+  (`refactor/`) com as alterações comitadas.
 
 ---
 
@@ -18,29 +24,29 @@ Padronizar a criação de Pull Requests (PRs), garantindo descrições claras qu
 
 ### 1️⃣ Análise do Contexto
 
-* Revise a Spec implementada e o changelog das alterações realizadas.
-* Identifique:
+- Revise a Spec implementada e o changelog das alterações realizadas.
+- Identifique:
 
-  * impactos técnicos
-  * decisões de design tomadas
-  * riscos e efeitos colaterais
+  - impactos técnicos
+  - decisões de design tomadas
+  - riscos e efeitos colaterais
 
 ---
 
 ### 2️⃣ Definição do Título
 
-* Deve ser:
+- Deve ser:
 
-  * curto
-  * direto
-  * em PT-BR
-  * refletir a essência da alteração
+  - curto
+  - direto
+  - em PT-BR
+  - refletir a essência da alteração
 
 Exemplos:
 
-* Implementação da listagem de produtos
-* Correção do erro de carregamento de imagem
-* Correção de navegação para tela de catálogo
+- Implementação da listagem de produtos
+- Correção do erro de carregamento de imagem
+- Correção de navegação para tela de catálogo
 
 ⚠️ Não incluir prefixos no título:
 
@@ -58,9 +64,9 @@ O corpo do PR deve seguir o template abaixo.
 
 **Regras de formatação:**
 
-* usar Markdown
-* não usar título principal `#`
-* usar `##` e níveis abaixo
+- usar Markdown
+- não usar título principal `#`
+- usar `##` e níveis abaixo
 
 ---
 
@@ -73,8 +79,7 @@ Explique por que este PR foi criado e qual seu propósito central.
 Vincule tarefas/buffs:
 
 ```
-fixes #123
-closes #456
+resolve https://github.com/JohnPetros/equiny/issues/<issue_number>
 ```
 
 ---
@@ -85,23 +90,14 @@ Descreva a causa técnica raiz.
 
 ---
 
-## #️⃣ Issues relacionadas (opcional)
-
-Lista de issues relacionadas ao PR:
-
-* resolve JohnPeterson/equiny#<issue-number>
-* resolve JohnPeterson/equiny#<issue-number>
-
----
-
 ## 📋 Changelog (obrigatório)
 
 Lista técnica das mudanças:
 
-* arquivos alterados
-* comportamento modificado
-* regras adicionadas
-* refatorações feitas
+- arquivos alterados
+- comportamento modificado
+- regras adicionadas
+- refatorações feitas
 
 ---
 
@@ -117,18 +113,18 @@ Passo a passo claro para o revisor validar:
 
 ## 👀 Observações (opcional)
 
-* decisões de arquitetura
-* limitações conhecidas
-* tradeoffs
-* próximos passos
+- decisões de arquitetura
+- limitações conhecidas
+- tradeoffs
+- próximos passos
 
 ---
 
 ## 4️⃣ Criação via gh CLI
 
-⚠️ Não usar GitHub MCP.
-⚠️ Não usar APIs MCP.
-Usar exclusivamente **gh**.
+⚠️ Não usar GitHub MCP. ⚠️ Não usar APIs MCP. Usar exclusivamente **gh**.
+
+> Repositorio: https://github.com/JohnPetros/equiny-mobile
 
 Comando padrão:
 
@@ -169,17 +165,6 @@ gh pr view --json url
 
 Retornar:
 
-* link do PR criado
-* título final
-* resumo do body gerado
-
----
-
-Se você quiser, eu também posso converter esse prompt em:
-
-✅ slash command
-✅ template de PR automático
-✅ script gh + template markdown
-✅ workflow de CI para validar PR body
-
-Só falar qual ambiente você vai usar.
+- link do PR criado
+- título final
+- resumo do body gerado
