@@ -134,17 +134,7 @@ gh pr create \
   --base main \
   --head <nome-da-branch> \
   --title "<Titulo do PR>" \
-  --body-file pr_body.md
-```
-
-Ou inline:
-
-```
-gh pr create \
-  --base main \
-  --head <branch> \
-  --title "<Titulo>" \
-  --body "<Descrição formatada>"
+  --body-file <body do PR>
 ```
 
 ---
