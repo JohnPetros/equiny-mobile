@@ -17,7 +17,7 @@ class GalleryMapper {
   }
 
   static GalleryDto toDto(Json body) {
-    final dynamic imagesSource = body['images'] ?? body['data'];
+    final dynamic imagesSource = body['images'];
     final List<dynamic> imagesRaw = imagesSource is List<dynamic>
         ? imagesSource
         : <dynamic>[];

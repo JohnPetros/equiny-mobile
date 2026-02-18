@@ -1,11 +1,16 @@
+import 'package:equiny/core/profiling/dtos/structures/feed_horse_dto.dart';
 import 'package:equiny/core/profiling/dtos/entities/horse_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/gallery_dto.dart';
 import 'package:equiny/core/profiling/dtos/entities/owner_dto.dart';
+import 'package:equiny/core/profiling/dtos/structures/age_range_dto.dart';
+import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
+import 'package:equiny/core/shared/responses/pagination_response.dart';
 import 'package:equiny/core/profiling/interfaces/profiling_service.dart'
     as profiling_service;
 import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/core/shared/types/json.dart';
 import 'package:equiny/rest/mappers/auth/owner_mapper.dart';
+import 'package:equiny/rest/mappers/profiling/horse_feed_mapper.dart';
 import 'package:equiny/rest/services/service.dart';
 import 'package:equiny/rest/mappers/profiling/gallery_mapper.dart';
 import 'package:equiny/rest/mappers/profiling/horse_mapper.dart';
@@ -33,7 +38,7 @@ class ProfilingService extends Service
   @override
   Future<RestResponse<OwnerDto>> updateOwner({required OwnerDto owner}) async {
     final RestResponse<Json> response = await super.restClient.put(
-      '/profiling/owners/',
+      '/profiling/owners',
       body: OwnerMapper.toJson(owner),
     );
 
@@ -61,11 +66,47 @@ class ProfilingService extends Service
     }
 
     return response.mapBody((dynamic body) {
-      final List<dynamic> list = body['data'] as List<dynamic>;
+      final List<dynamic> list = body['items'];
       return list
           .map((dynamic horseRaw) => HorseMapper.toDto(horseRaw as Json))
           .toList();
     });
+  }
+
+  @override
+  Future<RestResponse<PaginationResponse<FeedHorseDto>>> fetchHorseFeed({
+    required String horseId,
+    required String sex,
+    required List<String> breeds,
+    required AgeRangeDto ageRange,
+    required LocationDto location,
+    required int limit,
+    required String? cursor,
+  }) async {
+    final request = <String, dynamic>{
+      'sex': sex,
+      'breeds': breeds,
+      'min_age': ageRange.min,
+      'max_age': ageRange.max,
+      'city': location.city,
+      'state': location.state,
+      'limit': limit,
+      if ((cursor ?? '').isNotEmpty) 'cursor': cursor,
+    };
+
+    final RestResponse<Json> response = await super.restClient.get(
+      '/profiling/horses/$horseId/feed',
+      queryParams: request,
+    );
+
+    if (response.isFailure) {
+      return RestResponse<PaginationResponse<FeedHorseDto>>(
+        statusCode: response.statusCode,
+        errorMessage: response.errorMessage,
+      );
+    }
+
+    return response.mapBody(HorseFeedMapper.toFeedPagination);
   }
 
   @override
@@ -146,18 +187,13 @@ class ProfilingService extends Service
     }
 
     return response.mapBody((Json body) {
-      if (body['images'] != null ||
-          body['horse_id'] != null ||
-          body['horseId'] != null) {
+      if (body['images'] != null) {
         return GalleryMapper.toDto(body);
       }
 
-      final Json data = body['data'] is Json
-          ? body['data'] as Json
-          : <String, dynamic>{};
       return GalleryMapper.toDto(<String, dynamic>{
         'horse_id': horseId,
-        'images': data['images'] ?? body['items'] ?? <dynamic>[],
+        'images': body['items'],
       });
     });
   }
