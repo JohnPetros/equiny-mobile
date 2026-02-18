@@ -8,12 +8,13 @@ import 'package:equiny/rest/services/service.dart';
 
 class MatchingService extends Service
     implements matching_service.MatchingService {
-  MatchingService(super.restClient);
+  MatchingService(super.restClient, super._cacheDriver);
 
   @override
   Future<RestResponse<SwipeDto>> swipeHorse({
     required SwipeDto swipeDto,
   }) async {
+    super.setAuthHeader();
     final RestResponse<Json> response = await super.restClient.post(
       '/matching/swipes',
       body: SwipeMapper.toJson(swipeDto),

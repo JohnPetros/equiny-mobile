@@ -6,7 +6,7 @@ import 'package:equiny/rest/mappers/auth/jwt_mapper.dart';
 import 'package:equiny/rest/services/service.dart';
 
 class AuthService extends Service implements auth_service.AuthService {
-  AuthService(super.restClient);
+  AuthService(super.restClient, super._cacheDriver);
 
   @override
   Future<RestResponse<JwtDto>> signIn({

@@ -17,33 +17,47 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:equiny/rest/services/location_service.dart'
     as location_service_impl;
 import 'package:equiny/rest/location_rest_client.dart' as location_rest_client;
+import 'package:equiny/drivers/cache-driver/index.dart';
 
 final authServiceProvider = Provider<auth_service.AuthService>((ref) {
-  return AuthService(ref.watch(restClientProvider));
+  return AuthService(
+    ref.watch(restClientProvider),
+    ref.watch(cacheDriverProvider),
+  );
 });
 
 final profilingServiceProvider = Provider<profiling_service.ProfilingService>((
   ref,
 ) {
-  return profiling_service_impl.ProfilingService(ref.watch(restClientProvider));
+  return profiling_service_impl.ProfilingService(
+    ref.watch(restClientProvider),
+    ref.watch(cacheDriverProvider),
+  );
 });
 
 final matchingServiceProvider = Provider<matching_service.MatchingService>((
   ref,
 ) {
-  return matching_service_impl.MatchingService(ref.watch(restClientProvider));
+  return matching_service_impl.MatchingService(
+    ref.watch(restClientProvider),
+    ref.watch(cacheDriverProvider),
+  );
 });
 
 final fileStorageServiceProvider =
     Provider<file_storage_service.FileStorageService>((ref) {
       return file_storage_service_impl.FileStorageService(
         ref.watch(restClientProvider),
+        ref.watch(cacheDriverProvider),
       );
     });
 
 final locationServiceProvider = Provider<location_service_impl.LocationService>(
   (ref) {
     final restClient = ref.read(location_rest_client.restClientProvider);
-    return location_service_impl.LocationService(restClient);
+    return location_service_impl.LocationService(
+      restClient,
+      ref.watch(cacheDriverProvider),
+    );
   },
 );

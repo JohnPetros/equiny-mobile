@@ -8,7 +8,7 @@ import 'package:equiny/rest/services/service.dart';
 
 class LocationService extends Service
     implements location_service.LocationService {
-  LocationService(super.restClient) {
+  LocationService(super.restClient, super._cacheDriver) {
     super.restClient.setBaseUrl('https://servicodados.ibge.gov.br/api/v1');
   }
 
