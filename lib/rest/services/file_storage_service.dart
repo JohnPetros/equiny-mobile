@@ -12,7 +12,7 @@ import 'package:equiny/rest/services/service.dart';
 
 class FileStorageService extends Service
     implements file_storage_service.FileStorageService {
-  FileStorageService(super.restClient);
+  FileStorageService(super.restClient, super._cacheDriver);
 
   @override
   Future<RestResponse<List<ImageDto>>> uploadImageFiles({

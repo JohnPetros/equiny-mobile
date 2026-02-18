@@ -1,28 +1,19 @@
 class PaginationResponse<Item> {
   final List<Item> _items;
-  final int _itemsPerPage;
-  final int _currentPage;
-  final int _totalItems;
-  final int _totalPages;
+  final String _nextCursor;
+  final int _limit;
 
   PaginationResponse({
     List<Item> items = const [],
-    int itemsPerPage = 0,
-    int currentPage = 0,
-    int totalItems = 0,
+    String nextCursor = '',
+    int limit = 0,
   }) : _items = items,
-       _itemsPerPage = itemsPerPage,
-       _currentPage = currentPage,
-       _totalItems = totalItems,
-       _totalPages = itemsPerPage > 0 ? (totalItems / itemsPerPage).ceil() : 0;
+       _nextCursor = nextCursor,
+       _limit = limit;
 
   List<Item> get items => _items;
 
-  int get itemsPerPage => _itemsPerPage;
+  String get nextCursor => _nextCursor;
 
-  int get currentPage => _currentPage;
-
-  int get totalItems => _totalItems;
-
-  int get totalPages => _totalPages;
+  int get limit => _limit;
 }

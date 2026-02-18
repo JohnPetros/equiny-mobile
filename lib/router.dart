@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:equiny/core/shared/constants/routes.dart';
 import 'package:equiny/core/shared/constants/cache_keys.dart';
+import 'package:equiny/core/profiling/dtos/structures/feed_horse_dto.dart';
 import 'package:equiny/drivers/cache-driver/index.dart';
 import 'package:equiny/shared/widgets/components/tab_navigation/index.dart';
 import 'package:equiny/ui/conversations/widgets/screens/conversations_screen/index.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_in_screen/index.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/index.dart';
+import 'package:equiny/ui/feed/widgets/screens/feed_horse_details_screen/index.dart';
 import 'package:equiny/ui/feed/widgets/screens/feed_screen/index.dart';
 import 'package:equiny/ui/matches/widgets/screens/matches_screen/index.dart';
 import 'package:equiny/rest/services.dart';
@@ -35,6 +37,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           return null;
         }
         return Routes.signIn;
+      }
+
+      if (isSignIn || isSignUp) {
+        return Routes.feed;
       }
 
       final ownerResponse = await profilingService.fetchOwner();
@@ -100,6 +106,17 @@ final routerProvider = Provider<GoRouter>((ref) {
             },
           ),
         ],
+      ),
+      GoRoute(
+        path: Routes.feedHorseDetails,
+        builder: (BuildContext context, GoRouterState state) {
+          final Object? extra = state.extra;
+          if (extra is! FeedHorseDto) {
+            return const FeedScreen();
+          }
+
+          return FeedHorseDetailsScreen(horse: extra);
+        },
       ),
     ],
   );

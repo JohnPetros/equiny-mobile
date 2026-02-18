@@ -1,21 +1,27 @@
+import 'package:equiny/core/profiling/dtos/structures/feed_horse_dto.dart';
 import 'package:equiny/core/profiling/dtos/entities/horse_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/gallery_dto.dart';
 import 'package:equiny/core/profiling/dtos/entities/owner_dto.dart';
+import 'package:equiny/core/profiling/dtos/structures/age_range_dto.dart';
+import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
+import 'package:equiny/core/shared/responses/pagination_response.dart';
 import 'package:equiny/core/profiling/interfaces/profiling_service.dart'
     as profiling_service;
 import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/core/shared/types/json.dart';
 import 'package:equiny/rest/mappers/auth/owner_mapper.dart';
+import 'package:equiny/rest/mappers/profiling/horse_feed_mapper.dart';
 import 'package:equiny/rest/services/service.dart';
 import 'package:equiny/rest/mappers/profiling/gallery_mapper.dart';
 import 'package:equiny/rest/mappers/profiling/horse_mapper.dart';
 
 class ProfilingService extends Service
     implements profiling_service.ProfilingService {
-  ProfilingService(super.restClient);
+  ProfilingService(super.restClient, super._cacheDriver);
 
   @override
   Future<RestResponse<OwnerDto>> fetchOwner() async {
+    super.setAuthHeader();
     final RestResponse<Json> response = await super.restClient.get(
       '/profiling/owners/me',
     );
@@ -32,8 +38,9 @@ class ProfilingService extends Service
 
   @override
   Future<RestResponse<OwnerDto>> updateOwner({required OwnerDto owner}) async {
+    super.setAuthHeader();
     final RestResponse<Json> response = await super.restClient.put(
-      '/profiling/owners/',
+      '/profiling/owners',
       body: OwnerMapper.toJson(owner),
     );
 
@@ -49,6 +56,7 @@ class ProfilingService extends Service
 
   @override
   Future<RestResponse<List<HorseDto>>> fetchOwnerHorses() async {
+    super.setAuthHeader();
     final RestResponse<Json> response = await super.restClient.get(
       '/profiling/owners/me/horses',
     );
@@ -61,7 +69,7 @@ class ProfilingService extends Service
     }
 
     return response.mapBody((dynamic body) {
-      final List<dynamic> list = body['data'] as List<dynamic>;
+      final List<dynamic> list = body['items'];
       return list
           .map((dynamic horseRaw) => HorseMapper.toDto(horseRaw as Json))
           .toList();
@@ -69,7 +77,45 @@ class ProfilingService extends Service
   }
 
   @override
+  Future<RestResponse<PaginationResponse<FeedHorseDto>>> fetchHorseFeed({
+    required String horseId,
+    required String sex,
+    required List<String> breeds,
+    required AgeRangeDto ageRange,
+    required LocationDto location,
+    required int limit,
+    required String? cursor,
+  }) async {
+    super.setAuthHeader();
+    final request = <String, dynamic>{
+      'sex': sex,
+      'breeds': breeds,
+      'min_age': ageRange.min,
+      'max_age': ageRange.max,
+      'city': location.city,
+      'state': location.state,
+      'limit': limit,
+      if ((cursor ?? '').isNotEmpty) 'cursor': cursor,
+    };
+
+    final RestResponse<Json> response = await super.restClient.get(
+      '/profiling/horses/$horseId/feed',
+      queryParams: request,
+    );
+
+    if (response.isFailure) {
+      return RestResponse<PaginationResponse<FeedHorseDto>>(
+        statusCode: response.statusCode,
+        errorMessage: response.errorMessage,
+      );
+    }
+
+    return response.mapBody(HorseFeedMapper.toFeedPagination);
+  }
+
+  @override
   Future<RestResponse<HorseDto>> createHorse({required HorseDto horse}) async {
+    super.setAuthHeader();
     final RestResponse<Json> response = await super.restClient.post(
       '/profiling/horses',
       body: HorseMapper.toJson(horse),
@@ -90,6 +136,7 @@ class ProfilingService extends Service
     required String horseId,
     required GalleryDto gallery,
   }) async {
+    super.setAuthHeader();
     final RestResponse<Json> response = await super.restClient.post(
       '/profiling/horses/$horseId/gallery',
       body: GalleryMapper.toJson(gallery),
@@ -107,6 +154,7 @@ class ProfilingService extends Service
 
   @override
   Future<RestResponse<HorseDto>> updateHorse({required HorseDto horse}) async {
+    super.setAuthHeader();
     final String horseId = horse.id ?? '';
     if (horseId.isEmpty) {
       return RestResponse<HorseDto>(
@@ -134,6 +182,7 @@ class ProfilingService extends Service
   Future<RestResponse<GalleryDto>> fetchHorseGallery({
     required String horseId,
   }) async {
+    super.setAuthHeader();
     final RestResponse<Json> response = await super.restClient.get(
       '/profiling/horses/$horseId/gallery',
     );
@@ -146,18 +195,13 @@ class ProfilingService extends Service
     }
 
     return response.mapBody((Json body) {
-      if (body['images'] != null ||
-          body['horse_id'] != null ||
-          body['horseId'] != null) {
+      if (body['images'] != null) {
         return GalleryMapper.toDto(body);
       }
 
-      final Json data = body['data'] is Json
-          ? body['data'] as Json
-          : <String, dynamic>{};
       return GalleryMapper.toDto(<String, dynamic>{
         'horse_id': horseId,
-        'images': data['images'] ?? body['items'] ?? <dynamic>[],
+        'images': body['items'],
       });
     });
   }
@@ -167,6 +211,7 @@ class ProfilingService extends Service
     required String horseId,
     required GalleryDto gallery,
   }) async {
+    super.setAuthHeader();
     final RestResponse<Json> response = await super.restClient.put(
       '/profiling/horses/$horseId/gallery',
       body: GalleryMapper.toJson(gallery),
