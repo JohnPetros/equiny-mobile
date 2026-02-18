@@ -23,9 +23,9 @@ void main() {
     group('loadStates', () {
       test('should load states successfully', () async {
         final states = <String>['SP', 'RJ', 'MG', 'BA'];
-        when(() => locationService.fetchStates()).thenAnswer(
-          (_) async => RestResponse<List<String>>(body: states),
-        );
+        when(
+          () => locationService.fetchStates(),
+        ).thenAnswer((_) async => RestResponse<List<String>>(body: states));
 
         await presenter.loadStates();
 
@@ -51,12 +51,10 @@ void main() {
       });
 
       test('should set loading state while fetching', () async {
-        when(() => locationService.fetchStates()).thenAnswer(
-          (_) async {
-            expect(presenter.isLoadingStates.value, isTrue);
-            return RestResponse<List<String>>(body: <String>[]);
-          },
-        );
+        when(() => locationService.fetchStates()).thenAnswer((_) async {
+          expect(presenter.isLoadingStates.value, isTrue);
+          return RestResponse<List<String>>(body: <String>[]);
+        });
 
         await presenter.loadStates();
 
@@ -68,9 +66,9 @@ void main() {
       test('should load cities successfully', () async {
         const state = 'SP';
         final cities = <String>['Sao Paulo', 'Campinas', 'Santos'];
-        when(() => locationService.fetchCities(state)).thenAnswer(
-          (_) async => RestResponse<List<String>>(body: cities),
-        );
+        when(
+          () => locationService.fetchCities(state),
+        ).thenAnswer((_) async => RestResponse<List<String>>(body: cities));
 
         await presenter.loadCities(state);
 
@@ -107,12 +105,10 @@ void main() {
 
       test('should set loading state while fetching', () async {
         const state = 'SP';
-        when(() => locationService.fetchCities(state)).thenAnswer(
-          (_) async {
-            expect(presenter.isLoadingCities.value, isTrue);
-            return RestResponse<List<String>>(body: <String>[]);
-          },
-        );
+        when(() => locationService.fetchCities(state)).thenAnswer((_) async {
+          expect(presenter.isLoadingCities.value, isTrue);
+          return RestResponse<List<String>>(body: <String>[]);
+        });
 
         await presenter.loadCities(state);
 

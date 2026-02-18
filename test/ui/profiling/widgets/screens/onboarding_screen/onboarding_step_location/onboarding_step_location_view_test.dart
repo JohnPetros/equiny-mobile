@@ -17,9 +17,7 @@ void main() {
     mockLocationService = MockLocationService();
 
     when(() => mockLocationService.fetchStates()).thenAnswer(
-      (_) async => RestResponse<List<String>>(
-        body: <String>['SP', 'RJ', 'MG'],
-      ),
+      (_) async => RestResponse<List<String>>(body: <String>['SP', 'RJ', 'MG']),
     );
 
     when(() => mockLocationService.fetchCities(any())).thenAnswer(
@@ -81,10 +79,7 @@ void main() {
 
     testWidgets('should load states on init', (WidgetTester tester) async {
       await tester.pumpWidget(
-        createWidget(
-          form: createForm(),
-          submitAttempted: false,
-        ),
+        createWidget(form: createForm(), submitAttempted: false),
       );
       await tester.pumpAndSettle();
 
@@ -95,10 +90,7 @@ void main() {
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
-        createWidget(
-          form: createForm(),
-          submitAttempted: false,
-        ),
+        createWidget(form: createForm(), submitAttempted: false),
       );
       await tester.pumpAndSettle();
 
@@ -110,10 +102,7 @@ void main() {
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
-        createWidget(
-          form: createForm(),
-          submitAttempted: false,
-        ),
+        createWidget(form: createForm(), submitAttempted: false),
       );
       await tester.pumpAndSettle();
 
@@ -122,4 +111,3 @@ void main() {
     });
   });
 }
-
