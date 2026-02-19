@@ -1,4 +1,5 @@
 import 'package:equiny/core/profiling/dtos/structures/horse_feed_filters_dto.dart';
+import 'package:equiny/rest/services.dart';
 import 'package:equiny/ui/feed/widgets/screens/feed_screen/feed_filters_sheet/age_range_slider/index.dart';
 import 'package:equiny/ui/feed/widgets/screens/feed_screen/feed_filters_sheet/breed_chip/index.dart';
 import 'package:equiny/ui/feed/widgets/screens/feed_screen/feed_filters_sheet/city_dropdown/index.dart';
@@ -29,23 +30,51 @@ class FeedFiltersSheetView extends ConsumerStatefulWidget {
 }
 
 class _FeedFiltersSheetViewState extends ConsumerState<FeedFiltersSheetView> {
-  static const List<String> _breeds = <String>[
+  static const List<String> _fallbackBreeds = <String>[
     'quarto de milha',
     'mangalarga marchador',
     'criolo',
     'puro sangue ingles',
     'arabe',
     'campolina',
-    'outra',
   ];
 
   late final FeedFiltersSheetPresenter _presenter;
   final TextEditingController _breedSearchController = TextEditingController();
+  List<String> _breeds = <String>[..._fallbackBreeds];
 
   @override
   void initState() {
     super.initState();
     _presenter = FeedFiltersSheetPresenter(widget.initialFilters);
+    _presenter.selectedBreeds.value = _presenter.selectedBreeds.value
+        .where((String breed) => breed.toLowerCase().trim() != 'outra')
+        .toList();
+    _loadBreeds();
+  }
+
+  Future<void> _loadBreeds() async {
+    final response = await ref.read(profilingServiceProvider).fetchBreeds();
+    if (response.isFailure) {
+      return;
+    }
+
+    final List<String> breeds = response.body
+        .map((String breed) => breed.trim())
+        .where(
+          (String breed) =>
+              breed.isNotEmpty && breed.toLowerCase().trim() != 'outra',
+        )
+        .toSet()
+        .toList();
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _breeds = breeds;
+    });
   }
 
   @override
