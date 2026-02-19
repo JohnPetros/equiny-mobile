@@ -4,6 +4,7 @@ class OwnerDto {
   final String email;
   final String accountId;
   final bool hasCompletedOnboarding;
+  final String? avatar;
   final String? phone;
   final String? bio;
 
@@ -13,6 +14,7 @@ class OwnerDto {
     required this.email,
     required this.accountId,
     required this.hasCompletedOnboarding,
+    this.avatar,
     this.phone,
     this.bio,
   });

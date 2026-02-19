@@ -50,6 +50,7 @@ Use frontmatter e a hierarquia de cabecalhos sem pular niveis.
 ```md
 ---
 title: <Titulo claro>
+prd: <link para o PRD referente a spec, que esta no nivel acima do diretório da spec>
 status: <em progresso|concluido>
 last_updated_at: <AAAA-MM-DD>
 ---
@@ -148,7 +149,7 @@ widgets/
 - **Arquivo:** `lib/...`
   - **Mudanca:** ...
   - **Justificativa:** ...
-  - **Impacto:** `ui` | `core` | `rest` | `drivers`
+  - **Camada:** `ui` | `core` | `rest` | `drivers`
 
 # 7. O que deve ser removido
 

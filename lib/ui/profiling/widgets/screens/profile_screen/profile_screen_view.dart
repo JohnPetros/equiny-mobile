@@ -23,6 +23,27 @@ class ProfileScreenView extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppThemeColors.background,
         title: const Text('Perfil'),
+        actions: <Widget>[
+          PopupMenuButton<String>(
+            onSelected: (String value) async {
+              if (value != 'logout') {
+                return;
+              }
+              await screenPresenter.logout();
+            },
+            itemBuilder: (BuildContext context) {
+              return <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: 'logout',
+                  child: Row(
+                    spacing: AppSpacing.xxs,
+                    children: [Icon(Icons.logout), Text('Sair da conta')],
+                  ),
+                ),
+              ];
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: Center(

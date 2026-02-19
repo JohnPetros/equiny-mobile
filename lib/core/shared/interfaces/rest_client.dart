@@ -13,6 +13,11 @@ abstract class RestClient {
     Object? body,
     Json? queryParams,
   });
+  Future<RestResponse<Json>> patch(
+    String path, {
+    Object? body,
+    Json? queryParams,
+  });
   Future<RestResponse<Json>> delete(
     String path, {
     Object? body,

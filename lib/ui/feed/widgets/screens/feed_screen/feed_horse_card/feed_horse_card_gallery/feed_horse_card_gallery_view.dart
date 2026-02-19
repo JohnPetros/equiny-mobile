@@ -1,8 +1,9 @@
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
-class FeedHorseCardGalleryView extends StatelessWidget {
+class FeedHorseCardGalleryView extends StatefulWidget {
   final String? imageUrl;
+  final List<String> imageUrls;
   final int imageCount;
   final int currentImageIndex;
   final VoidCallback onNextImage;
@@ -10,6 +11,7 @@ class FeedHorseCardGalleryView extends StatelessWidget {
 
   const FeedHorseCardGalleryView({
     required this.imageUrl,
+    required this.imageUrls,
     required this.imageCount,
     required this.currentImageIndex,
     required this.onNextImage,
@@ -18,18 +20,54 @@ class FeedHorseCardGalleryView extends StatelessWidget {
   });
 
   @override
+  State<FeedHorseCardGalleryView> createState() =>
+      _FeedHorseCardGalleryViewState();
+}
+
+class _FeedHorseCardGalleryViewState extends State<FeedHorseCardGalleryView> {
+  final Set<String> _cachedImageUrls = <String>{};
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _precacheImages();
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant FeedHorseCardGalleryView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.imageUrls != widget.imageUrls) {
+      _precacheImages();
+    }
+  }
+
+  void _precacheImages() {
+    for (final String url in widget.imageUrls) {
+      final String normalized = url.trim();
+      if (normalized.isEmpty || _cachedImageUrls.contains(normalized)) {
+        continue;
+      }
+
+      _cachedImageUrls.add(normalized);
+      precacheImage(NetworkImage(normalized), context);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
         Positioned.fill(
-          child: imageUrl == null || imageUrl!.isEmpty
+          child: widget.imageUrl == null || widget.imageUrl!.isEmpty
               ? Container(
                   color: AppThemeColors.backgroundAlt,
                   alignment: Alignment.center,
                   child: const Icon(Icons.image_not_supported_outlined),
                 )
               : Image.network(
-                  imageUrl!,
+                  widget.imageUrl!,
                   fit: BoxFit.cover,
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
@@ -51,8 +89,8 @@ class FeedHorseCardGalleryView extends StatelessWidget {
           right: AppSpacing.md,
           top: AppSpacing.md,
           child: _GalleryProgress(
-            imageCount: imageCount,
-            currentImageIndex: currentImageIndex,
+            imageCount: widget.imageCount,
+            currentImageIndex: widget.currentImageIndex,
           ),
         ),
         Positioned.fill(
@@ -61,13 +99,13 @@ class FeedHorseCardGalleryView extends StatelessWidget {
               Expanded(
                 child: GestureDetector(
                   behavior: HitTestBehavior.translucent,
-                  onTap: onPreviousImage,
+                  onTap: widget.onPreviousImage,
                 ),
               ),
               Expanded(
                 child: GestureDetector(
                   behavior: HitTestBehavior.translucent,
-                  onTap: onNextImage,
+                  onTap: widget.onNextImage,
                 ),
               ),
             ],

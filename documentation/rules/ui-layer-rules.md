@@ -120,8 +120,9 @@ lib/ui/
 - Usar ConsumerWidget para acessar providers
 - Criar arquivos index.dart para exportação
 - Componentizar widgets complexos
-- Ao criar um widget interno de um widget maior, crie uma pasta para ele dentro da pasta do widget maior.
+- Ao criar um widget interno dentro do arquivo do widget maior para componetização, sempre crie uma pasta para ele dentro da pasta do widget maior.
 - Se precisou criar métodos do tipo _builder para construir widgets internos, crie um arquivo dentro da pasta do widget maior e aplique o padrão MVP (Model-View-Presenter) para ele.
+- Não crie métodos na view, use o presenter do widget para isso, se não houver presenter, crie um.
 
 ### ❌ Evitar
 

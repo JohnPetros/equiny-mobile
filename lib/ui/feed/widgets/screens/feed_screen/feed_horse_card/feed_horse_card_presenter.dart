@@ -24,6 +24,10 @@ class FeedHorseCardPresenter {
     });
   }
 
+  String getImageUrl(String imagePath) {
+    return _fileStorageDriver.getImageUrl(imagePath);
+  }
+
   void nextImage() {
     if (horse.imageUrls.isEmpty) {
       return;

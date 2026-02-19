@@ -38,7 +38,8 @@ class _FeedHorseCardViewState extends State<FeedHorseCardView> {
   @override
   void didUpdateWidget(covariant FeedHorseCardView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.horse.id != widget.horse.id) {
+    if (oldWidget.horse != widget.horse ||
+        oldWidget.fileStorageDriver != widget.fileStorageDriver) {
       _presenter = FeedHorseCardPresenter(
         widget.horse,
         widget.fileStorageDriver,
@@ -67,82 +68,76 @@ class _FeedHorseCardViewState extends State<FeedHorseCardView> {
                   Positioned.fill(
                     child: FeedHorseCardGallery(
                       imageUrl: _presenter.currentImageUrl.value,
+                      imageUrls: _horseImageUrls(),
                       imageCount: widget.horse.imageUrls.length,
                       currentImageIndex: _presenter.currentImageIndex.value,
                       onNextImage: _presenter.nextImage,
                       onPreviousImage: _presenter.previousImage,
                     ),
                   ),
-                  Positioned.fill(
+                  Positioned.fill(child: IgnorePointer()),
+                  Positioned(
+                    bottom: 0,
                     child: IgnorePointer(
-                      child: DecoratedBox(
+                      child: Container(
+                        padding: const EdgeInsets.all(24.0),
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: <Color>[
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: 0.15),
-                              Colors.black.withValues(alpha: 0.85),
-                            ],
-                            stops: const <double>[0.45, 0.68, 1],
+                          color: AppThemeColors.surface.withValues(alpha: 0.50),
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(36),
                           ),
                         ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: AppSpacing.lg,
-                    right: AppSpacing.lg,
-                    bottom: AppSpacing.lg,
-                    child: IgnorePointer(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            '${widget.horse.name}, $ageLabel',
-                            style: const TextStyle(
-                              fontSize: 42,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -1,
-                              height: 0.95,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              '${widget.horse.name}, $ageLabel',
+                              style: const TextStyle(
+                                fontSize: 42,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -1,
+                                height: 0.95,
+                              ),
+                              maxLines: 2,
                             ),
-                            maxLines: 2,
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            '${_sexLabel(widget.horse.sex)} • ${_locationLabel()}',
-                            style: TextStyle(
-                              fontSize: 24,
-                              color: Colors.white.withValues(alpha: 0.86),
-                              fontWeight: FontWeight.w500,
+                            const SizedBox(height: AppSpacing.xs),
+                            Text(
+                              '${_sexLabel(widget.horse.sex)} • ${_locationLabel()}',
+                              style: TextStyle(
+                                fontSize: 24,
+                                color: Colors.white.withValues(alpha: 0.86),
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          Wrap(
-                            spacing: AppSpacing.xs,
-                            runSpacing: AppSpacing.xs,
-                            children: <Widget>[
-                              _StatPill(
-                                icon: Icons.event_outlined,
-                                label: '$ageLabel anos',
+                            const SizedBox(height: AppSpacing.md),
+                            SizedBox(
+                              width: 350,
+                              child: Wrap(
+                                spacing: AppSpacing.xs,
+                                runSpacing: AppSpacing.xs,
+                                children: <Widget>[
+                                  _StatPill(
+                                    icon: Icons.event_outlined,
+                                    label: '$ageLabel anos',
+                                  ),
+                                  _StatPill(
+                                    icon: Icons.location_on_outlined,
+                                    label: _locationLabel(),
+                                  ),
+                                  _StatPill(
+                                    icon: Icons.straighten,
+                                    label:
+                                        '${widget.horse.height.toStringAsFixed(2)}m',
+                                  ),
+                                  _StatPill(
+                                    icon: Icons.pets_outlined,
+                                    label: widget.horse.breed,
+                                  ),
+                                ],
                               ),
-                              _StatPill(
-                                icon: Icons.location_on_outlined,
-                                label: _locationLabel(),
-                              ),
-                              _StatPill(
-                                icon: Icons.straighten,
-                                label:
-                                    '${widget.horse.height.toStringAsFixed(2)}m',
-                              ),
-                              _StatPill(
-                                icon: Icons.pets_outlined,
-                                label: widget.horse.breed,
-                              ),
-                            ],
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -222,6 +217,13 @@ class _FeedHorseCardViewState extends State<FeedHorseCardView> {
       return 'Garanhão';
     }
     return sex;
+  }
+
+  List<String> _horseImageUrls() {
+    return widget.horse.imageUrls
+        .map(_presenter.getImageUrl)
+        .where((String url) => url.trim().isNotEmpty)
+        .toList(growable: false);
   }
 }
 

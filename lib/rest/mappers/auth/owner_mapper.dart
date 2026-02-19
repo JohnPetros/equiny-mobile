@@ -8,9 +8,10 @@ class OwnerMapper {
       name: body['name']?.toString() ?? '',
       email: body['email']?.toString() ?? '',
       accountId: body['account_id']?.toString() ?? '',
+      avatar: body['avatar']?.toString(),
       phone: body['phone']?.toString(),
       bio: body['bio']?.toString(),
-      hasCompletedOnboarding: _readBool(body['has_completed_onboarding']),
+      hasCompletedOnboarding: body['has_completed_onboarding'],
     );
   }
 
@@ -18,21 +19,9 @@ class OwnerMapper {
     return <String, dynamic>{
       'name': owner.name,
       'email': owner.email,
+      'avatar': owner.avatar,
       'phone': owner.phone,
       'bio': owner.bio,
     };
-  }
-
-  static bool _readBool(dynamic value) {
-    if (value is bool) {
-      return value;
-    }
-    if (value is String) {
-      return value.toLowerCase() == 'true';
-    }
-    if (value is num) {
-      return value != 0;
-    }
-    return false;
   }
 }

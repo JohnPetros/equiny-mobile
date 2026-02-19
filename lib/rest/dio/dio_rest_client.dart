@@ -3,13 +3,18 @@ import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/core/shared/types/json.dart';
 import 'package:equiny/core/shared/interfaces/rest_client.dart';
 
+typedef QueryParams = Map<String, dynamic>;
+
 class DioRestClient implements RestClient {
   final Dio _dio;
 
-  DioRestClient() : _dio = Dio();
+  DioRestClient() : _dio = Dio(BaseOptions(listFormat: ListFormat.multi));
 
   @override
-  Future<RestResponse<Json>> get(String path, {Json? queryParams}) async {
+  Future<RestResponse<Json>> get(
+    String path, {
+    QueryParams? queryParams,
+  }) async {
     return _send(() => _dio.get(path, queryParameters: queryParams));
   }
 
@@ -32,6 +37,17 @@ class DioRestClient implements RestClient {
   }) async {
     return _send(
       () => _dio.put(path, data: body, queryParameters: queryParams),
+    );
+  }
+
+  @override
+  Future<RestResponse<Json>> patch(
+    String path, {
+    Object? body,
+    Json? queryParams,
+  }) async {
+    return _send(
+      () => _dio.patch(path, data: body, queryParameters: queryParams),
     );
   }
 

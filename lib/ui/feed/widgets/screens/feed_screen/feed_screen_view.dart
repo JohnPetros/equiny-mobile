@@ -162,6 +162,7 @@ class FeedScreenView extends ConsumerWidget {
               children: <Widget>[
                 Expanded(
                   child: FeedHorseCard(
+                    key: ValueKey<String>(currentCard.id),
                     horse: currentCard,
                     fileStorageDriver: fileStorageDriver,
                     onLike: presenter.likeCurrentHorse,
