@@ -6,6 +6,7 @@ import 'package:equiny/core/shared/responses/pagination_response.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/core/profiling/dtos/structures/age_range_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
+import 'package:equiny/core/profiling/dtos/structures/horse_match_dto.dart';
 
 abstract class ProfilingService {
   Future<RestResponse<OwnerDto>> fetchOwner();
@@ -18,6 +19,14 @@ abstract class ProfilingService {
     required int limit,
     required String? cursor,
   });
+  Future<RestResponse<List<HorseMatchDto>>> fetchHorseMatches({
+    required String horseId,
+  });
+  Future<RestResponse<void>> viewHorseMatch({
+    required String fromHorseId,
+    required String toHorseId,
+  });
+  Future<RestResponse<List<String>>> fetchBreeds();
   Future<RestResponse<OwnerDto>> updateOwner({required OwnerDto owner});
   Future<RestResponse<List<HorseDto>>> fetchOwnerHorses();
   Future<RestResponse<HorseDto>> createHorse({required HorseDto horse});
