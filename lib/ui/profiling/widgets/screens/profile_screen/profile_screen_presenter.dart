@@ -1,4 +1,8 @@
+import 'package:equiny/core/shared/constants/cache_keys.dart';
+import 'package:equiny/core/shared/constants/routes.dart';
+import 'package:equiny/core/shared/interfaces/cache_driver.dart';
 import 'package:equiny/core/shared/interfaces/navigation_driver.dart';
+import 'package:equiny/drivers/cache-driver/index.dart';
 import 'package:equiny/drivers/navigation-driver/index.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signals/signals.dart';
@@ -6,13 +10,14 @@ import 'package:signals/signals.dart';
 enum ProfileTab { horse, owner }
 
 class ProfileScreenPresenter {
+  final CacheDriver _cacheDriver;
   final NavigationDriver _navigationDriver;
 
   final Signal<ProfileTab> activeTab = signal(ProfileTab.horse);
   late final ReadonlySignal<bool> isHorseTab;
   late final ReadonlySignal<bool> isOwnerTab;
 
-  ProfileScreenPresenter(this._navigationDriver) {
+  ProfileScreenPresenter(this._cacheDriver, this._navigationDriver) {
     isHorseTab = computed(() => activeTab.value == ProfileTab.horse);
     isOwnerTab = computed(() => activeTab.value == ProfileTab.owner);
   }
@@ -26,8 +31,16 @@ class ProfileScreenPresenter {
       _navigationDriver.goBack();
     }
   }
+
+  Future<void> logout() async {
+    await _cacheDriver.delete(CacheKeys.accessToken);
+    _navigationDriver.goTo(Routes.signIn);
+  }
 }
 
 final profileScreenPresenterProvider = Provider<ProfileScreenPresenter>((ref) {
-  return ProfileScreenPresenter(ref.watch(navigationDriverProvider));
+  return ProfileScreenPresenter(
+    ref.watch(cacheDriverProvider),
+    ref.watch(navigationDriverProvider),
+  );
 });
