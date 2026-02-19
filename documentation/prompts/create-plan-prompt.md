@@ -1,6 +1,6 @@
 # Prompt: Criar Plano (Equiny Mobile)
 
-**Objetivo principal** Criar um plano de implementacao a partir de um documento de spec tecnica, alinhado a arquitetura e regras do Equiny Mobile.
+**Objetivo principal** Criar um plano de implementacao a partir de um documento de spec técnica, alinhado a arquitetura e regras do Equiny Mobile.
 
 ## Contexto do projeto
 
@@ -11,9 +11,12 @@
 
 ## Entrada
 
-- Caminho do arquivo do documento de spec tecnica (Markdown).
+- Caminho do arquivo do documento de spec técnica (Markdown).
 
 ## Diretrizes de execucao
+
+1. **Entendimento dos padrões do projeto**
+   - Leia as regras de projeto que estão relacionadas com a spec técnica em `documentation/rules/rules.md`.
 
 1. **Decomposicao atomica**
    - Quebre o trabalho em **fases** e **tarefas**.
