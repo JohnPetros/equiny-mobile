@@ -4,6 +4,7 @@ import 'package:equiny/core/profiling/dtos/structures/gallery_dto.dart';
 import 'package:equiny/core/profiling/dtos/entities/owner_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/age_range_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
+import 'package:equiny/core/profiling/dtos/structures/horse_match_dto.dart';
 import 'package:equiny/core/shared/responses/pagination_response.dart';
 import 'package:equiny/core/profiling/interfaces/profiling_service.dart'
     as profiling_service;
@@ -14,6 +15,7 @@ import 'package:equiny/rest/mappers/profiling/horse_feed_mapper.dart';
 import 'package:equiny/rest/services/service.dart';
 import 'package:equiny/rest/mappers/profiling/gallery_mapper.dart';
 import 'package:equiny/rest/mappers/profiling/horse_mapper.dart';
+import 'package:equiny/rest/mappers/profiling/horse_match_mapper.dart';
 
 class ProfilingService extends Service
     implements profiling_service.ProfilingService {
@@ -87,7 +89,7 @@ class ProfilingService extends Service
     required String? cursor,
   }) async {
     super.setAuthHeader();
-    final request = <String, dynamic>{
+    final queryParams = <String, dynamic>{
       'sex': sex,
       'breeds': breeds,
       'min_age': ageRange.min,
@@ -100,7 +102,7 @@ class ProfilingService extends Service
 
     final RestResponse<Json> response = await super.restClient.get(
       '/profiling/horses/$horseId/feed',
-      queryParams: request,
+      queryParams: queryParams,
     );
 
     if (response.isFailure) {
@@ -111,6 +113,65 @@ class ProfilingService extends Service
     }
 
     return response.mapBody(HorseFeedMapper.toFeedPagination);
+  }
+
+  @override
+  Future<RestResponse<List<HorseMatchDto>>> fetchHorseMatches({
+    required String horseId,
+  }) async {
+    super.setAuthHeader();
+    final RestResponse<Json> response = await super.restClient.get(
+      '/profiling/horses/$horseId/matches',
+    );
+
+    if (response.isFailure) {
+      return RestResponse<List<HorseMatchDto>>(
+        statusCode: response.statusCode,
+        errorMessage: response.errorMessage,
+      );
+    }
+
+    return response.mapBody(HorseMatchMapper.toDtoList);
+  }
+
+  @override
+  Future<RestResponse<void>> viewHorseMatch({
+    required String fromHorseId,
+    required String toHorseId,
+  }) async {
+    super.setAuthHeader();
+    final RestResponse<Json> response = await super.restClient.patch(
+      '/profiling/horses/$fromHorseId/matches/$toHorseId',
+    );
+
+    if (response.isFailure) {
+      return RestResponse<void>(
+        statusCode: response.statusCode,
+        errorMessage: response.errorMessage,
+      );
+    }
+
+    return RestResponse<void>(statusCode: response.statusCode, body: null);
+  }
+
+  @override
+  Future<RestResponse<List<String>>> fetchBreeds() async {
+    super.setAuthHeader();
+    final RestResponse<Json> response = await super.restClient.get(
+      '/profiling/breeds',
+    );
+
+    if (response.isFailure) {
+      return RestResponse<List<String>>(
+        statusCode: response.statusCode,
+        errorMessage: response.errorMessage,
+      );
+    }
+
+    return response.mapBody((Json body) {
+      final List<dynamic> list = body['items'];
+      return list.map((dynamic breed) => breed as String).toList();
+    });
   }
 
   @override

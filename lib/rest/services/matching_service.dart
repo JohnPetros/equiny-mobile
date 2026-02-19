@@ -29,4 +29,25 @@ class MatchingService extends Service
 
     return response.mapBody(SwipeMapper.toDto);
   }
+
+  @override
+  Future<RestResponse<void>> dismatchHorse({
+    required String fromHorseId,
+    required String toHorseId,
+  }) async {
+    super.setAuthHeader();
+    final RestResponse<Json> response = await super.restClient.delete(
+      '/matching/matches/',
+      queryParams: {'horse_a_id': fromHorseId, 'horse_b_id': toHorseId},
+    );
+
+    if (response.isFailure) {
+      return RestResponse<void>(
+        statusCode: response.statusCode,
+        errorMessage: response.errorMessage,
+      );
+    }
+
+    return RestResponse<void>(statusCode: response.statusCode);
+  }
 }
