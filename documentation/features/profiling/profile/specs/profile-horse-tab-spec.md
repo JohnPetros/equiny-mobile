@@ -45,7 +45,7 @@ Entregar a primeira iteracao da tela de perfil com foco na tab `Cavalo`, permiti
 # 4. O que ja existe (inventario)
 
 ## 4.1 UI (`lib/ui/`)
-- **`OnboardingScreenPresenter`** (`lib/ui/profiling/widgets/screens/onboarding_screen/onboarding_screen_presenter.dart`) - referencia de fluxo de upload com `MediaPickerDriver` + `FileStorageService` + `ProfilingService`.
+- **`OnboardingScreenPresenter`** (`lib/ui/profiling/widgets/screens/onboarding_screen/onboarding_screen_presenter.dart`) - referencia de fluxo de upload em 2 etapas com `MediaPickerDriver` + `FileStorageService` + `FileStorageDriver` + `ProfilingService`.
 - **`OnboardingStepImagesView`** (`lib/ui/profiling/widgets/screens/onboarding_screen/onboarding_step_images/onboarding_step_images_view.dart`) - base reaproveitavel de UX de lista de imagens com erro e retry.
 - **`AppThemeColors`, `AppSpacing`, `AppRadius`** (`lib/ui/shared/theme/app_theme.dart`) - tokens visuais e espacos usados no app.
 - **`HomeScreenView`** (`lib/ui/home/widgets/screens/home_screen/home_screen_view.dart`) - tela placeholder que sera ponto inicial de acesso manual para `ProfileScreen` nesta etapa.
@@ -61,7 +61,7 @@ Entregar a primeira iteracao da tela de perfil com foco na tab `Cavalo`, permiti
 - **`ProfilingService`** (`lib/rest/profiling/services/profiling_service.dart`) - implementa `fetchOwner`, `createHorse` e `createHorseGallery`; precisa ser extendido para leitura/edicao de cavalo e galeria.
 - **`HorseMapper`** (`lib/rest/profiling/mappers/horse_mapper.dart`) - serializacao e desserializacao de cavalo.
 - **`GalleryMapper`** (`lib/rest/profiling/mappers/gallery_mapper.dart`) - serializacao e desserializacao de galeria.
-- **`FileStorageService`** (`lib/rest/storage/services/file_storage_service.dart`) - upload multipart de imagens ja pronto para reutilizacao.
+- **`FileStorageService`** (`lib/rest/services/file_storage_service.dart`) - geracao de URLs pre-assinadas para upload da galeria.
 
 ## 4.4 Drivers (`lib/drivers/`)
 - **`ImagePickerMediaPickerDriver`** (`lib/drivers/media-picker-driver/image-picker/image_picker_media_picker_driver.dart`) - driver concreto para selecionar imagens do dispositivo.
@@ -75,7 +75,7 @@ Entregar a primeira iteracao da tela de perfil com foco na tab `Cavalo`, permiti
 ### 5.1.1 Presenters/Stores
 - **Arquivo (novo):** `lib/ui/profiling/widgets/screens/profile_screen/profile_screen_presenter.dart`
   - **Responsabilidade:** orquestrar hidratacao, estado da aba ativa, validacao do formulario do cavalo, gerenciamento da galeria, regra de elegibilidade de ativacao e persistencia de alteracoes.
-  - **Dependencias:** `ProfilingService`, `FileStorageService`, `MediaPickerDriver`, `NavigationDriver`.
+  - **Dependencias:** `ProfilingService`, `FileStorageService`, `FileStorageDriver`, `MediaPickerDriver`, `NavigationDriver`.
   - **Estado (`signals`/providers):** `activeTab`, `horseForm`, `horseImages`, `isLoadingInitialData`, `isSyncingHorse`, `isSyncingGallery`, `isUploadingImages`, `isHorseActive`, `generalError`, `fieldErrorsByKey`, `lastSyncAt`.
   - **Computeds:** `isHorseTab`, `canActivateHorse`, `feedReadinessChecklist`, `remainingImagesCount`.
   - **Metodos:** `loadHorseProfile()`, `switchTab()`, `startHorseAutosaveListener()`, `syncHorsePatch()`, `pickAndUploadImages()`, `retryImageUpload()`, `removeImage()`, `setPrimaryImage()`, `syncGallery()`, `toggleHorseActive()`, `discardLocalErrors()`.
@@ -211,7 +211,10 @@ ProfileScreenView
     -> fileStorageServiceProvider
       -> FileStorageService (REST)
         -> RestClient (Dio)
-          -> POST /storage/images/upload
+          -> POST /profiling/horses/{horseId}/gallery/upload-urls
+    -> fileStorageDriverProvider
+      -> FileStorageDriver (Supabase)
+        -> uploadFiles(files, uploadUrls)
 ```
 
 ## 8.2 Layout/hierarquia visual (ASCII)

@@ -92,7 +92,7 @@ Implementar a tela de **Inbox** no app mobile, exibindo a lista de conversas ini
 ## 4.4 Drivers (`lib/drivers/`)
 
 - **`NavigationDriver`** / **`GoRouterNavigationDriver`** (`lib/drivers/navigation-driver/`) — navegacao. **Reutilizado** pelo `InboxScreenPresenter`.
-- **`FileStorageDriver`** (`lib/drivers/file-storage-driver/`) — resolve URL de imagem via `getImageUrl(key)`. **Reutilizado** para resolver avatar URL.
+- **`FileStorageDriver`** (`lib/drivers/file-storage-driver/`) — resolve URL de imagem via `getFileUrl(key)`. **Reutilizado** para resolver avatar URL.
 - **`CacheDriver`** (`lib/drivers/cache-driver/`) — cache local. **Reutilizado** pelo `Service` base.
 
 # 5. O que deve ser criado
@@ -119,7 +119,7 @@ Implementar a tela de **Inbox** no app mobile, exibindo a lista de conversas ini
     - `Future<void> retry()` — alias para `loadChats()`.
     - `String formatRelativeTimestamp(DateTime sentAt)` — formata timestamp relativo ("14:32", "Ontem", "Segunda", "Domingo"). Logica: mesmo dia -> `HH:mm`; ontem -> "Ontem"; mesma semana -> dia da semana; outro -> `dd/MM`.
     - `String buildRecipientInitials(String name)` — extrai iniciais (mesmo algoritmo de `MatchesListItemPresenter.buildOwnerInitials`).
-    - `String resolveAvatarUrl(ImageDto? avatar)` — usa `FileStorageDriver.getImageUrl` se houver key.
+    - `String resolveAvatarUrl(ImageDto? avatar)` — usa `FileStorageDriver.getFileUrl` se houver key.
     - `void openChat(ChatDto chat)` — navega para `Routes.chat` passando `chat.id` como data.
     - `void goToMatches()` — navega para `Routes.matches`.
   - **Provider:**
