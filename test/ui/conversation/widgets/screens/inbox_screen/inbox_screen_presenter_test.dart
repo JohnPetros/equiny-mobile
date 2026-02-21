@@ -169,7 +169,7 @@ void main() {
 
     test('should resolve avatar url when key is available', () {
       when(
-        () => fileStorageDriver.getImageUrl('avatar-key'),
+        () => fileStorageDriver.getFileUrl('avatar-key'),
       ).thenReturn('https://cdn.equiny/avatar-key');
 
       final result = presenter.resolveAvatarUrl(
@@ -177,7 +177,7 @@ void main() {
       );
 
       expect(result, 'https://cdn.equiny/avatar-key');
-      verify(() => fileStorageDriver.getImageUrl('avatar-key')).called(1);
+      verify(() => fileStorageDriver.getFileUrl('avatar-key')).called(1);
     });
 
     test('should return empty avatar url when key is empty', () {
@@ -186,7 +186,7 @@ void main() {
       );
 
       expect(result, '');
-      verifyNever(() => fileStorageDriver.getImageUrl(any()));
+      verifyNever(() => fileStorageDriver.getFileUrl(any()));
     });
 
     test('should navigate to chat with chat id when openChat is called', () {
