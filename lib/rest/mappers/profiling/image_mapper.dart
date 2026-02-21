@@ -2,6 +2,10 @@ import 'package:equiny/core/profiling/dtos/structures/image_dto.dart';
 import 'package:equiny/core/shared/types/json.dart';
 
 class ImageMapper {
+  static Json toJson(ImageDto image) {
+    return <String, dynamic>{'key': image.key, 'name': image.name};
+  }
+
   static ImageDto toDto(Json body) {
     return ImageDto(
       key: body['key']?.toString() ?? '',
