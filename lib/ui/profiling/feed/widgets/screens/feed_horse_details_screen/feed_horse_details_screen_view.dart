@@ -1,10 +1,10 @@
 import 'package:equiny/core/profiling/dtos/structures/feed_horse_dto.dart';
 import 'package:equiny/core/storage/interfaces/file_storage_driver.dart';
-import 'package:equiny/ui/feed/widgets/screens/feed_horse_details_screen/bottom_action_button/index.dart';
-import 'package:equiny/ui/feed/widgets/screens/feed_horse_details_screen/feed_horse_details_screen_presenter.dart';
-import 'package:equiny/ui/feed/widgets/screens/feed_horse_details_screen/image_dots/index.dart';
-import 'package:equiny/ui/feed/widgets/screens/feed_horse_details_screen/info_tile/index.dart';
-import 'package:equiny/ui/feed/widgets/screens/feed_horse_details_screen/top_icon_button/index.dart';
+import 'package:equiny/ui/profiling/feed/widgets/screens/feed_horse_details_screen/bottom_action_button/index.dart';
+import 'package:equiny/ui/profiling/feed/widgets/screens/feed_horse_details_screen/feed_horse_details_screen_presenter.dart';
+import 'package:equiny/ui/profiling/feed/widgets/screens/feed_horse_details_screen/image_dots/index.dart';
+import 'package:equiny/ui/profiling/feed/widgets/screens/feed_horse_details_screen/info_tile/index.dart';
+import 'package:equiny/ui/profiling/feed/widgets/screens/feed_horse_details_screen/top_icon_button/index.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';

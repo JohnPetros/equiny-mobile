@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 
-class MatchesScreenEmptyStateView extends StatelessWidget {
-  final VoidCallback onGoToFeed;
+class InboxScreenErrorStateView extends StatelessWidget {
+  final String message;
+  final Future<void> Function() onRetry;
 
-  const MatchesScreenEmptyStateView({required this.onGoToFeed, super.key});
+  const InboxScreenErrorStateView({
+    required this.message,
+    required this.onRetry,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,14 +18,11 @@ class MatchesScreenEmptyStateView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Text(
-              'Voce ainda nao possui matches.',
-              textAlign: TextAlign.center,
-            ),
+            Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 12),
             ElevatedButton(
-              onPressed: onGoToFeed,
-              child: const Text('Ir para o Feed'),
+              onPressed: onRetry,
+              child: const Text('Tentar novamente'),
             ),
           ],
         ),

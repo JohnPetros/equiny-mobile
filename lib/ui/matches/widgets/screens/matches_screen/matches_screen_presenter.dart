@@ -168,11 +168,11 @@ class MatchesScreenPresenter {
   }
 
   Future<void> handleTapViewProfile() async {
-    await _viewMatchAndNavigateTo(Routes.conversations);
+    await _viewMatchAndNavigateTo(Routes.inbox);
   }
 
   Future<void> handleTapSendMessage() async {
-    await _viewMatchAndNavigateTo(Routes.conversations);
+    await _viewMatchAndNavigateTo(Routes.inbox);
   }
 
   void goToFeed() {

@@ -1,5 +1,5 @@
 import 'package:equiny/rest/services.dart';
-import 'package:equiny/ui/feed/widgets/screens/feed_screen/feed_filters_sheet/state_selection_dialog/index.dart';
+import 'package:equiny/ui/profiling/feed/widgets/screens/feed_screen/feed_filters_sheet/state_selection_dialog/index.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

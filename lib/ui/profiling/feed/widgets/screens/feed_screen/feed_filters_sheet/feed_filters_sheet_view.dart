@@ -1,10 +1,10 @@
 import 'package:equiny/core/profiling/dtos/structures/horse_feed_filters_dto.dart';
 import 'package:equiny/rest/services.dart';
-import 'package:equiny/ui/feed/widgets/screens/feed_screen/feed_filters_sheet/age_range_slider/index.dart';
-import 'package:equiny/ui/feed/widgets/screens/feed_screen/feed_filters_sheet/breed_chip/index.dart';
-import 'package:equiny/ui/feed/widgets/screens/feed_screen/feed_filters_sheet/city_dropdown/index.dart';
-import 'package:equiny/ui/feed/widgets/screens/feed_screen/feed_filters_sheet/feed_filters_sheet_presenter.dart';
-import 'package:equiny/ui/feed/widgets/screens/feed_screen/feed_filters_sheet/state_dropdown/index.dart';
+import 'package:equiny/ui/profiling/feed/widgets/screens/feed_screen/feed_filters_sheet/age_range_slider/index.dart';
+import 'package:equiny/ui/profiling/feed/widgets/screens/feed_screen/feed_filters_sheet/breed_chip/index.dart';
+import 'package:equiny/ui/profiling/feed/widgets/screens/feed_screen/feed_filters_sheet/city_dropdown/index.dart';
+import 'package:equiny/ui/profiling/feed/widgets/screens/feed_screen/feed_filters_sheet/feed_filters_sheet_presenter.dart';
+import 'package:equiny/ui/profiling/feed/widgets/screens/feed_screen/feed_filters_sheet/state_dropdown/index.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
