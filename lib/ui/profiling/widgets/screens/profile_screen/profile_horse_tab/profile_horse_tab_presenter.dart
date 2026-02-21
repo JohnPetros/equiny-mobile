@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:equiny/core/profiling/dtos/entities/horse_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/gallery_dto.dart';
@@ -6,7 +7,9 @@ import 'package:equiny/core/profiling/dtos/structures/image_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
 import 'package:equiny/core/profiling/interfaces/profiling_service.dart';
 import 'package:equiny/core/shared/interfaces/media_picker_driver.dart';
+import 'package:equiny/core/storage/interfaces/file_storage_driver.dart';
 import 'package:equiny/core/storage/interfaces/file_storage_service.dart';
+import 'package:equiny/drivers/file-storage-driver/index.dart';
 import 'package:equiny/drivers/media-picker-driver/index.dart';
 import 'package:equiny/rest/services.dart';
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_horse_tab/profile_horse_active_section/profile_horse_active_section_presenter.dart';
@@ -31,6 +34,7 @@ class ProfileHorseTabPresenter {
 
   final ProfilingService _profilingService;
   final FileStorageService _fileStorageService;
+  final FileStorageDriver _fileStorageDriver;
   final MediaPickerDriver _mediaPickerDriver;
   final ProfileHorseFormSectionPresenter _formSectionPresenter;
   final ProfileHorseFeedReadinessSectionPresenter _feedReadinessPresenter;
@@ -63,6 +67,7 @@ class ProfileHorseTabPresenter {
   ProfileHorseTabPresenter(
     this._profilingService,
     this._fileStorageService,
+    this._fileStorageDriver,
     this._mediaPickerDriver,
     this._formSectionPresenter,
     this._feedReadinessPresenter,
@@ -274,31 +279,56 @@ class ProfileHorseTabPresenter {
       return;
     }
 
+    final String horseId = _horseId.value ?? '';
+    if (horseId.isEmpty) {
+      return;
+    }
+
     generalError.value = null;
     galleryError.value = null;
     isUploadingImages.value = true;
 
     try {
-      final files = await _mediaPickerDriver.pickImages(
+      final List<File> files = await _mediaPickerDriver.pickImages(
         maxImages: remainingImagesCount.value,
       );
       if (files.isEmpty) {
         return;
       }
 
-      final response = await _fileStorageService.uploadImageFiles(files: files);
-      if (response.isFailure) {
-        galleryError.value = response.errorMessage;
+      final List<String> imageNames = files
+          .map((File f) => f.uri.pathSegments.last)
+          .toList();
+
+      final uploadUrlsResponse = await _fileStorageService
+          .generateUploadUrlsForHorseGallery(
+            horseId: horseId,
+            imagesNames: imageNames,
+          );
+
+      if (uploadUrlsResponse.isFailure) {
+        galleryError.value = uploadUrlsResponse.errorMessage;
         return;
       }
 
-      horseImages.value = <ImageDto>[...horseImages.value, ...response.body];
+      await _fileStorageDriver.uploadFiles(files, uploadUrlsResponse.body);
+
+      final List<ImageDto> newImages = uploadUrlsResponse.body
+          .map(
+            (uploadUrl) => ImageDto(
+              key: uploadUrl.filePath,
+              name: uploadUrl.filePath.split('/').last,
+            ),
+          )
+          .toList();
+
+      horseImages.value = <ImageDto>[...horseImages.value, ...newImages];
       await syncGallery();
     } on UnsupportedError {
       galleryError.value =
           'Selecao de imagem nao suportada nesta plataforma/dispositivo.';
-    } catch (_) {
-      galleryError.value = 'Erro inesperado ao enviar imagens.';
+    } catch (error) {
+      galleryError.value = error.toString();
     } finally {
       isUploadingImages.value = false;
     }
@@ -371,6 +401,7 @@ final profileHorseTabPresenterProvider =
       final presenter = ProfileHorseTabPresenter(
         ref.watch(profilingServiceProvider),
         ref.watch(fileStorageServiceProvider),
+        ref.watch(fileStorageDriverProvider),
         ref.watch(mediaPickerDriverProvider),
         ProfileHorseFormSectionPresenter(),
         ProfileHorseFeedReadinessSectionPresenter(),

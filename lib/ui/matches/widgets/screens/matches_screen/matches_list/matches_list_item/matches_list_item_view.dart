@@ -28,7 +28,7 @@ class MatchesListItemView extends ConsumerWidget {
     );
     final String avatarUrl = item.ownerAvatar?.key.trim().isEmpty ?? true
         ? ''
-        : fileStorageDriver.getImageUrl(item.ownerAvatar?.key ?? '');
+        : fileStorageDriver.getFileUrl(item.ownerAvatar?.key ?? '');
 
     Widget itemContent = InkWell(
       onTap: onTap,

@@ -53,7 +53,7 @@ class FeedHorseDetailsScreenPresenter {
         return key;
       }
 
-      return fileStorageDriver!.getImageUrl(key);
+      return fileStorageDriver!.getFileUrl(key);
     });
 
     sexLabel = computed(() {

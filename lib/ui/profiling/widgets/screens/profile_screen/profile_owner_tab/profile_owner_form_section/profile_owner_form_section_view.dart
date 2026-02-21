@@ -1,4 +1,5 @@
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_owner_tab/profile_owner_form_section/field_label/index.dart';
+import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_owner_tab/profile_owner_form_section/profile_owner_avatar_field/index.dart';
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_owner_tab/profile_owner_form_section/section_header/index.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
@@ -7,8 +8,23 @@ import 'package:reactive_forms/reactive_forms.dart';
 
 class ProfileOwnerFormSectionView extends StatelessWidget {
   final FormGroup form;
+  final String? avatarUrl;
+  final bool isUploadingAvatar;
+  final String? avatarError;
+  final VoidCallback onPickAvatar;
+  final VoidCallback onReplaceAvatar;
+  final VoidCallback onRemoveAvatar;
 
-  const ProfileOwnerFormSectionView({required this.form, super.key});
+  const ProfileOwnerFormSectionView({
+    required this.form,
+    required this.avatarUrl,
+    required this.isUploadingAvatar,
+    required this.avatarError,
+    required this.onPickAvatar,
+    required this.onReplaceAvatar,
+    required this.onRemoveAvatar,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +37,14 @@ class ProfileOwnerFormSectionView extends StatelessWidget {
         children: <Widget>[
           ProfileOwnerSectionHeader(theme: theme, title: 'DADOS PESSOAIS'),
           const SizedBox(height: AppSpacing.md),
-          const _AvatarReadOnlyField(),
+          ProfileOwnerAvatarField(
+            avatarUrl: avatarUrl,
+            isUploading: isUploadingAvatar,
+            errorMessage: avatarError,
+            onPickAvatar: onPickAvatar,
+            onReplaceAvatar: onReplaceAvatar,
+            onRemoveAvatar: onRemoveAvatar,
+          ),
           const SizedBox(height: AppSpacing.xl),
           const ProfileOwnerFieldLabel(text: 'Nome Completo'),
           const SizedBox(height: AppSpacing.xs),
@@ -185,69 +208,6 @@ class ProfileOwnerFormSectionView extends StatelessWidget {
   bool _isValidPhone(String value) {
     final String digitsOnly = value.replaceAll(RegExp(r'\D'), '');
     return digitsOnly.length == 11;
-  }
-}
-
-class _AvatarReadOnlyField extends StatelessWidget {
-  const _AvatarReadOnlyField();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: <Widget>[
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: AppThemeColors.primary, width: 3),
-              boxShadow: <BoxShadow>[
-                BoxShadow(
-                  color: AppThemeColors.primary.withValues(alpha: 0.2),
-                  blurRadius: 16,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(4),
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFFE7D8C8),
-                  border: Border.all(color: AppThemeColors.inputBackground),
-                ),
-                child: const Icon(
-                  Icons.person,
-                  size: 64,
-                  color: Color(0xFF6B5240),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            right: 2,
-            bottom: 2,
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppThemeColors.primary,
-                border: Border.all(color: AppThemeColors.background, width: 2),
-              ),
-              child: const Icon(
-                Icons.photo_camera_outlined,
-                size: 16,
-                color: Colors.black,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 

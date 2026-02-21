@@ -125,7 +125,7 @@ class InboxScreenPresenter {
       return '';
     }
 
-    return _fileStorageDriver.getImageUrl(key);
+    return _fileStorageDriver.getFileUrl(key);
   }
 
   void openChat(ChatDto chat) {
