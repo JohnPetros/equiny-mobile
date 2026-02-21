@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:equiny/core/profiling/dtos/entities/horse_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/gallery_dto.dart';
@@ -10,8 +11,10 @@ import 'package:equiny/core/shared/constants/routes.dart';
 import 'package:equiny/core/shared/interfaces/cache_driver.dart';
 import 'package:equiny/core/shared/interfaces/media_picker_driver.dart';
 import 'package:equiny/core/shared/interfaces/navigation_driver.dart';
+import 'package:equiny/core/storage/interfaces/file_storage_driver.dart';
 import 'package:equiny/core/storage/interfaces/file_storage_service.dart';
 import 'package:equiny/drivers/cache-driver/index.dart';
+import 'package:equiny/drivers/file-storage-driver/index.dart';
 import 'package:equiny/drivers/media-picker-driver/index.dart';
 import 'package:equiny/drivers/navigation-driver/index.dart';
 import 'package:equiny/rest/services.dart';
@@ -25,6 +28,7 @@ class OnboardingScreenPresenter {
 
   final ProfilingService _profilingService;
   final FileStorageService _fileStorageService;
+  final FileStorageDriver _fileStorageDriver;
   final MediaPickerDriver _mediaPickerDriver;
   final NavigationDriver _navigationDriver;
   final CacheDriver _cacheDriver;
@@ -39,6 +43,9 @@ class OnboardingScreenPresenter {
   final Signal<String?> generalError = signal(null);
   final Signal<List<ImageDto>> uploadedImages = signal(<ImageDto>[]);
   final Signal<int> _formVersion = signal(0);
+
+  /// Stores the actual [File] objects selected by the user, pending upload.
+  final Signal<List<File>> _pendingFiles = signal(<File>[]);
 
   StreamSubscription<Object?>? _formValueSubscription;
   StreamSubscription<ControlStatus>? _formStatusSubscription;
@@ -73,6 +80,7 @@ class OnboardingScreenPresenter {
   OnboardingScreenPresenter(
     this._profilingService,
     this._fileStorageService,
+    this._fileStorageDriver,
     this._mediaPickerDriver,
     this._navigationDriver,
     this._cacheDriver,
@@ -203,6 +211,11 @@ class OnboardingScreenPresenter {
     submitAttempted.value = false;
   }
 
+  /// Picks image files from the device and adds them as previews.
+  ///
+  /// The actual upload to storage happens during [submitOnboarding] after the
+  /// horse is created (so that a valid [horseId] is available for generating
+  /// pre-signed upload URLs).
   Future<void> pickAndUploadImages() async {
     generalError.value = null;
     if (isUploadingImages.value) {
@@ -216,36 +229,35 @@ class OnboardingScreenPresenter {
 
     isUploadingImages.value = true;
     try {
-      final files = await _mediaPickerDriver.pickImages(
+      final List<File> files = await _mediaPickerDriver.pickImages(
         maxImages: remainingImages,
       );
       if (files.isEmpty) {
-        isUploadingImages.value = false;
         return;
       }
 
-      final response = await _fileStorageService.uploadImageFiles(files: files);
-      if (response.isFailure) {
-        generalError.value = response.errorMessage;
-        isUploadingImages.value = false;
-        return;
-      }
+      _pendingFiles.value = <File>[..._pendingFiles.value, ...files];
 
-      uploadedImages.value = <ImageDto>[
-        ...uploadedImages.value,
-        ...response.body,
-      ];
+      // Show local file previews while the real upload is deferred to submit.
+      final List<ImageDto> previews = files.map((File file) {
+        return ImageDto(key: file.path, name: file.uri.pathSegments.last);
+      }).toList();
+
+      uploadedImages.value = <ImageDto>[...uploadedImages.value, ...previews];
     } on UnsupportedError {
       generalError.value =
           'Selecao de imagem nao suportada nesta plataforma/dispositivo. Tente reiniciar o app.';
     } catch (error) {
-      generalError.value = 'Erro inesperado ao enviar imagens: $error';
+      generalError.value = 'Erro inesperado ao selecionar imagens: $error';
     } finally {
       isUploadingImages.value = false;
     }
   }
 
   void removeImage(ImageDto image) {
+    _pendingFiles.value = _pendingFiles.value
+        .where((File file) => file.path != image.key)
+        .toList();
     uploadedImages.value = uploadedImages.value
         .where((ImageDto current) => current.key != image.key)
         .toList();
@@ -295,6 +307,38 @@ class OnboardingScreenPresenter {
         generalError.value = 'Resposta invalida ao criar cavalo.';
         isSubmitting.value = false;
         return;
+      }
+
+      if (_pendingFiles.value.isNotEmpty) {
+        final List<String> imageNames = _pendingFiles.value
+            .map((File f) => f.uri.pathSegments.last)
+            .toList();
+
+        final uploadUrlsResponse = await _fileStorageService
+            .generateUploadUrlsForHorseGallery(
+              horseId: horseId,
+              imagesNames: imageNames,
+            );
+
+        if (uploadUrlsResponse.isFailure) {
+          generalError.value = uploadUrlsResponse.errorMessage;
+          isSubmitting.value = false;
+          return;
+        }
+
+        await _fileStorageDriver.uploadFiles(
+          _pendingFiles.value,
+          uploadUrlsResponse.body,
+        );
+
+        uploadedImages.value = uploadUrlsResponse.body
+            .map(
+              (uploadUrl) => ImageDto(
+                key: uploadUrl.filePath,
+                name: uploadUrl.filePath.split('/').last,
+              ),
+            )
+            .toList();
       }
 
       final galleryResponse = await _profilingService.createHorseGallery(
@@ -355,6 +399,7 @@ final onboardingScreenPresenterProvider =
       final presenter = OnboardingScreenPresenter(
         ref.watch(profilingServiceProvider),
         ref.watch(fileStorageServiceProvider),
+        ref.watch(fileStorageDriverProvider),
         ref.watch(mediaPickerDriverProvider),
         ref.watch(navigationDriverProvider),
         ref.watch(cacheDriverProvider),

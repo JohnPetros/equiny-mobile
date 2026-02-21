@@ -26,7 +26,7 @@ class NewMatchesListItemView extends ConsumerWidget {
     );
     final String avatarUrl = item.ownerAvatar?.key.trim().isEmpty ?? true
         ? ''
-        : fileStorageDriver.getImageUrl(item.ownerAvatar?.key ?? '');
+        : fileStorageDriver.getFileUrl(item.ownerAvatar?.key ?? '');
 
     return GestureDetector(
       onTap: onTap,

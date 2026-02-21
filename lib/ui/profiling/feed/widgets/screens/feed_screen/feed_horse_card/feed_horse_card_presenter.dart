@@ -16,16 +16,17 @@ class FeedHorseCardPresenter {
       }
       if (currentImageIndex.value < 0 ||
           currentImageIndex.value >= horse.imageUrls.length) {
-        return _fileStorageDriver.getImageUrl(horse.imageUrls.first);
+        return _fileStorageDriver.getFileUrl(horse.imageUrls.first);
       }
-      return _fileStorageDriver.getImageUrl(
+      return _fileStorageDriver.getFileUrl(
         horse.imageUrls[currentImageIndex.value],
       );
     });
   }
 
-  String getImageUrl(String imagePath) {
-    return _fileStorageDriver.getImageUrl(imagePath);
+  String getFileUrl(String imagePath) {
+    print('fileUrl: ${_fileStorageDriver.getFileUrl(imagePath)}');
+    return _fileStorageDriver.getFileUrl(imagePath);
   }
 
   void nextImage() {

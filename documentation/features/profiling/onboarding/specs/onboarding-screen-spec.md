@@ -53,7 +53,7 @@ Implementar o fluxo de onboarding obrigatorio do primeiro cavalo no app mobile e
 - **`ImageDto`** (`lib/core/profiling/dtos/structures/image_dto.dart`) - metadados basicos de imagem.
 - **`GalleryDto`** (`lib/core/profiling/dtos/structures/gallery_dto.dart`) - contrato de galeria existente para evolucao.
 - **`ProfilingService`** (`lib/core/profiling/interfaces/profiling_service.dart`) - contrato para criar cavalo/galeria.
-- **`FileStorageService`** (`lib/core/storage/interfaces/file_storage_service.dart`) - contrato de upload de imagem.
+- **`FileStorageService`** (`lib/core/storage/interfaces/file_storage_service.dart`) - contrato para gerar URLs pre-assinadas de upload.
 - **`Routes`** (`lib/core/shared/constants/routes.dart`) - rotas base do app.
 - **`CacheKeys`** (`lib/core/shared/constants/cache_keys.dart`) - chaves de cache de sessao.
 - **`RestResponse`** (`lib/core/shared/responses/rest_response.dart`) - wrapper padrao para resposta REST.
@@ -76,7 +76,7 @@ Implementar o fluxo de onboarding obrigatorio do primeiro cavalo no app mobile e
 ### 5.1.1 Presenters/Stores
 - **Arquivo:** `lib/ui/profiling/widgets/screens/onboarding_screen/onboarding_screen_presenter.dart`
   - **Responsabilidade:** orquestrar etapas, validacao, upload, criacao de cavalo, vinculacao de galeria e navegacao final.
-  - **Dependencias:** `ProfilingService`, `FileStorageService`, `MediaPickerDriver`, `NavigationDriver`, `CacheDriver`.
+  - **Dependencias:** `ProfilingService`, `FileStorageService`, `FileStorageDriver`, `MediaPickerDriver`, `NavigationDriver`, `CacheDriver`.
   - **Estado (`signals`/providers):** `form`, `currentStepIndex`, `isSubmitting`, `isUploadingImages`, `submitAttempted`, `generalError`, `uploadedImages`.
   - **Computeds:** `isFirstStep`, `isLastStep`, `currentStepLabel`, `canAdvance`, `canFinish`.
   - **Metodos:** `buildForm()`, `validateCurrentStep()`, `goNextStep()`, `goPreviousStep()`, `pickAndUploadImages()`, `removeImage()`, `retryImageUpload()`, `submitOnboarding()`.
@@ -188,10 +188,10 @@ lib/ui/profiling/widgets/screens/onboarding_screen/
   - **Metodos:** `createHorse(...)`, `createHorseGallery(...)`.
   - **Entrada/Saida:** `HorseDto`/`GalleryDto` <-> `RestResponse<HorseDto|GalleryDto>`.
 
-- **Arquivo:** `lib/rest/storage/services/file_storage_service.dart`
-  - **Service/Client:** implementacao de `FileStorageService` com upload multipart.
-  - **Metodos:** `uploadImageFiles({required List<File> files})`.
-  - **Entrada/Saida:** `List<File>` <-> `RestResponse<List<ImageDto>>`.
+- **Arquivo:** `lib/rest/services/file_storage_service.dart`
+  - **Service/Client:** implementacao de `FileStorageService` para gerar URLs pre-assinadas de upload.
+  - **Metodos:** `generateUploadUrlsForHorseGallery({required String horseId, required List<String> imagesNames})`.
+  - **Entrada/Saida:** `List<String>` <-> `RestResponse<List<UploadUrlDto>>`.
 
 - **Arquivo:** `lib/rest/profiling/mappers/horse_mapper.dart`
   - **Service/Client:** mapper de payload/response de cavalo.
@@ -203,10 +203,10 @@ lib/ui/profiling/widgets/screens/onboarding_screen/
   - **Metodos:** `toPayload(GalleryDto)`, `toDto(Json)`.
   - **Entrada/Saida:** `GalleryDto` <-> `Json`.
 
-- **Arquivo:** `lib/rest/storage/mappers/image_mapper.dart`
-  - **Service/Client:** mapper de resposta de upload.
+- **Arquivo:** `lib/rest/mappers/storage/upload_url_mapper.dart`
+  - **Service/Client:** mapper de resposta para URLs pre-assinadas de upload.
   - **Metodos:** `toDtoList(Json)`.
-  - **Entrada/Saida:** `Json` -> `List<ImageDto>`.
+  - **Entrada/Saida:** `Json` -> `List<UploadUrlDto>`.
 
 ## 5.4 Drivers
 - **Arquivo:** `lib/drivers/media-picker-driver/image-picker/image_picker_media_picker_driver.dart`
@@ -237,8 +237,8 @@ lib/ui/profiling/widgets/screens/onboarding_screen/
   - **Impacto:** `core`
 
 - **Arquivo:** `lib/core/storage/interfaces/file_storage_service.dart`
-  - **Mudanca:** ajustar retorno para `Future<RestResponse<List<ImageDto>>>`.
-  - **Justificativa:** contrato atual retorna `String` e nao cobre upload multiplo com metadados.
+  - **Mudanca:** manter contrato para gerar URLs pre-assinadas (`Future<RestResponse<List<UploadUrlDto>>>`).
+  - **Justificativa:** upload agora ocorre em 2 etapas (geracao de URL + envio via driver) e nao via multipart direto no service.
   - **Impacto:** `core`
 
 - **Arquivo:** `lib/core/profiling/dtos/structures/gallery_dto.dart`
@@ -276,10 +276,12 @@ OnboardingScreenView
   -> OnboardingScreenPresenter
     -> validateCurrentStep()
     -> MediaPickerDriver.pickImages()
-    -> FileStorageService.uploadImageFiles(files)
-      -> RestClient (multipart)
-      -> API /storage/images/upload
     -> ProfilingService.createHorse(horse)
+    -> FileStorageService.generateUploadUrlsForHorseGallery(horseId, imagesNames)
+      -> RestClient
+      -> API /profiling/horses/{horseId}/gallery/upload-urls
+    -> FileStorageDriver.uploadFiles(files, uploadUrls)
+      -> Supabase/Storage provider
       -> RestClient
       -> API /profiling/horses
     -> ProfilingService.createHorseGallery(gallery)

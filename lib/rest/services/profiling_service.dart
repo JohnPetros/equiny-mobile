@@ -42,7 +42,7 @@ class ProfilingService extends Service
   Future<RestResponse<OwnerDto>> updateOwner({required OwnerDto owner}) async {
     super.setAuthHeader();
     final RestResponse<Json> response = await super.restClient.put(
-      '/profiling/owners',
+      '/profiling/owners/me',
       body: OwnerMapper.toJson(owner),
     );
 

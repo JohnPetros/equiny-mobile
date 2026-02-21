@@ -65,7 +65,7 @@ void main() {
     when(() => presenter.openChat(any())).thenReturn(null);
     when(() => presenter.buildRecipientInitials(any())).thenReturn('RN');
     when(() => presenter.formatRelativeTimestamp(any())).thenReturn('10:30');
-    when(() => fileStorageDriver.getImageUrl(any())).thenReturn('');
+    when(() => fileStorageDriver.getFileUrl(any())).thenReturn('');
   });
 
   group('InboxScreenView', () {

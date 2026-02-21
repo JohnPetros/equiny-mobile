@@ -1,13 +1,11 @@
-import 'dart:io';
-
-import 'package:dio/dio.dart';
-import 'package:equiny/core/profiling/dtos/structures/image_dto.dart';
 import 'package:equiny/core/shared/constants/http_status_code.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/core/shared/types/json.dart';
+import 'package:equiny/core/storage/dtos/structures/attachment_dto.dart';
+import 'package:equiny/core/storage/dtos/structures/upload_url_dto.dart';
 import 'package:equiny/core/storage/interfaces/file_storage_service.dart'
     as file_storage_service;
-import 'package:equiny/rest/mappers/profiling/image_mapper.dart';
+import 'package:equiny/rest/mappers/storage/upload_url_mapper.dart';
 import 'package:equiny/rest/services/service.dart';
 
 class FileStorageService extends Service
@@ -15,41 +13,115 @@ class FileStorageService extends Service
   FileStorageService(super.restClient, super._cacheDriver);
 
   @override
-  Future<RestResponse<List<ImageDto>>> uploadImageFiles({
-    required List<File> files,
+  Future<RestResponse<List<UploadUrlDto>>> generateUploadUrlsForAttachments({
+    required List<AttachmentDto> attachments,
   }) async {
-    if (files.isEmpty) {
-      return RestResponse<List<ImageDto>>(
+    if (attachments.isEmpty) {
+      return RestResponse<List<UploadUrlDto>>(
         statusCode: HttpStatusCode.badRequest,
-        errorMessage: 'Nenhuma imagem foi informada para upload.',
+        errorMessage: 'Nenhum anexo foi informado para gerar URLs de upload.',
       );
     }
 
-    final FormData formData = FormData();
-    for (final File file in files) {
-      formData.files.add(
-        MapEntry<String, MultipartFile>(
-          'files',
-          await MultipartFile.fromFile(
-            file.path,
-            filename: file.uri.pathSegments.last,
-          ),
-        ),
-      );
-    }
+    super.setAuthHeader();
 
     final RestResponse<Json> response = await super.restClient.post(
-      '/storage/images/upload',
-      body: formData,
+      '/storage/upload/attachments',
+      body: <String, dynamic>{
+        'attachments': attachments
+            .map(
+              (AttachmentDto a) => <String, dynamic>{
+                'chat_id': a.chatId,
+                'message_id': a.messageId,
+                'attachment_id': a.attachmentId,
+                'file_kind': a.fileKind,
+                'file_name': a.fileName,
+              },
+            )
+            .toList(),
+      },
     );
 
     if (response.isFailure) {
-      return RestResponse<List<ImageDto>>(
+      return RestResponse<List<UploadUrlDto>>(
         statusCode: response.statusCode,
         errorMessage: response.errorMessage,
       );
     }
 
-    return response.mapBody(ImageMapper.toDtoList);
+    return response.mapBody(UploadUrlMapper.toDtoList);
+  }
+
+  @override
+  Future<RestResponse<List<UploadUrlDto>>> generateUploadUrlsForHorseGallery({
+    required String horseId,
+    required List<String> imagesNames,
+  }) async {
+    if (horseId.isEmpty) {
+      return RestResponse<List<UploadUrlDto>>(
+        statusCode: HttpStatusCode.badRequest,
+        errorMessage: 'O id do cavalo nao foi informado.',
+      );
+    }
+
+    if (imagesNames.isEmpty) {
+      return RestResponse<List<UploadUrlDto>>(
+        statusCode: HttpStatusCode.badRequest,
+        errorMessage:
+            'Nenhum nome de imagem foi informado para gerar URLs de upload.',
+      );
+    }
+
+    super.setAuthHeader();
+
+    final RestResponse<Json> response = await super.restClient.post(
+      '/storage/upload/horses/$horseId/gallery',
+      body: <String, dynamic>{'files_names': imagesNames},
+    );
+
+    if (response.isFailure) {
+      return RestResponse<List<UploadUrlDto>>(
+        statusCode: response.statusCode,
+        errorMessage: response.errorMessage,
+      );
+    }
+
+    return response.mapBody(UploadUrlMapper.toDtoList);
+  }
+
+  @override
+  Future<RestResponse<UploadUrlDto>> generateUploadUrlForOwnerAvatar({
+    required String ownerId,
+    required String fileName,
+  }) async {
+    if (ownerId.isEmpty) {
+      return RestResponse<UploadUrlDto>(
+        statusCode: HttpStatusCode.badRequest,
+        errorMessage: 'O id do dono nao foi informado.',
+      );
+    }
+
+    if (fileName.isEmpty) {
+      return RestResponse<UploadUrlDto>(
+        statusCode: HttpStatusCode.badRequest,
+        errorMessage: 'O nome do arquivo de avatar nao foi informado.',
+      );
+    }
+
+    super.setAuthHeader();
+
+    final RestResponse<Json> response = await super.restClient.post(
+      '/storage/upload/owners/$ownerId/avatar',
+      body: <String, dynamic>{'file_name': fileName},
+    );
+
+    if (response.isFailure) {
+      return RestResponse<UploadUrlDto>(
+        statusCode: response.statusCode,
+        errorMessage: response.errorMessage,
+      );
+    }
+
+    return response.mapBody(UploadUrlMapper.toDto);
   }
 }
