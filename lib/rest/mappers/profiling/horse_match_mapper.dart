@@ -24,18 +24,18 @@ class HorseMatchMapper {
         state: ownerLocation['state']?.toString() ?? '',
       ),
       isViewed: body['is_viewed'] as bool? ?? false,
-      createdAt: DateTime.tryParse(body['created_at']?.toString() ?? '') ??
+      createdAt:
+          DateTime.tryParse(body['created_at']?.toString() ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
     );
   }
 
   static List<HorseMatchDto> toDtoList(Json body) {
     final List<dynamic> rawList =
-        body['items'] as List<dynamic>? ?? body['data']?['items'] as List<dynamic>? ?? <dynamic>[];
+        body['items'] as List<dynamic>? ??
+        body['data']?['items'] as List<dynamic>? ??
+        <dynamic>[];
 
-    return rawList
-        .whereType<Json>()
-        .map(HorseMatchMapper.toDto)
-        .toList();
+    return rawList.whereType<Json>().map(HorseMatchMapper.toDto).toList();
   }
 }

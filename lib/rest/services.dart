@@ -1,4 +1,6 @@
 import 'package:equiny/core/auth/interfaces/auth_service.dart' as auth_service;
+import 'package:equiny/core/conversation/interfaces/conversation_service.dart'
+    as conversation_service;
 import 'package:equiny/core/matching/interfaces/matching_service.dart'
     as matching_service;
 import 'package:equiny/core/profiling/interfaces/profiling_service.dart'
@@ -7,6 +9,8 @@ import 'package:equiny/core/storage/interfaces/file_storage_service.dart'
     as file_storage_service;
 import 'package:equiny/rest/services/matching_service.dart'
     as matching_service_impl;
+import 'package:equiny/rest/services/conversation_service.dart'
+    as conversation_service_impl;
 import 'package:equiny/rest/services/auth_service.dart';
 import 'package:equiny/rest/services/profiling_service.dart'
     as profiling_service_impl;
@@ -43,6 +47,14 @@ final matchingServiceProvider = Provider<matching_service.MatchingService>((
     ref.watch(cacheDriverProvider),
   );
 });
+
+final conversationServiceProvider =
+    Provider<conversation_service.ConversationService>((ref) {
+      return conversation_service_impl.ConversationService(
+        ref.watch(restClientProvider),
+        ref.watch(cacheDriverProvider),
+      );
+    });
 
 final fileStorageServiceProvider =
     Provider<file_storage_service.FileStorageService>((ref) {

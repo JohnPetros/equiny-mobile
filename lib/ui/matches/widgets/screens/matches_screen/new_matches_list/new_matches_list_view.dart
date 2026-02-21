@@ -30,7 +30,10 @@ class NewMatchesListView extends StatelessWidget {
             separatorBuilder: (_, _) => const SizedBox(width: 12),
             itemBuilder: (BuildContext context, int index) {
               final HorseMatchDto item = items[index];
-              return NewMatchesListItem(item: item, onTap: () => onTapItem(item));
+              return NewMatchesListItem(
+                item: item,
+                onTap: () => onTapItem(item),
+              );
             },
           ),
         ),

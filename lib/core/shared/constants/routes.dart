@@ -6,6 +6,7 @@ class Routes {
   static const String feedHorseDetails = '/feed/horse-details';
   static const String home = feed;
   static const String matches = '/matches';
-  static const String conversations = '/conversations';
+  static const String inbox = '/inbox';
+  static const String chat = '/chat';
   static const String profile = '/profile';
 }

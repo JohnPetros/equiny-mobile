@@ -5,11 +5,12 @@ import 'package:equiny/core/shared/constants/cache_keys.dart';
 import 'package:equiny/core/profiling/dtos/structures/feed_horse_dto.dart';
 import 'package:equiny/drivers/cache-driver/index.dart';
 import 'package:equiny/shared/widgets/components/tab_navigation/index.dart';
-import 'package:equiny/ui/conversations/widgets/screens/conversations_screen/index.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/index.dart';
+import 'package:equiny/ui/conversation/widgets/screens/inbox_screen/index.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_in_screen/index.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/index.dart';
-import 'package:equiny/ui/feed/widgets/screens/feed_horse_details_screen/index.dart';
-import 'package:equiny/ui/feed/widgets/screens/feed_screen/index.dart';
+import 'package:equiny/ui/profiling/feed/widgets/screens/feed_horse_details_screen/index.dart';
+import 'package:equiny/ui/profiling/feed/widgets/screens/feed_screen/index.dart';
 import 'package:equiny/ui/matches/widgets/screens/matches_screen/index.dart';
 import 'package:equiny/rest/services.dart';
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/index.dart';
@@ -94,9 +95,9 @@ final routerProvider = Provider<GoRouter>((ref) {
             },
           ),
           GoRoute(
-            path: Routes.conversations,
+            path: Routes.inbox,
             builder: (BuildContext context, GoRouterState state) {
-              return const ConversationsScreen();
+              return const InboxScreen();
             },
           ),
           GoRoute(
@@ -116,6 +117,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           }
 
           return FeedHorseDetailsScreen(horse: extra);
+        },
+      ),
+      GoRoute(
+        path: Routes.chat,
+        builder: (BuildContext context, GoRouterState state) {
+          final Object? extra = state.extra;
+          final String chatId = extra is String ? extra : '';
+          return ChatScreen(chatId: chatId);
         },
       ),
     ],
