@@ -2,7 +2,7 @@
 title: Tela de Chat (Thread de Conversa)
 prd: documentation/features/conversation/chat-screen/prd.md
 status: em progresso
-last_updated_at: 2026-02-21
+last_updated_at: 2026-02-22
 ---
 
 # 1. Objetivo
@@ -390,3 +390,57 @@ ChatScreen
 - Definir contrato exato do endpoint de mensagens paginadas (`path`, `queryParams`, formato de cursor) no `Equiny Server` para implementar `fetchMessagesList` sem divergencia.
 - Definir payload oficial do `WebSocket` (evento de entrada/saida, shape do JSON) para mapear `MessageMapper` sem inferencia.
 - Definir estrategia de fallback para subtitle quando `isOnline = false` e nao houver `lastPresenceAt` no `RecipientDto` (ex.: `Visto recentemente`).
+
+# 10. Consolidacao da implementacao
+
+## 10.1 Status geral
+
+- Status da spec: **em progresso**.
+- Implementacao principal da thread de `chat` foi aplicada em `ui`, `core`, `rest` e `websocket`.
+- Fluxo base operacional previsto: abrir por `chatId` -> carregar chat -> carregar mensagens paginadas -> conectar socket -> enviar/receber mensagem.
+
+## 10.2 Verificacao de qualidade
+
+- `dart format .`: executado em todo o projeto.
+- `flutter analyze`: executado; sem `warning`/`error` (restaram apenas 2 `info` preexistentes sobre `print` em arquivos fora do escopo desta spec).
+- `flutter test`: executado; **falhou** em suite de `profile_horse_tab` por `NotInitializedError` de `DotEnv` em `GallerySlotView` (fora do escopo da feature de chat).
+- Diretrizes de codigo verificadas contra `documentation/guidelines/code-conventions-guidelines.md` e `documentation/rules/code-conventions-rules.md`.
+
+## 10.3 Checklist de requisitos (spec x codigo)
+
+- **RF-01 a RF-08:** implementados no fluxo de tela/presenter/canal.
+- **RF-09 e RF-10:** estado vazio e sugestoes rapidas implementados.
+- **RF-11:** `fetchOwnerPresence` implementado e integrado no header.
+- **RF-12:** botao de anexos visivel e desabilitado no `chat_input_bar`.
+- Agrupamento por data e separadores (`HOJE`, `ONTEM`, `DD DE <MES>`) aplicado.
+- Caminho do channel aplicado em `lib/websocket/wsc/channels/conversation/wsc_chat_channel.dart` com `web_socket_channel`.
+
+## 10.4 PRD/milestone
+
+- PRD remoto (milestone `https://github.com/JohnPetros/equiny/milestone/9`) foi lido via `gh`.
+- Nao foi necessario atualizar milestone neste ciclo, pois as decisoes finais ficaram refletidas na spec tecnica local.
+
+## 10.5 Fluxo final consolidado (ASCII)
+
+```ASCII
+ChatScreenView
+  -> ChatScreenPresenter.init(chatId)
+    -> ConversationService.fetchChat(chatId)
+    -> ConversationService.fetchMessagesList(chatId, limit, cursor)
+    -> ProfilingService.fetchOwnerPresence(ownerId)
+    -> ChatChannel.connect("{EQUINY_SERVICE_URL}/conversation/{chatId}?token=<access_token>")
+    -> ChatChannel.listen(onMessageReceived)
+
+Nova mensagem
+  InputBar.onSend
+    -> ChatScreenPresenter.sendMessage
+      -> ChatChannel.sendMessage(MessageDto)
+      -> websocket server
+      -> evento recebido -> presenter._onMessageReceived -> UI atualiza
+
+Historico antigo
+  ChatMessagesList.onReachTop
+    -> ChatScreenPresenter.loadMoreMessages
+      -> ConversationService.fetchMessagesList(cursor)
+      -> merge + dedupe + sort
+```
