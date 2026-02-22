@@ -4,9 +4,11 @@ import 'package:equiny/core/profiling/dtos/structures/image_dto.dart';
 class HorseMatchDto {
   final String ownerId;
   final String ownerName;
-  final String ownerHorseId;
   final ImageDto? ownerAvatar;
   final LocationDto ownerLocation;
+  final String ownerHorseId;
+  final String ownerHorseName;
+  final ImageDto? ownerHorseImage;
   final bool isViewed;
   final DateTime createdAt;
 
@@ -14,8 +16,10 @@ class HorseMatchDto {
     required this.ownerId,
     required this.ownerName,
     required this.ownerAvatar,
-    required this.ownerHorseId,
     required this.ownerLocation,
+    required this.ownerHorseId,
+    required this.ownerHorseName,
+    required this.ownerHorseImage,
     required this.isViewed,
     required this.createdAt,
   });
