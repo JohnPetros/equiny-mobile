@@ -72,9 +72,9 @@ class GallerySlotView extends ConsumerWidget {
 
     final image = presenter.getImage(slotIndex: slotIndex, images: images);
 
-    final imageUrl = presenter.getImageUrl(
+    final imageUrl = presenter.getFileUrl(
       image: image,
-      getUrlFromKey: fileStorageDriver.getImageUrl,
+      getUrlFromKey: fileStorageDriver.getFileUrl,
     );
 
     final isPrimary = presenter.isPrimary(slotIndex: slotIndex);

@@ -34,7 +34,7 @@ class InboxChatListItemView extends ConsumerWidget {
         : 'Sem nome';
     final String avatarUrl = chat.recipient.avatar?.key.trim().isEmpty ?? true
         ? ''
-        : fileStorageDriver.getImageUrl(chat.recipient.avatar?.key ?? '');
+        : fileStorageDriver.getFileUrl(chat.recipient.avatar?.key ?? '');
     final String initials = screenPresenter.buildRecipientInitials(
       recipientName,
     );

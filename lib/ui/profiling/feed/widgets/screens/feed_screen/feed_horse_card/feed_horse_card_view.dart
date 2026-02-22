@@ -221,7 +221,7 @@ class _FeedHorseCardViewState extends State<FeedHorseCardView> {
 
   List<String> _horseImageUrls() {
     return widget.horse.imageUrls
-        .map(_presenter.getImageUrl)
+        .map(_presenter.getFileUrl)
         .where((String url) => url.trim().isNotEmpty)
         .toList(growable: false);
   }

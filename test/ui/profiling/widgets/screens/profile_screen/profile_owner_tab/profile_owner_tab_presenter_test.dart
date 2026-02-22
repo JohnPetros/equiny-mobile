@@ -1,6 +1,9 @@
 import 'package:equiny/core/profiling/dtos/entities/owner_dto.dart';
 import 'package:equiny/core/profiling/interfaces/profiling_service.dart';
+import 'package:equiny/core/shared/interfaces/media_picker_driver.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
+import 'package:equiny/core/storage/interfaces/file_storage_driver.dart';
+import 'package:equiny/core/storage/interfaces/file_storage_service.dart';
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_owner_tab/profile_owner_form_section/profile_owner_form_section_presenter.dart';
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_owner_tab/profile_owner_tab_presenter.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,8 +13,17 @@ import '../../../../../../fakers/profiling/owner_faker.dart';
 
 class MockProfilingService extends Mock implements ProfilingService {}
 
+class MockFileStorageService extends Mock implements FileStorageService {}
+
+class MockFileStorageDriver extends Mock implements FileStorageDriver {}
+
+class MockMediaPickerDriver extends Mock implements MediaPickerDriver {}
+
 void main() {
   late MockProfilingService profilingService;
+  late MockFileStorageService fileStorageService;
+  late MockFileStorageDriver fileStorageDriver;
+  late MockMediaPickerDriver mediaPickerDriver;
   late ProfileOwnerTabPresenter presenter;
 
   setUpAll(() {
@@ -20,8 +32,14 @@ void main() {
 
   setUp(() {
     profilingService = MockProfilingService();
+    fileStorageService = MockFileStorageService();
+    fileStorageDriver = MockFileStorageDriver();
+    mediaPickerDriver = MockMediaPickerDriver();
     presenter = ProfileOwnerTabPresenter(
       profilingService,
+      fileStorageService,
+      fileStorageDriver,
+      mediaPickerDriver,
       ProfileOwnerFormSectionPresenter(),
     );
   });

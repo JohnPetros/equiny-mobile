@@ -115,6 +115,14 @@ class ProfileScreenView extends ConsumerWidget {
                               isLoading: ownerTabPresenter.isLoadingOwner.value,
                               generalError:
                                   ownerTabPresenter.generalError.value,
+                              avatarUrl: ownerTabPresenter.ownerAvatarUrl.value,
+                              isUploadingAvatar:
+                                  ownerTabPresenter.isUploadingAvatar.value,
+                              avatarError: ownerTabPresenter.avatarError.value,
+                              onPickAvatar:
+                                  ownerTabPresenter.pickAndUploadAvatar,
+                              onReplaceAvatar: ownerTabPresenter.replaceAvatar,
+                              onRemoveAvatar: ownerTabPresenter.removeAvatar,
                             ),
                     ),
                   ],
