@@ -3,15 +3,33 @@ import 'dart:convert';
 
 import 'package:equiny/core/conversation/dtos/entities/message_dto.dart';
 import 'package:equiny/core/conversation/interfaces/chat_channel.dart';
+import 'package:equiny/core/shared/constants/cache_keys.dart';
+import 'package:equiny/core/shared/constants/env_keys.dart';
+import 'package:equiny/core/shared/interfaces/cache_driver.dart';
+import 'package:equiny/core/shared/interfaces/env_driver.dart';
 import 'package:equiny/rest/mappers/conversation/message_mapper.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class WscChatChannel extends ChatChannel {
   WebSocketChannel? _channel;
   StreamSubscription<dynamic>? _subscription;
+  final EnvDriver _envDriver;
+  final CacheDriver _cacheDriver;
+
+  WscChatChannel(this._envDriver, this._cacheDriver);
 
   @override
-  Future<void> connect(Uri uri) async {
+  Future<void> connect(String chatId) async {
+    final token = _cacheDriver.get(CacheKeys.accessToken) ?? '';
+    final ownerId = _cacheDriver.get(CacheKeys.ownerId) ?? '';
+    final url = Uri.parse(_envDriver.get(EnvKeys.equinyRestServiceUrl));
+    final uri = Uri(
+      scheme: 'ws',
+      host: url.host,
+      port: url.port,
+      path: '/conversation/chats/$chatId/$ownerId',
+      queryParameters: {'token': token},
+    );
     _channel = WebSocketChannel.connect(uri);
   }
 
