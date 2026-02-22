@@ -1,6 +1,7 @@
 import 'package:equiny/core/profiling/dtos/structures/feed_horse_dto.dart';
 import 'package:equiny/core/profiling/dtos/entities/horse_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/gallery_dto.dart';
+import 'package:equiny/core/profiling/dtos/structures/owner_presence_dto.dart';
 import 'package:equiny/core/profiling/dtos/entities/owner_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/age_range_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
@@ -36,6 +37,31 @@ class ProfilingService extends Service
     }
 
     return response.mapBody(OwnerMapper.toDto);
+  }
+
+  @override
+  Future<RestResponse<OwnerPresenceDto>> fetchOwnerPresence({
+    required String ownerId,
+  }) async {
+    super.setAuthHeader();
+    final RestResponse<Json> response = await super.restClient.get(
+      '/profiling/owners/$ownerId/presence',
+    );
+
+    if (response.isFailure) {
+      return RestResponse<OwnerPresenceDto>(
+        statusCode: response.statusCode,
+        errorMessage: response.errorMessage,
+      );
+    }
+
+    return response.mapBody((Json body) {
+      final Json data = body['data'] as Json? ?? body;
+      return OwnerPresenceDto(
+        ownerId: data['owner_id']?.toString() ?? ownerId,
+        isOnline: data['is_online'] as bool? ?? false,
+      );
+    });
   }
 
   @override
