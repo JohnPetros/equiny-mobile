@@ -1,32 +1,70 @@
-import 'package:equiny/core/shared/constants/routes.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_error_state/index.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_header/index.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_input_bar/index.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_loading_state/index.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_messages_list/index.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_empty_state/index.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_screen_presenter.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signals_flutter/signals_flutter.dart';
 
-class ChatScreenView extends StatelessWidget {
+class ChatScreenView extends ConsumerWidget {
   final String chatId;
 
   const ChatScreenView({required this.chatId, super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ChatScreenPresenter presenter = ref.watch(
+      chatScreenPresenterProvider(chatId),
+    );
+
     return Scaffold(
       backgroundColor: AppThemeColors.background,
-      appBar: AppBar(
-        backgroundColor: AppThemeColors.background,
-        title: const Text('Chat'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            context.go(Routes.inbox);
-          },
-        ),
-      ),
-      body: Center(
-        child: Text(
-          'Thread $chatId',
-          style: const TextStyle(color: AppThemeColors.textSecondary),
-        ),
+      body: SafeArea(
+        child: Watch((BuildContext context) {
+          if (presenter.isLoadingInitial.value) {
+            return const ChatLoadingState();
+          }
+
+          if (presenter.errorMessage.value != null && presenter.chat.value == null) {
+            return ChatErrorState(
+              message: presenter.errorMessage.value ?? 'Erro ao carregar conversa.',
+              onRetry: presenter.retry,
+            );
+          }
+
+          return Column(
+            children: <Widget>[
+              ChatHeader(
+                recipientName: presenter.resolveRecipientName(),
+                recipientAvatarUrl: presenter.resolveRecipientAvatarUrl(),
+                subtitle: presenter.headerSubtitle.value,
+                onBack: presenter.onBack,
+                onOpenProfile: () {},
+              ),
+              Expanded(
+                child: presenter.showEmptyState.value
+                    ? ChatEmptyState(onSuggestionTap: presenter.sendSuggestedMessage)
+                    : ChatMessagesList(
+                        sections: presenter.groupedMessages.value,
+                        isLoadingMore: presenter.isLoadingMore.value,
+                        onReachTop: presenter.loadMoreMessages,
+                        isMine: presenter.isMine,
+                        formatTime: presenter.formatMessageHour,
+                      ),
+              ),
+              ChatInputBar(
+                draft: presenter.draft.value,
+                isSending: presenter.isSending.value,
+                onChanged: presenter.onDraftChanged,
+                onSend: presenter.sendMessage,
+              ),
+            ],
+          );
+        }),
       ),
     );
   }
