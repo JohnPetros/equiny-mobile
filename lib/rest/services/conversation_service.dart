@@ -48,6 +48,34 @@ class ConversationService extends Service
   }
 
   @override
+  Future<RestResponse<ChatDto>> createChat({
+    required String recipientId,
+    required String senderId,
+    required String recipientHorseId,
+    required String senderHorseId,
+  }) async {
+    super.setAuthHeader();
+    final RestResponse<Json> response = await super.restClient.post(
+      '/conversation/chats/',
+      body: <String, dynamic>{
+        'recipient_id': recipientId,
+        'sender_id': senderId,
+        'recipient_horse_id': recipientHorseId,
+        'sender_horse_id': senderHorseId,
+      },
+    );
+
+    if (response.isFailure) {
+      return RestResponse<ChatDto>(
+        statusCode: response.statusCode,
+        errorMessage: response.errorMessage,
+      );
+    }
+
+    return response.mapBody(ChatMapper.toDto);
+  }
+
+  @override
   Future<RestResponse<PaginationResponse<MessageDto>>> fetchMessagesList({
     required String chatId,
     required int limit,
