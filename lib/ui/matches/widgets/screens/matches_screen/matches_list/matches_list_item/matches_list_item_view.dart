@@ -26,64 +26,132 @@ class MatchesListItemView extends ConsumerWidget {
     final FileStorageDriver fileStorageDriver = ref.read(
       fileStorageDriverProvider,
     );
-    final String avatarUrl = item.ownerAvatar?.key.trim().isEmpty ?? true
+    final String horseImageUrl =
+        item.ownerHorseImage?.key.trim().isEmpty ?? true
+        ? ''
+        : fileStorageDriver.getFileUrl(item.ownerHorseImage?.key ?? '');
+
+    final String ownerAvatarUrl = item.ownerAvatar?.key.trim().isEmpty ?? true
         ? ''
         : fileStorageDriver.getFileUrl(item.ownerAvatar?.key ?? '');
 
+    final String locationText =
+        '${item.ownerLocation.city}, ${item.ownerLocation.state}';
+
     Widget itemContent = InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Ink(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppThemeColors.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppThemeColors.border),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
         ),
         child: Row(
           children: <Widget>[
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: AppThemeColors.backgroundAlt,
-              backgroundImage: avatarUrl.isEmpty
-                  ? null
-                  : NetworkImage(avatarUrl),
-              child: avatarUrl.isEmpty
-                  ? Text(
-                      presenter.buildOwnerInitials(item.ownerName),
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    )
-                  : null,
+            SizedBox(
+              width: 64,
+              height: 64,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: <Widget>[
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: AppThemeColors.surface,
+                    backgroundImage: horseImageUrl.isEmpty
+                        ? null
+                        : NetworkImage(horseImageUrl),
+                    child: horseImageUrl.isEmpty
+                        ? Text(
+                            presenter.buildOwnerInitials(item.ownerHorseName),
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          )
+                        : null,
+                  ),
+                  Positioned(
+                    bottom: -4,
+                    left: -4,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppThemeColors.background,
+                          width: 2,
+                        ),
+                      ),
+                      child: CircleAvatar(
+                        radius: 13,
+                        backgroundColor: AppThemeColors.backgroundAlt,
+                        backgroundImage: ownerAvatarUrl.isEmpty
+                            ? null
+                            : NetworkImage(ownerAvatarUrl),
+                        child: ownerAvatarUrl.isEmpty
+                            ? Text(
+                                presenter.buildOwnerInitials(item.ownerName),
+                                style: const TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              )
+                            : null,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
+                  Text(
+                    item.ownerHorseName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppThemeColors.textMain,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
                   Row(
                     children: <Widget>[
+                      Text(
+                        item.ownerName,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppThemeColors.textSecondary,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.location_on,
+                        size: 12,
+                        color: AppThemeColors.textSecondary,
+                      ),
+                      const SizedBox(width: 2),
                       Expanded(
                         child: Text(
-                          item.ownerName,
+                          locationText,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
+                            color: AppThemeColors.textSecondary,
+                            fontSize: 12,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    presenter.formatRelativeTime(item.createdAt),
-                    style: const TextStyle(
-                      color: AppThemeColors.textSecondary,
-                      fontSize: 12,
-                    ),
-                  ),
                 ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              presenter.formatRelativeTime(item.createdAt),
+              style: const TextStyle(
+                color: AppThemeColors.textSecondary,
+                fontSize: 12,
               ),
             ),
           ],

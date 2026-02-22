@@ -6,11 +6,13 @@ class MessageBubbleView extends StatelessWidget {
   final String message;
   final bool isMine;
   final String timeLabel;
+  final bool isReadByRecipient;
 
   const MessageBubbleView({
     required this.message,
     required this.isMine,
     required this.timeLabel,
+    required this.isReadByRecipient,
     super.key,
   });
 
@@ -28,22 +30,42 @@ class MessageBubbleView extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
-            Text(
-              message,
-              style: TextStyle(
-                color: presenter.textColor(isMine),
-                fontSize: AppFontSize.sm,
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                message,
+                style: TextStyle(
+                  color: presenter.textColor(isMine),
+                  fontSize: AppFontSize.sm,
+                ),
               ),
             ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              timeLabel,
-              style: const TextStyle(
-                color: AppThemeColors.textSecondary,
-                fontSize: AppFontSize.xxs,
-              ),
+            const SizedBox(height: 2),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  timeLabel,
+                  style: TextStyle(
+                    color: isMine
+                        ? AppThemeColors.border
+                        : AppThemeColors.textSecondary,
+                    fontSize: AppFontSize.xxs,
+                  ),
+                ),
+                if (isMine) ...[
+                  const SizedBox(width: 4),
+                  Icon(
+                    isReadByRecipient ? Icons.done_all : Icons.done,
+                    size: AppFontSize.xs,
+                    color: isReadByRecipient
+                        ? AppThemeColors.border
+                        : AppThemeColors.border,
+                  ),
+                ],
+              ],
             ),
           ],
         ),

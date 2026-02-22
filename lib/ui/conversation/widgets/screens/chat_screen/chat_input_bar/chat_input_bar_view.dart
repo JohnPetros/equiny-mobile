@@ -33,7 +33,9 @@ class _ChatInputBarViewState extends State<ChatInputBarView> {
     super.didUpdateWidget(oldWidget);
     if (_controller.text != widget.draft) {
       _controller.text = widget.draft;
-      _controller.selection = TextSelection.collapsed(offset: _controller.text.length);
+      _controller.selection = TextSelection.collapsed(
+        offset: _controller.text.length,
+      );
     }
   }
 
@@ -53,15 +55,13 @@ class _ChatInputBarViewState extends State<ChatInputBarView> {
       ),
       child: Row(
         children: <Widget>[
-          IconButton(
-            onPressed: null,
-            icon: const Icon(Icons.add_circle_outline),
-          ),
           Expanded(
             child: TextField(
               controller: _controller,
               onChanged: widget.onChanged,
-              decoration: const InputDecoration(hintText: 'Digite uma mensagem'),
+              decoration: const InputDecoration(
+                hintText: 'Digite uma mensagem',
+              ),
             ),
           ),
           const SizedBox(width: AppSpacing.xs),

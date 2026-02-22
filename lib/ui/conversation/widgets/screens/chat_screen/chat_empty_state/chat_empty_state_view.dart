@@ -20,11 +20,17 @@ class ChatEmptyStateView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Icon(Icons.chat_bubble_outline, color: AppThemeColors.textSecondary),
+            const Icon(
+              Icons.chat_bubble_outline,
+              color: AppThemeColors.textSecondary,
+            ),
             const SizedBox(height: AppSpacing.md),
             const Text(
               'Inicie a conversa',
-              style: TextStyle(color: AppThemeColors.textMain, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                color: AppThemeColors.textMain,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(height: AppSpacing.xs),
             const Text(
@@ -37,7 +43,10 @@ class ChatEmptyStateView extends StatelessWidget {
               spacing: AppSpacing.xs,
               runSpacing: AppSpacing.xs,
               children: suggestions.map((String text) {
-                return ActionChip(label: Text(text), onPressed: () => onSuggestionTap(text));
+                return ActionChip(
+                  label: Text(text),
+                  onPressed: () => onSuggestionTap(text),
+                );
               }).toList(),
             ),
           ],

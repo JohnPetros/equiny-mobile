@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:equiny/core/conversation/interfaces/conversation_service.dart';
 import 'package:equiny/core/matching/interfaces/matching_service.dart';
 import 'package:equiny/core/profiling/dtos/entities/horse_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/horse_match_dto.dart';
@@ -15,6 +16,7 @@ class MatchesScreenPresenter {
   final ProfilingService _profilingService;
   final MatchingService _matchingService;
   final NavigationDriver _navigationDriver;
+  final ConversationService _conversationService;
 
   final Signal<List<HorseMatchDto>> matches = signal(<HorseMatchDto>[]);
   final Signal<bool> isLoadingInitial = signal(false);
@@ -33,6 +35,7 @@ class MatchesScreenPresenter {
     this._profilingService,
     this._matchingService,
     this._navigationDriver,
+    this._conversationService,
   ) {
     newMatches = computed(() {
       final List<HorseMatchDto> items = matches.value
@@ -150,6 +153,8 @@ class MatchesScreenPresenter {
             ownerName: item.ownerName,
             ownerAvatar: item.ownerAvatar,
             ownerHorseId: item.ownerHorseId,
+            ownerHorseName: item.ownerHorseName,
+            ownerHorseImage: item.ownerHorseImage,
             ownerLocation: item.ownerLocation,
             isViewed: true,
             createdAt: item.createdAt,
@@ -172,7 +177,77 @@ class MatchesScreenPresenter {
   }
 
   Future<void> handleTapSendMessage() async {
-    await _viewMatchAndNavigateTo(Routes.inbox);
+    final HorseMatchDto? match = selectedMatch.value;
+    final String horseId = activeHorseId.value ?? '';
+    if (match == null || horseId.isEmpty) {
+      closeMatchOptions();
+      return;
+    }
+
+    if (!match.isViewed) {
+      final response = await _profilingService.viewHorseMatch(
+        fromHorseId: horseId,
+        toHorseId: match.ownerHorseId,
+      );
+
+      if (response.isSuccessful) {
+        matches.value = matches.value.map((HorseMatchDto item) {
+          if (item.ownerHorseId != match.ownerHorseId) {
+            return item;
+          }
+
+          return HorseMatchDto(
+            ownerId: item.ownerId,
+            ownerName: item.ownerName,
+            ownerAvatar: item.ownerAvatar,
+            ownerHorseId: item.ownerHorseId,
+            ownerHorseName: item.ownerHorseName,
+            ownerHorseImage: item.ownerHorseImage,
+            ownerLocation: item.ownerLocation,
+            isViewed: true,
+            createdAt: item.createdAt,
+          );
+        }).toList()..sort(_sortByCreatedAtDesc);
+      }
+
+      if (response.isFailure) {
+        errorMessage.value = response.errorMessage;
+        return;
+      }
+    }
+
+    final ownerResponse = await _profilingService.fetchOwner();
+    if (ownerResponse.isFailure) {
+      errorMessage.value = ownerResponse.errorMessage;
+      return;
+    }
+
+    final String senderId = ownerResponse.body.id ?? '';
+    if (senderId.isEmpty) {
+      errorMessage.value = 'Não foi possível identificar o usuário.';
+      return;
+    }
+
+    final chatResponse = await _conversationService.createChat(
+      recipientId: match.ownerId,
+      senderId: senderId,
+      recipientHorseId: match.ownerHorseId,
+      senderHorseId: horseId,
+    );
+
+    if (chatResponse.isFailure) {
+      errorMessage.value = chatResponse.errorMessage;
+      return;
+    }
+
+    final String chatId = chatResponse.body.id ?? '';
+    if (chatId.isEmpty) {
+      errorMessage.value = 'Não foi possível abrir o chat.';
+      return;
+    }
+
+    closeMatchOptions();
+    _navigationDriver.goTo(Routes.chat, data: chatId);
   }
 
   void goToFeed() {
@@ -212,6 +287,7 @@ final matchesScreenPresenterProvider =
         ref.watch(profilingServiceProvider),
         ref.watch(matchingServiceProvider),
         ref.watch(navigationDriverProvider),
+        ref.watch(conversationServiceProvider),
       );
       presenter.init();
       return presenter;

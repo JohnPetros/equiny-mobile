@@ -6,18 +6,15 @@ import 'package:equiny/core/conversation/dtos/structures/chat_date_section_dto.d
 import 'package:equiny/core/conversation/interfaces/chat_channel.dart';
 import 'package:equiny/core/conversation/interfaces/conversation_service.dart';
 import 'package:equiny/core/profiling/interfaces/profiling_service.dart';
-import 'package:equiny/core/shared/constants/cache_keys.dart';
 import 'package:equiny/core/shared/constants/routes.dart';
 import 'package:equiny/core/shared/interfaces/cache_driver.dart';
-import 'package:equiny/core/shared/interfaces/env_driver.dart';
 import 'package:equiny/core/shared/interfaces/navigation_driver.dart';
 import 'package:equiny/core/storage/interfaces/file_storage_driver.dart';
 import 'package:equiny/drivers/cache-driver/index.dart';
-import 'package:equiny/drivers/env-driver/index.dart';
 import 'package:equiny/drivers/file-storage-driver/index.dart';
 import 'package:equiny/drivers/navigation-driver/index.dart';
 import 'package:equiny/rest/services.dart';
-import 'package:equiny/websocket/wsc/channels/conversation/index.dart';
+import 'package:equiny/websocket/channels.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signals/signals.dart';
 
@@ -28,7 +25,6 @@ class ChatScreenPresenter {
   final ProfilingService _profilingService;
   final NavigationDriver _navigationDriver;
   final CacheDriver _cacheDriver;
-  final EnvDriver _envDriver;
   final FileStorageDriver _fileStorageDriver;
 
   static const int _pageSize = 30;
@@ -58,18 +54,23 @@ class ChatScreenPresenter {
     this._profilingService,
     this._navigationDriver,
     this._cacheDriver,
-    this._envDriver,
     this._fileStorageDriver,
   ) {
     hasMessages = computed(() => messages.value.isNotEmpty);
     showEmptyState = computed(
-      () => !isLoadingInitial.value && errorMessage.value == null && !hasMessages.value,
+      () =>
+          !isLoadingInitial.value &&
+          errorMessage.value == null &&
+          !hasMessages.value,
     );
     canLoadMore = computed(() {
       return !isLoadingMore.value && (nextCursor.value ?? '').isNotEmpty;
     });
     canSend = computed(
-      () => !isSending.value && draft.value.trim().isNotEmpty && isSocketConnected.value,
+      () =>
+          !isSending.value &&
+          draft.value.trim().isNotEmpty &&
+          isSocketConnected.value,
     );
     groupedMessages = computed(_buildGroupedMessages);
     headerSubtitle = computed(() {
@@ -100,7 +101,7 @@ class ChatScreenPresenter {
 
     await loadInitialMessages();
     await refreshPresence();
-    await connectSocket();
+    await connectChannel();
     isLoadingInitial.value = false;
   }
 
@@ -153,16 +154,8 @@ class ChatScreenPresenter {
     nextCursor.value = response.body.nextCursor;
   }
 
-  Future<void> connectSocket() async {
-    final String baseUrl = _envDriver.get('EQUINY_SERVICE_URL');
-    final String token = _cacheDriver.get(CacheKeys.accessToken) ?? '';
-    final String wsBaseUrl = baseUrl
-        .replaceFirst('https://', 'wss://')
-        .replaceFirst('http://', 'ws://');
-
-    await _chatChannel.connect(
-      Uri.parse('$wsBaseUrl/conversation/$_chatId?token=$token'),
-    );
+  Future<void> connectChannel() async {
+    await _chatChannel.connect(_chatId);
 
     _chatChannel.listen(
       onMessageReceived: _onMessageReceived,
@@ -177,7 +170,7 @@ class ChatScreenPresenter {
     isSocketConnected.value = true;
   }
 
-  Future<void> disconnectSocket() async {
+  Future<void> disconnectChannel() async {
     await _chatChannel.disconnect();
     isSocketConnected.value = false;
   }
@@ -207,7 +200,6 @@ class ChatScreenPresenter {
     );
 
     await _chatChannel.sendMessage(message);
-    messages.value = _sortAndDedupe(<MessageDto>[...messages.value, message]);
     draft.value = '';
     isSending.value = false;
   }
@@ -223,7 +215,9 @@ class ChatScreenPresenter {
       return;
     }
 
-    final response = await _profilingService.fetchOwnerPresence(ownerId: ownerId);
+    final response = await _profilingService.fetchOwnerPresence(
+      ownerId: ownerId,
+    );
     if (response.isFailure) {
       return;
     }
@@ -249,7 +243,7 @@ class ChatScreenPresenter {
     if (key.isEmpty) {
       return '';
     }
-    return _fileStorageDriver.getImageUrl(key);
+    return _fileStorageDriver.getFileUrl(key);
   }
 
   String resolveRecipientName() {
@@ -281,7 +275,9 @@ class ChatScreenPresenter {
         message.sentAt.month,
         message.sentAt.day,
       );
-      grouped.putIfAbsent(date.toIso8601String(), () => <MessageDto>[]).add(message);
+      grouped
+          .putIfAbsent(date.toIso8601String(), () => <MessageDto>[])
+          .add(message);
     }
 
     final List<DateTime> dates = grouped.keys.map(DateTime.parse).toList()
@@ -300,7 +296,8 @@ class ChatScreenPresenter {
   List<MessageDto> _sortAndDedupe(List<MessageDto> items) {
     final Map<String, MessageDto> byKey = <String, MessageDto>{};
     for (final message in items) {
-      final String key = message.id ??
+      final String key =
+          message.id ??
           '${message.senderId}_${message.receiverId}_${message.sentAt.toIso8601String()}_${message.content}';
       byKey[key] = message;
     }
@@ -355,20 +352,19 @@ class ChatScreenPresenter {
   }
 }
 
-final chatScreenPresenterProvider =
-    Provider.autoDispose.family<ChatScreenPresenter, String>((ref, chatId) {
+final chatScreenPresenterProvider = Provider.autoDispose
+    .family<ChatScreenPresenter, String>((ref, chatId) {
       final presenter = ChatScreenPresenter(
         chatId,
         ref.watch(conversationServiceProvider),
-        ref.watch(wscChatChannelProvider(chatId)),
+        ref.watch(chatChannelProvider),
         ref.watch(profilingServiceProvider),
         ref.watch(navigationDriverProvider),
         ref.watch(cacheDriverProvider),
-        ref.watch(envDriverProvider),
         ref.watch(fileStorageDriverProvider),
       );
       ref.onDispose(() {
-        unawaited(presenter.disconnectSocket());
+        unawaited(presenter.disconnectChannel());
       });
       presenter.init();
       return presenter;

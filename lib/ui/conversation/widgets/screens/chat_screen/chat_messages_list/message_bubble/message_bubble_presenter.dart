@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 
 class MessageBubblePresenter {
   Color bubbleBackground(bool isMine) {
-    return isMine ? AppThemeColors.primaryDark : AppThemeColors.surface;
+    return isMine ? AppThemeColors.primary : AppThemeColors.surface;
   }
 
   Color textColor(bool isMine) {
-    return isMine ? AppThemeColors.textMain : AppThemeColors.textSecondary;
+    return isMine ? AppThemeColors.border : AppThemeColors.textSecondary;
   }
 }

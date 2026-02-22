@@ -27,7 +27,10 @@ class ChatErrorStateView extends StatelessWidget {
               style: const TextStyle(color: AppThemeColors.textSecondary),
             ),
             const SizedBox(height: AppSpacing.md),
-            ElevatedButton(onPressed: onRetry, child: const Text('Tentar novamente')),
+            ElevatedButton(
+              onPressed: onRetry,
+              child: const Text('Tentar novamente'),
+            ),
           ],
         ),
       ),

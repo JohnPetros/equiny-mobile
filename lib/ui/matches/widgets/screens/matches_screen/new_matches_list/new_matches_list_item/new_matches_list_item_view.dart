@@ -24,7 +24,13 @@ class NewMatchesListItemView extends ConsumerWidget {
     final NewMatchesListItemPresenter presenter = ref.read(
       newMatchesListItemPresenterProvider,
     );
-    final String avatarUrl = item.ownerAvatar?.key.trim().isEmpty ?? true
+
+    final String horseImageUrl =
+        item.ownerHorseImage?.key.trim().isEmpty ?? true
+        ? ''
+        : fileStorageDriver.getFileUrl(item.ownerHorseImage?.key ?? '');
+
+    final String ownerAvatarUrl = item.ownerAvatar?.key.trim().isEmpty ?? true
         ? ''
         : fileStorageDriver.getFileUrl(item.ownerAvatar?.key ?? '');
 
@@ -33,23 +39,64 @@ class NewMatchesListItemView extends ConsumerWidget {
       child: SizedBox(
         width: 84,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            CircleAvatar(
-              radius: 28,
-              backgroundColor: AppThemeColors.surface,
-              backgroundImage: avatarUrl.isEmpty
-                  ? null
-                  : NetworkImage(avatarUrl),
-              child: avatarUrl.isEmpty
-                  ? Text(
-                      presenter.buildOwnerInitials(item.ownerName),
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    )
-                  : null,
+            SizedBox(
+              width: 72,
+              height: 72,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: <Widget>[
+                  // Horse image (large circle)
+                  CircleAvatar(
+                    radius: 34,
+                    backgroundColor: AppThemeColors.surface,
+                    backgroundImage: horseImageUrl.isEmpty
+                        ? null
+                        : NetworkImage(horseImageUrl),
+                    child: horseImageUrl.isEmpty
+                        ? Text(
+                            presenter.buildOwnerInitials(item.ownerHorseName),
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          )
+                        : null,
+                  ),
+                  // Owner avatar (small circle, bottom-left overlapping)
+                  Positioned(
+                    bottom: -4,
+                    left: -4,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppThemeColors.background,
+                          width: 2,
+                        ),
+                      ),
+                      child: CircleAvatar(
+                        radius: 14,
+                        backgroundColor: AppThemeColors.backgroundAlt,
+                        backgroundImage: ownerAvatarUrl.isEmpty
+                            ? null
+                            : NetworkImage(ownerAvatarUrl),
+                        child: ownerAvatarUrl.isEmpty
+                            ? Text(
+                                presenter.buildOwnerInitials(item.ownerName),
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              )
+                            : null,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Text(
-              item.ownerName,
+              item.ownerHorseName,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),

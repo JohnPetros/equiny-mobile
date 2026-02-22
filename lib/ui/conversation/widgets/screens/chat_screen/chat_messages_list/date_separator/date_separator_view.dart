@@ -15,8 +15,8 @@ class DateSeparatorView extends StatelessWidget {
       child: Center(
         child: Container(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.sm,
-            vertical: AppSpacing.xs,
+            horizontal: AppSpacing.xs,
+            vertical: AppSpacing.xxs,
           ),
           decoration: BoxDecoration(
             color: AppThemeColors.surface,

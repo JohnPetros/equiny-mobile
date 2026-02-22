@@ -1,10 +1,10 @@
 import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_error_state/index.dart';
-import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_header/index.dart';
-import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_input_bar/index.dart';
 import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_loading_state/index.dart';
-import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_messages_list/index.dart';
-import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_empty_state/index.dart';
 import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_screen_presenter.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_header/index.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_empty_state/index.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_messages_list/index.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_input_bar/index.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,25 +29,28 @@ class ChatScreenView extends ConsumerWidget {
             return const ChatLoadingState();
           }
 
-          if (presenter.errorMessage.value != null && presenter.chat.value == null) {
+          if (presenter.errorMessage.value != null &&
+              presenter.chat.value == null) {
             return ChatErrorState(
-              message: presenter.errorMessage.value ?? 'Erro ao carregar conversa.',
+              message:
+                  presenter.errorMessage.value ?? 'Erro ao carregar conversa.',
               onRetry: presenter.retry,
             );
           }
 
           return Column(
             children: <Widget>[
-              ChatHeader(
-                recipientName: presenter.resolveRecipientName(),
-                recipientAvatarUrl: presenter.resolveRecipientAvatarUrl(),
-                subtitle: presenter.headerSubtitle.value,
-                onBack: presenter.onBack,
-                onOpenProfile: () {},
-              ),
+              if (presenter.chat.value?.recipient != null)
+                ChatHeader(
+                  recipient: presenter.chat.value!.recipient,
+                  onBack: presenter.onBack,
+                  onOpenProfile: () {},
+                ),
               Expanded(
                 child: presenter.showEmptyState.value
-                    ? ChatEmptyState(onSuggestionTap: presenter.sendSuggestedMessage)
+                    ? ChatEmptyState(
+                        onSuggestionTap: presenter.sendSuggestedMessage,
+                      )
                     : ChatMessagesList(
                         sections: presenter.groupedMessages.value,
                         isLoadingMore: presenter.isLoadingMore.value,

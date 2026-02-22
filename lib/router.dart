@@ -123,11 +123,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.chat,
         builder: (BuildContext context, GoRouterState state) {
           final Object? extra = state.extra;
-          final String chatId = extra is String ? extra : '';
-          if (chatId.isEmpty) {
-            return const InboxScreen();
+          if (extra is String) {
+            return ChatScreen(chatId: extra);
           }
-          return ChatScreen(chatId: chatId);
+          return const InboxScreen();
         },
       ),
     ],
