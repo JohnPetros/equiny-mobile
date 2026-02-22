@@ -11,4 +11,10 @@ abstract class ConversationService {
     required int limit,
     required String? cursor,
   });
+  Future<RestResponse<ChatDto>> createChat({
+    required String recipientId,
+    required String senderId,
+    required String recipientHorseId,
+    required String senderHorseId,
+  });
 }
