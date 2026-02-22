@@ -9,6 +9,8 @@ class HorseMatchMapper {
     final Json ownerLocation =
         body['owner_location'] as Json? ?? <String, dynamic>{};
 
+    final Json? ownerHorseImageRaw = body['owner_horse_image'] as Json?;
+
     return HorseMatchDto(
       ownerId: body['owner_id']?.toString() ?? '',
       ownerName: body['owner_name']?.toString() ?? '',
@@ -19,6 +21,13 @@ class HorseMatchMapper {
             )
           : null,
       ownerHorseId: body['owner_horse_id']?.toString() ?? '',
+      ownerHorseName: body['owner_horse_name']?.toString() ?? '',
+      ownerHorseImage: ownerHorseImageRaw != null
+          ? ImageDto(
+              key: ownerHorseImageRaw['key']?.toString() ?? '',
+              name: ownerHorseImageRaw['name']?.toString() ?? '',
+            )
+          : null,
       ownerLocation: LocationDto(
         city: ownerLocation['city']?.toString() ?? '',
         state: ownerLocation['state']?.toString() ?? '',

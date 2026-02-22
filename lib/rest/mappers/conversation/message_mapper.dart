@@ -15,6 +15,7 @@ class MessageMapper {
       sentAt:
           DateTime.tryParse(json['sent_at']?.toString() ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
+      isReadByRecipient: json['is_read_by_recipient'] as bool? ?? false,
       attachments: attachmentsRaw.whereType<Json>().map((Json attachment) {
         return AttachmentDto(
           kind: attachment['kind']?.toString() ?? '',
@@ -33,6 +34,7 @@ class MessageMapper {
       'sender_id': dto.senderId,
       'receiver_id': dto.receiverId,
       'sent_at': dto.sentAt.toIso8601String(),
+      'is_read_by_recipient': dto.isReadByRecipient,
       'attachments': dto.attachments.map((AttachmentDto attachment) {
         return <String, dynamic>{
           'kind': attachment.kind,

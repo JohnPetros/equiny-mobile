@@ -10,6 +10,9 @@ class RecipientMapper {
       id: json['id']?.toString(),
       name: json['name']?.toString(),
       avatar: avatarRaw == null ? null : ImageMapper.toDto(avatarRaw),
+      lastPresenceAt: DateTime.tryParse(
+        json['last_presence_at']?.toString() ?? '',
+      ),
     );
   }
 }

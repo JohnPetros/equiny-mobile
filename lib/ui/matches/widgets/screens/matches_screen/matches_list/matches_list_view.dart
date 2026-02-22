@@ -23,8 +23,13 @@ class MatchesListView extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           child: const Text(
-            'Vistos',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            'VISTOS',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: AppThemeColors.textSecondary,
+              letterSpacing: 1.2,
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -43,7 +48,7 @@ class MatchesListView extends StatelessWidget {
             itemCount: items.length,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            separatorBuilder: (_, _) => const SizedBox(height: 8),
+            separatorBuilder: (_, _) => const SizedBox(height: 4),
             itemBuilder: (BuildContext context, int index) {
               final HorseMatchDto item = items[index];
               return MatchesListItem(

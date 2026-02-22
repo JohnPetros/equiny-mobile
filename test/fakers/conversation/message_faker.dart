@@ -16,6 +16,7 @@ class MessageFaker {
       senderId: senderId ?? 'sender-id',
       receiverId: receiverId ?? 'receiver-id',
       sentAt: sentAt ?? DateTime(2026, 1, 1, 10, 30),
+      isReadByRecipient: false,
       attachments: attachments ?? const <AttachmentDto>[],
     );
   }
