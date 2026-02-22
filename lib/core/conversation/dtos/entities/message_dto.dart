@@ -5,6 +5,7 @@ class MessageDto {
   final String content;
   final String senderId;
   final String receiverId;
+  final bool isReadByRecipient;
   final DateTime sentAt;
   final List<AttachmentDto> attachments;
 
@@ -14,6 +15,7 @@ class MessageDto {
     required this.senderId,
     required this.receiverId,
     required this.sentAt,
+    required this.isReadByRecipient,
     required this.attachments,
   });
 }
