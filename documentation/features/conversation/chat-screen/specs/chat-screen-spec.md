@@ -17,9 +17,9 @@ Implementar a tela de `chat` do `equiny_mobile` com fluxo completo de thread por
 - Carregar dados do chat (`recipient`) via `ConversationService.fetchChat`.
 - Carregar mensagens via `ConversationService.fetchMessagesList` com paginacao por cursor.
 - Ordenar/renderizar mensagens por data com separadores (`HOJE`, `ONTEM`, `DD DE <MES>`).
-- Conectar canal `WebSocket` em `{EQUINY_SERVICE_URL}/conversation/{chatId}?token=<access_token>`.
+- Registrar listener no canal `WebSocket` compartilhado da sessao autenticada.
 - Receber mensagens em tempo real e atualizar lista sem recarregar tela.
-- Enviar mensagem de texto via `WebSocket` (`ChatChannel.sendMessage`).
+- Enviar mensagem de texto via `WebSocket` (`ConversationChannel.sendMessage`).
 - Header com avatar/nome do recipient e status (`Online agora` ou `Visto por ultimo ...`) usando `ProfilingService.fetchOwnerPresence`.
 - Estado vazio da thread com sugestoes rapidas **estaticas** (hardcoded) para primeira mensagem.
 - Input bottom bar com:
@@ -48,7 +48,7 @@ Implementar a tela de `chat` do `equiny_mobile` com fluxo completo de thread por
 - **RF-03:** buscar primeira pagina de mensagens via `fetchMessagesList(chatId, limit, cursor)`.
 - **RF-04:** permitir carregar mensagens mais antigas (scroll para cima) usando `nextCursor`.
 - **RF-05:** exibir mensagens agrupadas por dia, com separador visual entre grupos.
-- **RF-06:** conectar `WebSocket` ao entrar na tela e desconectar ao sair.
+- **RF-06:** registrar callback de mensagens ao entrar na tela e liberar estado local ao sair.
 - **RF-07:** ao receber evento de nova mensagem no socket, inserir no fim da lista mantendo ordenacao.
 - **RF-08:** enviar mensagem de texto pelo socket quando tocar em enviar.
 - **RF-09:** mostrar estado "Inicie a conversa" quando nao houver mensagens.
@@ -78,7 +78,7 @@ Implementar a tela de `chat` do `equiny_mobile` com fluxo completo de thread por
 ## 4.2 Core (`lib/core/`)
 
 - **`ConversationService`** (`lib/core/conversation/interfaces/conversation_service.dart`) - contrato de `fetchChats`, `fetchChat`, `fetchMessagesList`.
-- **`ChatChannel`** (`lib/core/conversation/interfaces/chat_channel.dart`) - contrato para canal de chat (`connect`, `disconnect`, `listen`, `sendMessage`).
+- **`ConversationChannel`** (`lib/core/conversation/interfaces/conversation_channel.dart`) - contrato para envio e recebimento de mensagens do chat (`onMessageReceived`, `sendMessage`).
 - **`ChatDto`** (`lib/core/conversation/dtos/entities/chat_dto.dart`) - dados da conversa com `recipient`, `lastMessage`, `unreadCount`.
 - **`MessageDto`** (`lib/core/conversation/dtos/entities/message_dto.dart`) - mensagem com `content`, `senderId`, `receiverId`, `sentAt`, `attachments`.
 - **`RecipientDto`** (`lib/core/conversation/dtos/entities/recipient_dto.dart`) - dados do participant com `lastPresenceAt`.
@@ -110,7 +110,7 @@ Implementar a tela de `chat` do `equiny_mobile` com fluxo completo de thread por
 
 - **Arquivo:** `lib/ui/conversation/widgets/screens/chat_screen/chat_screen_presenter.dart`
   - **Responsabilidade:** orquestrar ciclo da tela, paginacao, socket, envio de mensagem, estado de presenca e estados visuais.
-  - **Dependencias:** `ConversationService`, `ChatChannel`, `ProfilingService`, `NavigationDriver`, `CacheDriver`.
+  - **Dependencias:** `ConversationService`, `ConversationChannel`, `ProfilingService`, `NavigationDriver`, `CacheDriver`.
   - **Estado (`signals`/providers):**
     - `Signal<ChatDto?> chat`
     - `Signal<List<MessageDto>> messages`
@@ -257,16 +257,15 @@ chat_screen/
 
 ## 5.4 Drivers
 
-- **Arquivo:** `lib/websocket/wsc/channels/conversation/wsc_chat_channel.dart`
-  - **Adapter/Driver:** implementacao concreta de `ChatChannel` com `web_socket_channel`.
-  - **Responsabilidade:** conectar/desconectar socket, enviar payload de mensagem, emitir stream de `MessageDto`.
-  - **Dependencias:** `EnvDriver`, `CacheDriver`, `MessageMapper`, `web_socket_channel`.
-  - **URI obrigatoria:** `wss|ws://<host>/conversation/{chatId}/{ownerId}?token=<access_token>`.
+- **Arquivo:** `lib/websocket/channels/conversation_channel.dart`
+  - **Adapter/Driver:** implementacao concreta de `ConversationChannel`.
+  - **Responsabilidade:** serializar envio de mensagem e mapear evento recebido para `MessageDto`.
+  - **Dependencias:** `WebSocketClient`, `MessageMapper`.
 
-- **Arquivo:** `lib/websocket/wsc/channels/conversation/index.dart`
-  - **Adapter/Driver:** provider `wscChatChannelProvider` (`Provider.family<ChatChannel, String>`).
-  - **Responsabilidade:** criar canal por `chatId` para DI no presenter.
-  - **Dependencias:** `envDriverProvider`, `cacheDriverProvider`.
+- **Arquivo:** `lib/websocket/channels.dart`
+  - **Adapter/Driver:** provider `conversationChannelProvider` (`Provider<ConversationChannel>`).
+  - **Responsabilidade:** disponibilizar canal de conversa para DI no presenter.
+  - **Dependencias:** `websocketClientProvider`.
 
 # 6. O que deve ser modificado
 
@@ -310,9 +309,9 @@ chat_screen/
   - **Justificativa:** requisito funcional de presenca no header.
   - **Camada:** `rest`
 
-- **Arquivo:** `lib/websocket/wsc/channels/conversation/index.dart`
-  - **Mudanca:** expor provider `wscChatChannelProvider` para DI do presenter.
-  - **Justificativa:** centralizar instancia por `chatId` e desacoplar UI do detalhe de socket.
+- **Arquivo:** `lib/websocket/channels.dart`
+  - **Mudanca:** expor provider `conversationChannelProvider` para DI do presenter.
+  - **Justificativa:** centralizar instancia do canal e desacoplar UI do detalhe de socket.
   - **Camada:** `drivers`
 
 - **Arquivo:** `lib/router.dart`
@@ -337,11 +336,10 @@ ChatScreenView
     -> ConversationService.fetchChat(chatId)
     -> ProfilingService.fetchOwnerPresence(ownerId)
     -> ConversationService.fetchMessagesList(chatId, limit, cursor)
-    -> ChatChannel.connect(ws://.../conversation/{chatId}?token=<access_token>)
-    -> ChatChannel.listen(onMessageReceived)
+    -> ConversationChannel.onMessageReceived(onMessageReceived)
 
 Send flow:
-View(chat_input_bar) -> Presenter.sendMessage -> ChatChannel.sendMessage -> API(WebSocket)
+View(chat_input_bar) -> Presenter.sendMessage -> ConversationChannel.sendMessage -> API(WebSocket)
 
 History flow:
 View(reach top) -> Presenter.loadMoreMessages -> ConversationService.fetchMessagesList -> append oldest
@@ -371,7 +369,7 @@ ChatScreen
 
 - `lib/ui/conversation/widgets/screens/inbox_screen/inbox_screen_presenter.dart` (padrao de presenter com `signals` e `Provider.autoDispose`).
 - `lib/rest/services/conversation_service.dart` (base de integracao REST de conversa).
-- `lib/core/conversation/interfaces/chat_channel.dart` (contrato de websocket da conversa).
+- `lib/core/conversation/interfaces/conversation_channel.dart` (contrato de websocket da conversa).
 - `lib/core/profiling/interfaces/profiling_service.dart` (fonte de presenca via `fetchOwnerPresence`).
 
 ## 8.4 Referencias de tela (quando houver)
@@ -413,7 +411,7 @@ ChatScreen
 - **RF-11:** `fetchOwnerPresence` implementado e integrado no header.
 - **RF-12:** botao de anexos visivel e desabilitado no `chat_input_bar`.
 - Agrupamento por data e separadores (`HOJE`, `ONTEM`, `DD DE <MES>`) aplicado.
-- Caminho do channel aplicado em `lib/websocket/wsc/channels/conversation/wsc_chat_channel.dart` com `web_socket_channel`.
+- Canal aplicado em `lib/websocket/channels/conversation_channel.dart` com `WebSocketClient` compartilhado.
 
 ## 10.4 PRD/milestone
 
@@ -428,13 +426,12 @@ ChatScreenView
     -> ConversationService.fetchChat(chatId)
     -> ConversationService.fetchMessagesList(chatId, limit, cursor)
     -> ProfilingService.fetchOwnerPresence(ownerId)
-    -> ChatChannel.connect("{EQUINY_SERVICE_URL}/conversation/{chatId}?token=<access_token>")
-    -> ChatChannel.listen(onMessageReceived)
+    -> ConversationChannel.onMessageReceived(onMessageReceived)
 
 Nova mensagem
   InputBar.onSend
     -> ChatScreenPresenter.sendMessage
-      -> ChatChannel.sendMessage(MessageDto)
+      -> ConversationChannel.sendMessage(MessageDto)
       -> websocket server
       -> evento recebido -> presenter._onMessageReceived -> UI atualiza
 
