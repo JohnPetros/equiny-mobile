@@ -7,6 +7,7 @@ import 'package:equiny/core/shared/constants/routes.dart';
 import 'package:equiny/core/shared/interfaces/cache_driver.dart';
 import 'package:equiny/core/shared/interfaces/navigation_driver.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
+import 'package:equiny/shared/providers/auth_state_provider.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/sign_up_screen_presenter.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -26,6 +27,7 @@ void main() {
   late MockProfilingService profilingService;
   late MockNavigationDriver navigationDriver;
   late MockCacheDriver cacheDriver;
+  late AuthStateNotifier authStateNotifier;
   late SignUpScreenPresenter presenter;
 
   setUp(() {
@@ -33,11 +35,13 @@ void main() {
     profilingService = MockProfilingService();
     navigationDriver = MockNavigationDriver();
     cacheDriver = MockCacheDriver();
+    authStateNotifier = AuthStateNotifier(false);
     presenter = SignUpScreenPresenter(
       authService,
       profilingService,
       navigationDriver,
       cacheDriver,
+      authStateNotifier,
     );
 
     when(() => cacheDriver.set(any(), any())).thenAnswer((_) async {});
