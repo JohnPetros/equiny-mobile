@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_error_state/index.dart';
 import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_loading_state/index.dart';
 import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_screen_presenter.dart';
@@ -10,16 +12,48 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 
-class ChatScreenView extends ConsumerWidget {
+class ChatScreenView extends ConsumerStatefulWidget {
   final String chatId;
 
   const ChatScreenView({required this.chatId, super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ChatScreenView> createState() => _ChatScreenViewState();
+}
+
+class _ChatScreenViewState extends ConsumerState<ChatScreenView> {
+  bool _isScreenInFocus = false;
+
+  void _syncChannelConnection(
+    ChatScreenPresenter presenter,
+    bool shouldBeConnected,
+  ) {
+    if (_isScreenInFocus == shouldBeConnected) {
+      return;
+    }
+
+    _isScreenInFocus = shouldBeConnected;
+    if (shouldBeConnected) {
+      unawaited(presenter.connectChannel());
+      return;
+    }
+
+    unawaited(presenter.disconnectChannel());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final ChatScreenPresenter presenter = ref.watch(
-      chatScreenPresenterProvider(chatId),
+      chatScreenPresenterProvider(widget.chatId),
     );
+    final bool isCurrentRoute = ModalRoute.of(context)?.isCurrent ?? false;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _syncChannelConnection(presenter, isCurrentRoute);
+    });
 
     return Scaffold(
       backgroundColor: AppThemeColors.background,
@@ -70,5 +104,16 @@ class ChatScreenView extends ConsumerWidget {
         }),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    if (_isScreenInFocus) {
+      final ChatScreenPresenter presenter = ref.read(
+        chatScreenPresenterProvider(widget.chatId),
+      );
+      unawaited(presenter.disconnectChannel());
+    }
+    super.dispose();
   }
 }

@@ -1,5 +1,8 @@
 import 'package:equiny/core/conversation/dtos/entities/chat_dto.dart';
+import 'package:equiny/core/shared/constants/cache_keys.dart';
+import 'package:equiny/core/shared/interfaces/cache_driver.dart';
 import 'package:equiny/core/storage/interfaces/file_storage_driver.dart';
+import 'package:equiny/drivers/cache-driver/index.dart';
 import 'package:equiny/drivers/file-storage-driver/index.dart';
 import 'package:equiny/ui/conversation/widgets/screens/inbox_screen/inbox_chat_list/inbox_chat_list_item/inbox_chat_list_item_presenter.dart';
 import 'package:equiny/ui/conversation/widgets/screens/inbox_screen/inbox_screen_presenter.dart';
@@ -28,7 +31,10 @@ class InboxChatListItemView extends ConsumerWidget {
     final FileStorageDriver fileStorageDriver = ref.watch(
       fileStorageDriverProvider,
     );
+    final CacheDriver cacheDriver = ref.watch(cacheDriverProvider);
+    final String ownerId = cacheDriver.get(CacheKeys.ownerId) ?? '';
 
+    final bool isLastMessageFromOwner = chat.lastMessage.senderId == ownerId;
     final String recipientName = chat.recipient.name?.trim().isNotEmpty == true
         ? chat.recipient.name!.trim()
         : 'Sem nome';
@@ -44,7 +50,6 @@ class InboxChatListItemView extends ConsumerWidget {
     final bool showUnreadBadge = itemPresenter.shouldShowUnreadBadge(
       chat.unreadCount,
     );
-    final bool showReadCheck = itemPresenter.shouldShowReadCheck(chat, '');
     final String preview = itemPresenter.truncatePreview(
       chat.lastMessage.content,
     );
@@ -118,14 +123,17 @@ class InboxChatListItemView extends ConsumerWidget {
                         const SizedBox(height: 2),
                         Row(
                           children: <Widget>[
-                            if (showReadCheck)
+                            if (isLastMessageFromOwner)
                               Padding(
                                 padding: const EdgeInsets.only(right: 6),
                                 child: Icon(
-                                  Icons.done_all,
+                                  chat.lastMessage.isReadByRecipient
+                                      ? Icons.done_all
+                                      : Icons.done,
                                   size: 16,
-                                  color: AppThemeColors.textSecondary
-                                      .withValues(alpha: 0.6),
+                                  color: AppThemeColors.primary.withValues(
+                                    alpha: 0.6,
+                                  ),
                                 ),
                               ),
                             Expanded(
