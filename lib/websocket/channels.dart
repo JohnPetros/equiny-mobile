@@ -1,11 +1,8 @@
-import 'package:equiny/core/conversation/interfaces/chat_channel.dart';
-import 'package:equiny/drivers/cache-driver/index.dart';
-import 'package:equiny/drivers/env-driver/index.dart';
-import 'package:equiny/websocket/wsc/channels/conversation/wsc_chat_channel.dart';
+import 'package:equiny/websocket/channels/conversation_channel.dart';
+import 'package:equiny/websocket/websocket_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final chatChannelProvider = Provider<ChatChannel>((ref) {
-  final envDriver = ref.read(envDriverProvider);
-  final cacheDriver = ref.read(cacheDriverProvider);
-  return WscChatChannel(envDriver, cacheDriver);
+final conversationChannelProvider = Provider<ConversationChannel>((ref) {
+  final websocketClient = ref.read(websocketClientProvider);
+  return ConversationChannel(websocketClient);
 });
