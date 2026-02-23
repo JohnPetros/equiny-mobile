@@ -7,6 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 final restClientProvider = Provider<RestClient>((ref) {
   final envDriver = ref.read(envDriverProvider);
   final restClient = DioRestClient();
-  restClient.setBaseUrl(envDriver.get(EnvKeys.equinyRestServiceUrl));
+  restClient.setBaseUrl(envDriver.get(EnvKeys.equinyRestUrl));
   return restClient;
 });
