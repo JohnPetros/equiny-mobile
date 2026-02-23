@@ -8,6 +8,7 @@ import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/drivers/cache-driver/index.dart';
 import 'package:equiny/drivers/navigation-driver/index.dart';
 import 'package:equiny/rest/services.dart';
+import 'package:equiny/shared/providers/auth_state_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 import 'package:signals/signals.dart';
@@ -17,6 +18,7 @@ class SignUpScreenPresenter {
   final NavigationDriver _navigationDriver;
   final CacheDriver _cacheDriver;
   final ProfilingService _profilingService;
+  final AuthStateNotifier _authStateNotifier;
 
   final Signal<FormGroup> form = signal(
     FormGroup(<String, AbstractControl<Object?>>{}),
@@ -35,6 +37,7 @@ class SignUpScreenPresenter {
     this._profilingService,
     this._navigationDriver,
     this._cacheDriver,
+    this._authStateNotifier,
   ) {
     form.value = buildForm();
     canSubmit = computed(() => form.value.valid && !isLoading.value);
@@ -136,7 +139,8 @@ class SignUpScreenPresenter {
       return;
     }
 
-    _cacheDriver.set(CacheKeys.accessToken, response.body.accessToken);
+    await _cacheDriver.set(CacheKeys.accessToken, response.body.accessToken);
+    _authStateNotifier.setAuthenticated(true);
 
     final ownerResponse = await _profilingService.fetchOwner();
     if (ownerResponse.isFailure) {
@@ -174,5 +178,6 @@ final signUpScreenPresenterProvider =
         ref.watch(profilingServiceProvider),
         ref.watch(navigationDriverProvider),
         ref.watch(cacheDriverProvider),
+        ref.read(authStateProvider.notifier),
       );
     });

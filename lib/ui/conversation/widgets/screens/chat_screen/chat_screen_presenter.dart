@@ -3,9 +3,12 @@ import 'dart:async';
 import 'package:equiny/core/conversation/dtos/entities/chat_dto.dart';
 import 'package:equiny/core/conversation/dtos/entities/message_dto.dart';
 import 'package:equiny/core/conversation/dtos/structures/chat_date_section_dto.dart';
-import 'package:equiny/core/conversation/interfaces/chat_channel.dart';
+import 'package:equiny/core/conversation/events/chat_participant_entered_event.dart';
+import 'package:equiny/core/conversation/events/message_sent_event.dart';
+import 'package:equiny/core/conversation/interfaces/conversation_channel.dart';
 import 'package:equiny/core/conversation/interfaces/conversation_service.dart';
 import 'package:equiny/core/profiling/interfaces/profiling_service.dart';
+import 'package:equiny/core/shared/constants/cache_keys.dart';
 import 'package:equiny/core/shared/constants/routes.dart';
 import 'package:equiny/core/shared/interfaces/cache_driver.dart';
 import 'package:equiny/core/shared/interfaces/navigation_driver.dart';
@@ -21,11 +24,12 @@ import 'package:signals/signals.dart';
 class ChatScreenPresenter {
   final String _chatId;
   final ConversationService _conversationService;
-  final ChatChannel _chatChannel;
+  final ConversationChannel _conversationChannel;
   final ProfilingService _profilingService;
   final NavigationDriver _navigationDriver;
   final CacheDriver _cacheDriver;
   final FileStorageDriver _fileStorageDriver;
+  void Function()? _unsubscribeMessageReceived;
 
   static const int _pageSize = 30;
 
@@ -50,7 +54,7 @@ class ChatScreenPresenter {
   ChatScreenPresenter(
     this._chatId,
     this._conversationService,
-    this._chatChannel,
+    this._conversationChannel,
     this._profilingService,
     this._navigationDriver,
     this._cacheDriver,
@@ -101,7 +105,6 @@ class ChatScreenPresenter {
 
     await loadInitialMessages();
     await refreshPresence();
-    await connectChannel();
     isLoadingInitial.value = false;
   }
 
@@ -155,23 +158,26 @@ class ChatScreenPresenter {
   }
 
   Future<void> connectChannel() async {
-    await _chatChannel.connect(_chatId);
-
-    _chatChannel.listen(
-      onMessageReceived: _onMessageReceived,
-      onError: () {
-        isSocketConnected.value = false;
-      },
-      onClose: () {
-        isSocketConnected.value = false;
-      },
+    _unsubscribeMessageReceived ??= _conversationChannel.onMessageReceived(
+      _onMessageReceived,
     );
+
+    final String participantId = _resolveCurrentOwnerId();
+    if (participantId.isNotEmpty) {
+      await _conversationChannel.emitChatParticipantEnteredEvent(
+        ChatParticipantEnteredEvent(
+          chatId: _chatId,
+          participantId: participantId,
+        ),
+      );
+    }
 
     isSocketConnected.value = true;
   }
 
   Future<void> disconnectChannel() async {
-    await _chatChannel.disconnect();
+    _unsubscribeMessageReceived?.call();
+    _unsubscribeMessageReceived = null;
     isSocketConnected.value = false;
   }
 
@@ -199,7 +205,13 @@ class ChatScreenPresenter {
       attachments: const [],
     );
 
-    await _chatChannel.sendMessage(message);
+    await _conversationChannel.emitMessageSentEvent(
+      MessageSentEvent(
+        messageContent: message.content,
+        chatId: _chatId,
+        senderId: senderId,
+      ),
+    );
     draft.value = '';
     isSending.value = false;
   }
@@ -307,7 +319,7 @@ class ChatScreenPresenter {
   }
 
   String _resolveCurrentOwnerId() {
-    return _cacheDriver.get('owner_id') ?? '';
+    return _cacheDriver.get(CacheKeys.ownerId) ?? '';
   }
 
   String _formatDateLabel(DateTime date) {
@@ -357,7 +369,7 @@ final chatScreenPresenterProvider = Provider.autoDispose
       final presenter = ChatScreenPresenter(
         chatId,
         ref.watch(conversationServiceProvider),
-        ref.watch(chatChannelProvider),
+        ref.watch(conversationChannelProvider),
         ref.watch(profilingServiceProvider),
         ref.watch(navigationDriverProvider),
         ref.watch(cacheDriverProvider),
