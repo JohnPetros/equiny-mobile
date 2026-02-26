@@ -9,6 +9,7 @@ import 'package:equiny/ui/conversation/widgets/screens/inbox_screen/inbox_screen
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signals_flutter/signals_flutter.dart';
 
 class InboxChatListItemView extends ConsumerWidget {
   final ChatDto chat;
@@ -73,19 +74,48 @@ class InboxChatListItemView extends ConsumerWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: AppThemeColors.backgroundAlt,
-                  backgroundImage: avatarUrl.isEmpty
-                      ? null
-                      : NetworkImage(avatarUrl),
-                  child: avatarUrl.isEmpty
-                      ? Text(
-                          initials,
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        )
-                      : null,
-                ),
+                Watch((BuildContext context) {
+                  final bool isOnline = screenPresenter.isRecipientOnline(
+                    chat.recipient,
+                  );
+
+                  return Stack(
+                    children: <Widget>[
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: AppThemeColors.backgroundAlt,
+                        backgroundImage: avatarUrl.isEmpty
+                            ? null
+                            : NetworkImage(avatarUrl),
+                        child: avatarUrl.isEmpty
+                            ? Text(
+                                initials,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              )
+                            : null,
+                      ),
+                      if (isOnline)
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppThemeColors.surface,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                }),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: SizedBox(

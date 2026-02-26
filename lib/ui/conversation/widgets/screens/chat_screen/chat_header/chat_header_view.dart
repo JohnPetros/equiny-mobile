@@ -1,10 +1,13 @@
+import 'dart:async';
+
 import 'package:equiny/core/conversation/dtos/entities/recipient_dto.dart';
 import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_header/chat_header_presenter.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:signals_flutter/signals_flutter.dart';
 
-class ChatHeaderView extends ConsumerWidget {
+class ChatHeaderView extends ConsumerStatefulWidget {
   final RecipientDto recipient;
   final VoidCallback onBack;
   final VoidCallback onOpenProfile;
@@ -17,13 +20,48 @@ class ChatHeaderView extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ChatHeaderView> createState() => _ChatHeaderViewState();
+}
+
+class _ChatHeaderViewState extends ConsumerState<ChatHeaderView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      unawaited(
+        ref.read(chatHeaderPresenterProvider).loadPresence(widget.recipient),
+      );
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant ChatHeaderView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final String oldRecipientId = oldWidget.recipient.id ?? '';
+    final String newRecipientId = widget.recipient.id ?? '';
+    if (oldRecipientId == newRecipientId) {
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      unawaited(
+        ref.read(chatHeaderPresenterProvider).loadPresence(widget.recipient),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final ChatHeaderPresenter presenter = ref.watch(
       chatHeaderPresenterProvider,
     );
-    final String avatarUrl = presenter.resolveAvatarUrl(recipient);
-    final bool isOnline = presenter.isOnline(recipient);
-    final String presenceLabel = presenter.resolvePresenceLabel(recipient);
+    final String avatarUrl = presenter.resolveAvatarUrl(widget.recipient);
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -33,7 +71,7 @@ class ChatHeaderView extends ConsumerWidget {
       child: Row(
         children: <Widget>[
           IconButton(
-            onPressed: onBack,
+            onPressed: widget.onBack,
             icon: const Icon(Icons.arrow_back, color: AppThemeColors.textMain),
           ),
           Stack(
@@ -52,8 +90,12 @@ class ChatHeaderView extends ConsumerWidget {
                       )
                     : null,
               ),
-              if (isOnline)
-                Positioned(
+              Watch((BuildContext context) {
+                if (!presenter.isRecipientOnline.value) {
+                  return const SizedBox.shrink();
+                }
+
+                return Positioned(
                   right: 0,
                   bottom: 0,
                   child: Container(
@@ -68,7 +110,8 @@ class ChatHeaderView extends ConsumerWidget {
                       ),
                     ),
                   ),
-                ),
+                );
+              }),
             ],
           ),
           const SizedBox(width: AppSpacing.sm),
@@ -77,7 +120,7 @@ class ChatHeaderView extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  recipient.name ?? '',
+                  widget.recipient.name ?? '',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -85,23 +128,25 @@ class ChatHeaderView extends ConsumerWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                Text(
-                  presenceLabel,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: isOnline
-                        ? Colors.green
-                        : AppThemeColors.textSecondary,
-                    fontSize: AppFontSize.xs,
-                  ),
-                ),
+                Watch((BuildContext context) {
+                  return Text(
+                    presenter.presenceLabel.value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: presenter.isRecipientOnline.value
+                          ? Colors.green
+                          : AppThemeColors.textSecondary,
+                      fontSize: AppFontSize.xs,
+                    ),
+                  );
+                }),
               ],
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
           OutlinedButton(
-            onPressed: onOpenProfile,
+            onPressed: widget.onOpenProfile,
             style: OutlinedButton.styleFrom(
               foregroundColor: AppThemeColors.primary,
               side: const BorderSide(color: AppThemeColors.primary),

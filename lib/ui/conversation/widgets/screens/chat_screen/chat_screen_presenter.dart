@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:equiny/core/conversation/dtos/entities/chat_dto.dart';
 import 'package:equiny/core/conversation/dtos/entities/message_dto.dart';
 import 'package:equiny/core/conversation/dtos/structures/chat_date_section_dto.dart';
-import 'package:equiny/core/conversation/events/chat_participant_entered_event.dart';
 import 'package:equiny/core/conversation/events/message_sent_event.dart';
 import 'package:equiny/core/conversation/interfaces/conversation_channel.dart';
 import 'package:equiny/core/conversation/interfaces/conversation_service.dart';
@@ -29,7 +28,7 @@ class ChatScreenPresenter {
   final NavigationDriver _navigationDriver;
   final CacheDriver _cacheDriver;
   final FileStorageDriver _fileStorageDriver;
-  void Function()? _unsubscribeMessageReceived;
+  void Function()? _conversationChannelSubscription;
 
   static const int _pageSize = 30;
 
@@ -158,26 +157,16 @@ class ChatScreenPresenter {
   }
 
   Future<void> connectChannel() async {
-    _unsubscribeMessageReceived ??= _conversationChannel.onMessageReceived(
-      _onMessageReceived,
+    _conversationChannelSubscription ??= _conversationChannel.listen(
+      onMessageReceived: (event) => _onMessageReceived(event.payload.message),
     );
-
-    final String participantId = _resolveCurrentOwnerId();
-    if (participantId.isNotEmpty) {
-      await _conversationChannel.emitChatParticipantEnteredEvent(
-        ChatParticipantEnteredEvent(
-          chatId: _chatId,
-          participantId: participantId,
-        ),
-      );
-    }
 
     isSocketConnected.value = true;
   }
 
   Future<void> disconnectChannel() async {
-    _unsubscribeMessageReceived?.call();
-    _unsubscribeMessageReceived = null;
+    _conversationChannelSubscription?.call();
+    _conversationChannelSubscription = null;
     isSocketConnected.value = false;
   }
 

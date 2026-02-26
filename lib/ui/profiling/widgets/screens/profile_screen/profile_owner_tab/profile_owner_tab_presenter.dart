@@ -90,8 +90,6 @@ class ProfileOwnerTabPresenter {
 
       ownerAvatarUrl.value = _resolveAvatarUrl(_owner?.avatar);
 
-      print('ownerAvatarUrl: $ownerAvatarUrl.value');
-
       _lastSyncedSignature = _buildOwnerSignature();
     } catch (_) {
       generalError.value = 'Erro inesperado ao carregar os dados do dono.';
