@@ -78,7 +78,7 @@ Implementar a tela de `chat` do `equiny_mobile` com fluxo completo de thread por
 ## 4.2 Core (`lib/core/`)
 
 - **`ConversationService`** (`lib/core/conversation/interfaces/conversation_service.dart`) - contrato de `fetchChats`, `fetchChat`, `fetchMessagesList`.
-- **`ConversationChannel`** (`lib/core/conversation/interfaces/conversation_channel.dart`) - contrato para envio e recebimento de mensagens do chat (`onMessageReceived`, `sendMessage`).
+- **`ConversationChannel`** (`lib/core/conversation/interfaces/conversation_channel.dart`) - contrato para envio e recebimento de mensagens do chat (`listen(onMessageReceived:)`, `emitMessageSentEvent`).
 - **`ChatDto`** (`lib/core/conversation/dtos/entities/chat_dto.dart`) - dados da conversa com `recipient`, `lastMessage`, `unreadCount`.
 - **`MessageDto`** (`lib/core/conversation/dtos/entities/message_dto.dart`) - mensagem com `content`, `senderId`, `receiverId`, `sentAt`, `attachments`.
 - **`RecipientDto`** (`lib/core/conversation/dtos/entities/recipient_dto.dart`) - dados do participant com `lastPresenceAt`.
@@ -336,10 +336,10 @@ ChatScreenView
     -> ConversationService.fetchChat(chatId)
     -> ProfilingService.fetchOwnerPresence(ownerId)
     -> ConversationService.fetchMessagesList(chatId, limit, cursor)
-    -> ConversationChannel.onMessageReceived(onMessageReceived)
+    -> ConversationChannel.listen(onMessageReceived: onMessageReceived)
 
 Send flow:
-View(chat_input_bar) -> Presenter.sendMessage -> ConversationChannel.sendMessage -> API(WebSocket)
+View(chat_input_bar) -> Presenter.sendMessage -> ConversationChannel.emitMessageSentEvent -> API(WebSocket)
 
 History flow:
 View(reach top) -> Presenter.loadMoreMessages -> ConversationService.fetchMessagesList -> append oldest
@@ -426,12 +426,12 @@ ChatScreenView
     -> ConversationService.fetchChat(chatId)
     -> ConversationService.fetchMessagesList(chatId, limit, cursor)
     -> ProfilingService.fetchOwnerPresence(ownerId)
-    -> ConversationChannel.onMessageReceived(onMessageReceived)
+    -> ConversationChannel.listen(onMessageReceived: onMessageReceived)
 
 Nova mensagem
   InputBar.onSend
     -> ChatScreenPresenter.sendMessage
-      -> ConversationChannel.sendMessage(MessageDto)
+      -> ConversationChannel.emitMessageSentEvent(MessageSentEvent)
       -> websocket server
       -> evento recebido -> presenter._onMessageReceived -> UI atualiza
 

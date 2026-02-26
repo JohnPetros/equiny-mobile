@@ -1,4 +1,7 @@
 import 'package:equiny/core/conversation/dtos/entities/chat_dto.dart';
+import 'package:equiny/core/conversation/dtos/entities/recipient_dto.dart';
+import 'package:equiny/core/shared/interfaces/cache_driver.dart';
+import 'package:equiny/drivers/cache-driver/index.dart';
 import 'package:equiny/core/storage/interfaces/file_storage_driver.dart';
 import 'package:equiny/drivers/file-storage-driver/index.dart';
 import 'package:equiny/ui/conversation/widgets/screens/inbox_screen/inbox_screen_presenter.dart';
@@ -15,9 +18,12 @@ class MockInboxScreenPresenter extends Mock implements InboxScreenPresenter {}
 
 class MockFileStorageDriver extends Mock implements FileStorageDriver {}
 
+class MockCacheDriver extends Mock implements CacheDriver {}
+
 void main() {
   late MockInboxScreenPresenter presenter;
   late MockFileStorageDriver fileStorageDriver;
+  late MockCacheDriver cacheDriver;
   late Signal<List<ChatDto>> chats;
   late Signal<bool> isLoadingInitial;
   late Signal<String?> errorMessage;
@@ -31,6 +37,7 @@ void main() {
       overrides: <Override>[
         inboxScreenPresenterProvider.overrideWithValue(presenter),
         fileStorageDriverProvider.overrideWithValue(fileStorageDriver),
+        cacheDriverProvider.overrideWithValue(cacheDriver),
       ],
       child: const MaterialApp(home: InboxScreenView()),
     );
@@ -38,11 +45,13 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(ChatFaker.fakeDto());
+    registerFallbackValue(ChatFaker.fakeDto().recipient);
   });
 
   setUp(() {
     presenter = MockInboxScreenPresenter();
     fileStorageDriver = MockFileStorageDriver();
+    cacheDriver = MockCacheDriver();
     chats = signal(<ChatDto>[]);
     isLoadingInitial = signal(false);
     errorMessage = signal(null);
@@ -65,7 +74,11 @@ void main() {
     when(() => presenter.openChat(any())).thenReturn(null);
     when(() => presenter.buildRecipientInitials(any())).thenReturn('RN');
     when(() => presenter.formatRelativeTimestamp(any())).thenReturn('10:30');
+    when(
+      () => presenter.isRecipientOnline(any<RecipientDto>()),
+    ).thenReturn(false);
     when(() => fileStorageDriver.getFileUrl(any())).thenReturn('');
+    when(() => cacheDriver.get(any())).thenReturn('owner-id');
   });
 
   group('InboxScreenView', () {

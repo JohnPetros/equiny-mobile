@@ -25,7 +25,6 @@ class FeedHorseCardPresenter {
   }
 
   String getFileUrl(String imagePath) {
-    print('fileUrl: ${_fileStorageDriver.getFileUrl(imagePath)}');
     return _fileStorageDriver.getFileUrl(imagePath);
   }
 

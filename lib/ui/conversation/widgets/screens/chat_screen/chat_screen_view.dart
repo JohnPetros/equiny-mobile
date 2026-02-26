@@ -34,6 +34,7 @@ class _ChatScreenViewState extends ConsumerState<ChatScreenView> {
 
     _isScreenInFocus = shouldBeConnected;
     if (shouldBeConnected) {
+      unawaited(presenter.loadInitialMessages());
       unawaited(presenter.connectChannel());
       return;
     }

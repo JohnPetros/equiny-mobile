@@ -11,7 +11,7 @@ import 'package:equiny/core/profiling/interfaces/profiling_service.dart'
     as profiling_service;
 import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/core/shared/types/json.dart';
-import 'package:equiny/rest/mappers/auth/owner_mapper.dart';
+import 'package:equiny/rest/mappers/profiling/owner_mapper.dart';
 import 'package:equiny/rest/mappers/profiling/horse_feed_mapper.dart';
 import 'package:equiny/rest/services/service.dart';
 import 'package:equiny/rest/mappers/profiling/gallery_mapper.dart';
@@ -60,6 +60,9 @@ class ProfilingService extends Service
       return OwnerPresenceDto(
         ownerId: data['owner_id']?.toString() ?? ownerId,
         isOnline: data['is_online'] as bool? ?? false,
+        lastSeenAt: data['last_seen_at'] != null
+            ? DateTime.tryParse(data['last_seen_at'] as String)!
+            : null,
       );
     });
   }
