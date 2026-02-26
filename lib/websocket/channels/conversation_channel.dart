@@ -1,5 +1,3 @@
-import 'package:equiny/core/conversation/dtos/entities/message_dto.dart';
-import 'package:equiny/core/conversation/events/chat_participant_entered_event.dart';
 import 'package:equiny/core/conversation/events/message_sent_event.dart';
 import 'package:equiny/core/conversation/interfaces/conversation_channel.dart'
     as conversation_channel;
@@ -21,15 +19,19 @@ class ConversationChannel extends Channel
   }
 
   @override
-  void Function() onMessageReceived(Function(MessageDto message) callback) {
-    return super.websocketClient.onMessage((data) {
+  void Function() listen({
+    required void Function(MessageReceivedEvent event) onMessageReceived,
+  }) {
+    return super.websocketClient.onData((data) {
       final (String name, Json payload) = parseEvent(data);
-      print('name: $name');
-      print('payload: $payload');
-
       switch (name) {
         case MessageReceivedEvent.name:
-          callback(MessageMapper.toDto(_resolveMessagePayload(payload)));
+          onMessageReceived(
+            MessageReceivedEvent(
+              message: MessageMapper.toDto(_resolveMessagePayload(payload)),
+              chatId: payload['chat_id'],
+            ),
+          );
           break;
         default:
           break;
@@ -45,19 +47,6 @@ class ConversationChannel extends Channel
         'message_content': event.payload.messageContent,
         'chat_id': event.payload.chatId,
         'sender_id': event.payload.senderId,
-      },
-    });
-  }
-
-  @override
-  Future<void> emitChatParticipantEnteredEvent(
-    ChatParticipantEnteredEvent event,
-  ) async {
-    await super.websocketClient.send(<String, dynamic>{
-      'name': event.getName(),
-      'payload': <String, dynamic>{
-        'chat_id': event.payload.chatId,
-        'participant_id': event.payload.participantId,
       },
     });
   }

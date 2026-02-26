@@ -9,7 +9,8 @@ class Channel {
   (String, Json) parseEvent(Json data) {
     final String name =
         data['name']?.toString() ?? data['event']?.toString() ?? '';
-    final Json payload = (data['payload'] as Json?) ??
+    final Json payload =
+        (data['payload'] as Json?) ??
         (data['data'] as Json?) ??
         <String, dynamic>{};
 

@@ -9,7 +9,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 class WscWebSocketClient implements WebSocketClient {
   WebSocketChannel? _channel;
   StreamSubscription<dynamic>? _subscription;
-  final List<void Function(Json data)> _onMessageCallbacks =
+  final List<void Function(Json data)> _onDataCallbacks =
       <void Function(Json data)>[];
 
   @override
@@ -19,11 +19,9 @@ class WscWebSocketClient implements WebSocketClient {
     _channel = WebSocketChannel.connect(uri);
     _subscription = _channel?.stream.listen((dynamic event) {
       final parsed = _parseData(event);
-      if (parsed == null) {
-        return;
-      }
+      if (parsed == null) return;
 
-      for (final callback in _onMessageCallbacks) {
+      for (final callback in _onDataCallbacks) {
         callback(parsed);
       }
     }, cancelOnError: false);
@@ -39,11 +37,11 @@ class WscWebSocketClient implements WebSocketClient {
   }
 
   @override
-  void Function() onMessage(Function(Json data) callback) {
-    _onMessageCallbacks.add(callback);
+  void Function() onData(Function(Json data) callback) {
+    _onDataCallbacks.add(callback);
 
     return () {
-      _onMessageCallbacks.remove(callback);
+      _onDataCallbacks.remove(callback);
     };
   }
 
