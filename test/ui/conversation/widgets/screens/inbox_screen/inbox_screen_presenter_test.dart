@@ -1,6 +1,11 @@
 import 'package:equiny/core/conversation/dtos/entities/chat_dto.dart';
+import 'package:equiny/core/conversation/interfaces/conversation_channel.dart';
 import 'package:equiny/core/conversation/interfaces/conversation_service.dart';
 import 'package:equiny/core/profiling/dtos/structures/image_dto.dart';
+import 'package:equiny/core/profiling/dtos/structures/owner_presence_dto.dart';
+import 'package:equiny/core/profiling/interfaces/profiling_channel.dart';
+import 'package:equiny/core/profiling/interfaces/profiling_service.dart';
+import 'package:equiny/core/shared/interfaces/cache_driver.dart';
 import 'package:equiny/core/shared/constants/routes.dart';
 import 'package:equiny/core/shared/interfaces/navigation_driver.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
@@ -14,6 +19,14 @@ import '../../../../../fakers/conversation/message_faker.dart';
 
 class MockConversationService extends Mock implements ConversationService {}
 
+class MockConversationChannel extends Mock implements ConversationChannel {}
+
+class MockProfilingChannel extends Mock implements ProfilingChannel {}
+
+class MockCacheDriver extends Mock implements CacheDriver {}
+
+class MockProfilingService extends Mock implements ProfilingService {}
+
 class MockNavigationDriver extends Mock implements NavigationDriver {}
 
 class MockFileStorageDriver extends Mock implements FileStorageDriver {}
@@ -22,14 +35,51 @@ void main() {
   late MockConversationService conversationService;
   late MockNavigationDriver navigationDriver;
   late MockFileStorageDriver fileStorageDriver;
+  late MockConversationChannel conversationChannel;
+  late MockProfilingChannel profilingChannel;
+  late MockCacheDriver cacheDriver;
+  late MockProfilingService profilingService;
   late InboxScreenPresenter presenter;
 
   setUp(() {
     conversationService = MockConversationService();
     navigationDriver = MockNavigationDriver();
     fileStorageDriver = MockFileStorageDriver();
+    conversationChannel = MockConversationChannel();
+    profilingChannel = MockProfilingChannel();
+    cacheDriver = MockCacheDriver();
+    profilingService = MockProfilingService();
+
+    when(
+      () => conversationChannel.listen(
+        onMessageReceived: any(named: 'onMessageReceived'),
+      ),
+    ).thenReturn(() {});
+    when(
+      () => profilingChannel.listen(
+        onOwnerPresenceRegistered: any(named: 'onOwnerPresenceRegistered'),
+        onOwnerPresenceUnregistered: any(named: 'onOwnerPresenceUnregistered'),
+      ),
+    ).thenReturn(() {});
+    when(() => cacheDriver.get(any())).thenReturn('owner-id');
+    when(
+      () => profilingService.fetchOwnerPresence(ownerId: any(named: 'ownerId')),
+    ).thenAnswer(
+      (_) async => RestResponse<OwnerPresenceDto>(
+        body: const OwnerPresenceDto(
+          ownerId: 'recipient-id',
+          isOnline: false,
+          lastSeenAt: null,
+        ),
+      ),
+    );
+
     presenter = InboxScreenPresenter(
       conversationService,
+      conversationChannel,
+      profilingChannel,
+      profilingService,
+      cacheDriver,
       navigationDriver,
       fileStorageDriver,
     );

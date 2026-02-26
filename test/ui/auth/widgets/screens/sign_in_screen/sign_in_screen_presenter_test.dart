@@ -35,7 +35,7 @@ void main() {
     profilingService = MockProfilingService();
     navigationDriver = MockNavigationDriver();
     cacheDriver = MockCacheDriver();
-    authStateNotifier = AuthStateNotifier(false);
+    authStateNotifier = AuthStateNotifier(false, cacheDriver, profilingService);
     presenter = SignInScreenPresenter(
       authService,
       profilingService,
