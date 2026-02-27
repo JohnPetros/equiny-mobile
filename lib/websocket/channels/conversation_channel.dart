@@ -4,6 +4,7 @@ import 'package:equiny/core/conversation/interfaces/conversation_channel.dart'
 import 'package:equiny/core/conversation/events/message_received_event.dart';
 import 'package:equiny/core/shared/types/json.dart';
 import 'package:equiny/rest/mappers/conversation/message_mapper.dart';
+import 'package:equiny/rest/mappers/conversation/message_attachment_mapper.dart';
 import 'package:equiny/websocket/channels/channel.dart';
 
 class ConversationChannel extends Channel
@@ -47,6 +48,9 @@ class ConversationChannel extends Channel
         'message_content': event.payload.messageContent,
         'chat_id': event.payload.chatId,
         'sender_id': event.payload.senderId,
+        'attachments': event.payload.attachments
+            .map(MessageAttachmentMapper.toJson)
+            .toList(),
       },
     });
   }
