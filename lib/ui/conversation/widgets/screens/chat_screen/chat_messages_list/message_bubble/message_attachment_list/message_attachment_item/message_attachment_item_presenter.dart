@@ -1,15 +1,7 @@
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
-class MessageBubblePresenter {
-  Color bubbleBackground(bool isMine) {
-    return isMine ? AppThemeColors.primary : AppThemeColors.surface;
-  }
-
-  Color textColor(bool isMine) {
-    return isMine ? AppThemeColors.border : AppThemeColors.textSecondary;
-  }
-
+class MessageAttachmentItemPresenter {
   bool isImage(String kind) {
     return kind == 'image';
   }
@@ -29,5 +21,12 @@ class MessageBubblePresenter {
       default:
         return Icons.attach_file;
     }
+  }
+
+  Color iconColor(String kind) {
+    if (kind == 'pdf') {
+      return AppThemeColors.error;
+    }
+    return AppThemeColors.textSecondary;
   }
 }

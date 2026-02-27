@@ -1,3 +1,6 @@
+import 'package:equiny/core/conversation/dtos/structures/attachment_dto.dart';
+import 'package:equiny/core/conversation/enums/attachment_upload_status.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_messages_list/message_bubble/message_attachment_list/index.dart';
 import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_messages_list/message_bubble/message_bubble_presenter.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
@@ -7,12 +10,24 @@ class MessageBubbleView extends StatelessWidget {
   final bool isMine;
   final String timeLabel;
   final bool isReadByRecipient;
+  final List<MessageAttachmentDto> attachments;
+  final Map<String, AttachmentUploadStatus> uploadStatusMap;
+  final String Function(String key) resolveFileUrl;
+  final void Function(String key) onRetryAttachment;
+  final void Function(String url) onOpenDocument;
+  final void Function(String url) onOpenImage;
 
   const MessageBubbleView({
     required this.message,
     required this.isMine,
     required this.timeLabel,
     required this.isReadByRecipient,
+    this.attachments = const <MessageAttachmentDto>[],
+    this.uploadStatusMap = const <String, AttachmentUploadStatus>{},
+    required this.resolveFileUrl,
+    required this.onRetryAttachment,
+    required this.onOpenDocument,
+    required this.onOpenImage,
     super.key,
   });
 
@@ -34,12 +49,26 @@ class MessageBubbleView extends StatelessWidget {
           children: <Widget>[
             Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                message,
-                style: TextStyle(
-                  color: presenter.textColor(isMine),
-                  fontSize: AppFontSize.sm,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  if (message.trim().isNotEmpty)
+                    Text(
+                      message,
+                      style: TextStyle(
+                        color: presenter.textColor(isMine),
+                        fontSize: AppFontSize.sm,
+                      ),
+                    ),
+                  MessageAttachmentList(
+                    attachments: attachments,
+                    uploadStatusMap: uploadStatusMap,
+                    resolveFileUrl: resolveFileUrl,
+                    onRetry: onRetryAttachment,
+                    onOpenDocument: onOpenDocument,
+                    onOpenImage: onOpenImage,
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 2),
