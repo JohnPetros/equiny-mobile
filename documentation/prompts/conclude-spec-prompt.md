@@ -21,7 +21,7 @@ Finalizar e consolidar a implementação de uma Spec técnica, garantindo que o 
 
 3. **Atualização da Documentação e Visualização:**
     *   Refine o documento da Spec original para refletir decisões de design de última hora ou mudanças de caminho.
-    *   Leia o PRD associado a spec e atualize-o para refletir as alterações implementadas, caso necessário. O PRD é um link para um arquivo md no Github, então use o GitHub CLI para ler/atualizar o milestone.
+    *   Leia o PRD associado a spec e atualize-o para refletir as alterações implementadas, caso necessário. O PRD é um link para o milestone no Github, então use o GitHub CLI para ler/atualizar o milestone.
     *   Caso seja necessário, rules associadas caso algum novo padrão de projeto não mapeado foi utilizado na implementação.
     *   **Diagramas ASCII:** Avalie se as mudanças implementadas alteraram fluxos complexos ou a navegação.
         *   **Ação:** Gere ou atualize um diagrama ASCII (fluxo de dados ou sequência) para facilitar a visualização da implementação final.

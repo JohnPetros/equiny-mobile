@@ -99,21 +99,19 @@ class ChatAttachmentPickerPresenter {
 
   String _resolveKindFromFileName(String fileName) {
     final String lower = fileName.toLowerCase();
-    if (lower.endsWith('.pdf')) {
-      return 'pdf';
-    }
-    if (lower.endsWith('.docx')) {
-      return 'docx';
-    }
-    if (lower.endsWith('.txt')) {
-      return 'txt';
-    }
     if (lower.endsWith('.jpg') ||
         lower.endsWith('.jpeg') ||
         lower.endsWith('.png') ||
         lower.endsWith('.heic')) {
       return 'image';
     }
+
+    for (final String extension in allowedDocumentExtensions) {
+      if (lower.endsWith('.$extension')) {
+        return extension;
+      }
+    }
+
     return 'document';
   }
 }

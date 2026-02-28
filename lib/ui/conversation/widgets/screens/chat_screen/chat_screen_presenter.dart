@@ -29,7 +29,6 @@ import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_attachme
 import 'package:equiny/websocket/channels.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signals/signals.dart';
-import 'package:ulid/ulid.dart';
 
 class ChatScreenPresenter {
   final String _chatId;
@@ -249,10 +248,6 @@ class ChatScreenPresenter {
       return;
     }
 
-    if ((pending.errorMessage ?? '').isNotEmpty) {
-      return;
-    }
-
     if ((_pendingMessageId ?? '').isEmpty) {
       await sendMessage();
       return;
@@ -281,7 +276,21 @@ class ChatScreenPresenter {
 
     isSending.value = true;
 
-    _pendingMessageId = Ulid().toString().toUpperCase();
+    final messageResponse = await _conversationService.sendMessage(
+      chatId: _chatId,
+      content: text.isEmpty ? null : text,
+      attachments: const <MessageAttachmentDto>[],
+    );
+
+    if (messageResponse.isFailure || (messageResponse.body.id ?? '').isEmpty) {
+      errorMessage.value = messageResponse.errorMessage.isNotEmpty
+          ? messageResponse.errorMessage
+          : 'Nao foi possivel preparar o envio da mensagem.';
+      isSending.value = false;
+      return;
+    }
+
+    _pendingMessageId = messageResponse.body.id;
     _pendingMessageText = text;
 
     if (validAttachments.isNotEmpty) {
@@ -322,7 +331,11 @@ class ChatScreenPresenter {
 
   PendingAttachment? _findPendingByKey(String key) {
     for (final PendingAttachment pending in pendingAttachments.value) {
-      if (pending.localId == key || pending.name == key) {
+      final MessageAttachmentDto? uploaded =
+          _uploadedAttachmentsByLocalId[pending.localId];
+      if (pending.localId == key ||
+          pending.name == key ||
+          uploaded?.key == key) {
         return pending;
       }
     }

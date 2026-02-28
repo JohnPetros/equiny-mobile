@@ -14,7 +14,6 @@ class MessageBubbleView extends StatelessWidget {
   final Map<String, AttachmentUploadStatus> uploadStatusMap;
   final String Function(String key) resolveFileUrl;
   final void Function(String key) onRetryAttachment;
-  final void Function(String url) onOpenDocument;
   final void Function(String url) onOpenImage;
 
   const MessageBubbleView({
@@ -26,7 +25,6 @@ class MessageBubbleView extends StatelessWidget {
     this.uploadStatusMap = const <String, AttachmentUploadStatus>{},
     required this.resolveFileUrl,
     required this.onRetryAttachment,
-    required this.onOpenDocument,
     required this.onOpenImage,
     super.key,
   });
@@ -65,7 +63,6 @@ class MessageBubbleView extends StatelessWidget {
                     uploadStatusMap: uploadStatusMap,
                     resolveFileUrl: resolveFileUrl,
                     onRetry: onRetryAttachment,
-                    onOpenDocument: onOpenDocument,
                     onOpenImage: onOpenImage,
                   ),
                 ],

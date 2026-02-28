@@ -15,19 +15,19 @@ class MessageBubblePresenter {
   }
 
   bool isDocument(String kind) {
-    return kind == 'pdf' || kind == 'docx' || kind == 'txt';
+    return kind == 'pdf' ||
+        kind == 'docx' ||
+        kind == 'txt' ||
+        kind == 'document';
   }
 
   IconData attachmentIconData(String kind) {
-    switch (kind) {
-      case 'pdf':
-        return Icons.picture_as_pdf_outlined;
-      case 'docx':
-        return Icons.description_outlined;
-      case 'txt':
-        return Icons.article_outlined;
-      default:
-        return Icons.attach_file;
+    if (kind == 'image') {
+      return Icons.image_outlined;
     }
+    if (isDocument(kind)) {
+      return Icons.description_outlined;
+    }
+    return Icons.attach_file;
   }
 }

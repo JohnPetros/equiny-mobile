@@ -1,67 +1,273 @@
-# Prompt: Criar Bug Report
+---
+description: Prompt para criar um bug report técnico com base no relato informal do problema, no PRD, na arquitetura e na codebase existente.
+---
 
-**Objetivo:**
-Transformar um esboço ou relato informal de um erro em um **Bug Report Profissional**, padronizado e pronto para ser entregue à equipe de desenvolvimento.
+# Prompt: Criar Bug Report Técnico
 
-**Entrada:**
-* **Esboço do Problema:** documento de report com apenas o problema descrito de maneira geral
-* **Contexto Técnico (Opcional):** [Inserir info do dispositivo, OS, versão do app, se houver]
+## Objetivo
 
-**Diretrizes de Execução:**
+Transformar um relato informal de erro em um **Bug Report Técnico** claro, acionável e orientado à correção, com base no comportamento observado, no PRD, na arquitetura e na codebase existente.
 
-1.  **Análise do Relato:** Interprete o esboço do problema e o contexto técnico fornecido.
-2. Entenda a arquitetura do projeto, usando as guidelines de cada camada.
-3.  **Diagnóstico:** Identifique as prováveis causas com base na arquitetura do sistema descrito em documentation\architecture.md. Para maior compreendimento do contexto da funcionalidade, se existir, veja o PRD da funcionalidade afetada, localizada no root do diretorio de bug-reports, no nível acima
-4.  **Mapeamento de Camadas:** Determine quais camadas (UI, Core, REST, Drivers) e arquivos específicos estão envolvidos.
-5.  **Plano de Correção:** Elabore uma solução passo a passo, separada por camadas, para orientar o desenvolvimento.
+O bug report deve:
 
-**Formato de Saída Obrigatório:**
+* Explicar **o que está quebrado**
+* Diferenciar **comportamento observado vs esperado**
+* Indicar **onde provavelmente está o problema**
+* Sugerir **como corrigir**, sem inventar soluções fora dos padrões do projeto
 
-Por favor, gere a resposta dentro de um bloco de código Markdown seguindo estritamente este template:
+---
 
-```markdown
-## 🐛 Bug Report: [Título Curto e Descritivo]
+## Entrada
 
-**Problema Identificado:**
-[Uma frase clara descrevendo o comportamento inesperado]
+* **Relato do problema:** descrição livre do erro observado
+* **Contexto técnico (opcional):**
 
-**Causas:**
-[Explicação sucinta das possíveis razões técnicas para o erro]
+  * dispositivo / OS / browser
+  * versão do app
+  * ambiente
+  * feature, fluxo ou módulo afetado
+  * logs, payloads ou exemplos de dados
+  * passos para reproduzir, se houver
 
-**Contexto e Análise:**
-### [Nome da Camada (ex: Camada UI, Camada Core, Camada REST, Camada Drivers)]
+---
 
-<!-- Repita o bloco abaixo para cada camada afetada -->
-- Arquivo: `[Caminho/Nome do Arquivo]`
-- Diagnóstico: [O que está errado especificamente neste local]
+## Diretrizes de Execução
 
-**Plano de Correção (Spec):**
+### 1. Entendimento do problema
 
-### 1. O que já existe? (Contexto/Impacto)
-Liste recursos da codebase (Services, Widgets, DTOs, Stores, Drivers, etc.) que serão utilizados ou impactados. Indique caminhos absolutos ou relativos claros.
+Antes de escrever o bug report:
 
-- **[Camada]**: 
-[Nome do Componente] - [Responsabilidade]
-[Nome do Componente] - [Responsabilidade]
+* Interprete o relato focando em:
 
-### 2. O que deve ser criado?
-Descreva novos componentes necessários para a correção.
+  * sintoma observado
+  * comportamento esperado
+  * impacto funcional
+  * contexto de reprodução
+* Elimine ambiguidades.
+* **Não trate hipótese como fato.**
 
-- **[Camada]**: 
-[Nome do Componente] - [Responsabilidade]
-[Nome do Componente] - [Responsabilidade]
+### 2. Contextualização técnica
 
-### 3. O que deve ser modificado?
-Liste as alterações em código existente.
+* Consulte a arquitetura e as regras do projeto (ex: `documentation/architecture.md`, `documentation/rules/rules.md`).
+* Se o bug estiver ligado a uma feature existente, consulte o **PRD correspondente**.
+* Resuma apenas o que for necessário para entender o bug.
 
-- **[Camada]**: 
-[Nome do Componente] - [Responsabilidade]
-[Nome do Componente] - [Responsabilidade]
+### 3. Investigação da codebase
 
-### 4. O que deve ser removido?
-Liste código legado ou refatorações de limpeza necessárias (se houver).
+Mapeie os pontos reais da codebase envolvidos no fluxo, priorizando:
 
-- **[Camada]**: 
-[Nome do Componente] - [Responsabilidade]
-[Nome do Componente] - [Responsabilidade]
+* entrada da feature: page, widget, route, controller
+* controle de estado: store, context, hook
+* chamada remota: action, service, provider
+* regra de negócio: use case, service, workflow
+* persistência / integração: repository, mapper, provider
+* contratos: schema, DTO, types
+* origem da verdade dos dados
 
+Sempre que possível:
+
+* associe o problema a **arquivos reais**
+* procure implementações similares
+* registre **evidências**
+* diferencie **fato**, **hipótese** e **proposta de correção**
+
+### 4. Diagnóstico e correção
+
+* Liste as **causas prováveis** com nível de confiança.
+* Proponha uma correção **incremental, segura e consistente** com os padrões existentes.
+* Inclua **apenas camadas realmente afetadas**.
+* Se faltar informação, registre em **Pendências / Dúvidas** em vez de inventar.
+
+### 5. Ferramentas auxiliares
+
+* **MCP Serena:** usar para localizar arquivos relevantes
+* **MCP Context7:** usar para dúvidas sobre bibliotecas específicas
+* **Tool `question`:** usar quando houver lacunas críticas, incongruências ou dependência de decisão funcional/arquitetural
+
+---
+
+## Estrutura do Documento (Markdown)
+
+Gere o arquivo Markdown do Bug Report seguindo **estritamente** o modelo abaixo.
+
+### Cabeçalho (Frontmatter)
+
+```md
+---
+title: <Título claro>
+prd: <link para o PRD da feature afetada, quando aplicável>
+status: <em_progresso|concluido>
+last_updated_at: <YYYY-MM-DD>
+---
+```
+
+---
+
+# 1. Problema Identificado
+
+[Descreva objetivamente o comportamento incorreto observado.]
+
+Incluir, quando houver:
+
+* o que o usuário fez
+* o que aconteceu
+* o que deveria ter acontecido
+* onde ocorre
+* em qual ambiente ocorre
+* frequência percebida
+
+> Não incluir hipótese técnica nesta seção.
+
+---
+
+# 2. Escopo e Impacto
+
+## 2.1 Fluxo afetado
+
+[Descreva a feature, tela, endpoint ou jornada afetada.]
+
+## 2.2 Impacto funcional
+
+[Explique o impacto real para usuário, operação ou sistema.]
+
+## 2.3 Severidade e alcance
+
+[Classifique a gravidade e o alcance do bug.]
+
+---
+
+# 3. Contexto Esperado
+
+[Resuma o comportamento esperado com base no PRD, contratos existentes, arquitetura ou padrões da codebase.]
+
+> Se não aplicável, escrever: **Não aplicável**.
+
+---
+
+# 4. Causas Prováveis
+
+Para cada causa relevante:
+
+* **Causa provável**
+* **Evidência encontrada**
+* **Nível de confiança:** alto | médio | baixo
+* **Impacto no bug**
+
+---
+
+# 5. O que já existe?
+
+[Liste recursos reais da codebase envolvidos no bug, reutilizados na correção ou potencialmente impactados.]
+
+## [Nome da Camada]
+
+* **`NomeDaClasseOuModulo`** (`caminho/relativo/do/arquivo`) - *[Responsabilidade atual e relação com o bug.]*
+
+---
+
+# 6. Análise Técnica por Camada
+
+## [Nome da Camada]
+
+* **Arquivo:** `caminho/relativo/do/arquivo`
+* **Responsabilidade atual:** [Papel do arquivo no fluxo]
+* **Diagnóstico:** [O que está errado, inconsistente, ausente ou frágil]
+* **Evidência:** [Indício encontrado no código, contrato ou fluxo]
+* **Risco associado:** [Risco de manter como está]
+
+> Repetir para cada arquivo relevante.
+
+---
+
+# 7. Plano de Correção (Spec)
+
+## 7.1 O que deve ser criado?
+
+[Descreva novos recursos necessários **apenas se estritamente necessário**.]
+
+### [Nome da Camada]
+
+* **Localização:** `caminho/do/arquivo` (**novo arquivo** se aplicável)
+* **Responsabilidade:** [O que será criado]
+* **Justificativa:** [Por que criar é necessário]
+
+> Se não houver criação, escrever: **Não aplicável**.
+
+## 7.2 O que deve ser modificado?
+
+### [Nome da Camada]
+
+* **Arquivo:** `caminho/do/arquivo`
+* **Mudança:** [Alteração específica]
+* **Justificativa:** [Por que a mudança é necessária]
+* **Impacto esperado:** [Efeito esperado da correção]
+* **Camada:** `ui` | `core` | `rest` | `provision` | `queue` | `database` | `ai`
+
+> Se não houver modificações, escrever: **Não aplicável**.
+
+## 7.3 O que deve ser removido?
+
+### [Nome da Camada]
+
+* **Arquivo:** `caminho/do/arquivo`
+* **Motivo da remoção:** [Por que remover]
+* **Impacto esperado:** [Efeito da remoção]
+
+> Se não houver remoções, escrever: **Não aplicável**.
+
+---
+
+# 8. Contratos, Dados e Compatibilidade
+
+[Descreva impactos em schemas, DTOs, payloads, mapeamentos, compatibilidade e dados.]
+
+> Se não houver impacto, escrever: **Não aplicável**.
+
+---
+
+# 9. Decisões Técnicas e Trade-offs
+
+Para cada decisão importante:
+
+* **Decisão**
+* **Alternativas consideradas**
+* **Motivo da escolha**
+* **Impactos / trade-offs**
+
+---
+
+# 10. Diagramas e Referências
+
+* **Fluxo afetado:** diagrama ASCII/text-based mostrando onde o bug acontece
+* **Fluxo corrigido:** diagrama ASCII/text-based mostrando o comportamento esperado após a correção
+* **Referências:** caminhos de arquivos reais com implementações similares
+
+---
+
+# 11. Pendências / Dúvidas
+
+Para cada item em aberto:
+
+* **Descrição da pendência**
+* **Impacto na correção**
+* **Ação sugerida**
+
+> Se não houver pendências, escrever: **Sem pendências**.
+
+---
+
+## Restrições
+
+* **Não inclua testes automatizados no bug report.**
+* Todos os caminhos citados devem existir no projeto **ou** estar explicitamente marcados como **novo arquivo**.
+* **Não invente** arquivos, métodos, contratos, causas ou integrações sem evidência.
+* Diferencie explicitamente:
+  * fato observado
+  * evidência encontrada
+  * hipótese diagnóstica
+  * proposta de correção
+* Se faltar informação suficiente, registrar em **Pendências / Dúvidas** e usar a tool `question` quando necessário.
+* Se uma seção não se aplicar, preencher explicitamente com **Não aplicável**.
+* Prefira correções incrementais e localizadas.
+* Evite repetir a mesma informação em múltiplas seções.
+* Inclua apenas camadas sustentadas por evidência.

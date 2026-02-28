@@ -1,8 +1,8 @@
 ---
 title: Chat — Envio e Visualizacao de Anexos
 prd: documentation/features/conversation/chat-screen/prd.md
-status: em progresso
-last_updated_at: 2026-02-26
+status: concluido
+last_updated_at: 2026-02-28
 ---
 
 # 1. Objetivo
@@ -82,7 +82,7 @@ Habilitar o envio de anexos (imagens e documentos) na tela de chat do `equiny_mo
 ## 4.2 Core (`lib/core/`)
 
 - **`MessageDto`** (`lib/core/conversation/dtos/entities/message_dto.dart`) — possui `List<AttachmentDto> attachments` (campo a ser atualizado para `List<MessageAttachmentDto>`).
-- **`AttachmentDto` (conversation)** (`lib/core/conversation/dtos/structures/attachment_dto.dart`) — sera renomeado para `MessageAttachmentDto` com campos `kind`, `key`, `name`, `size`.
+- **`MessageAttachmentDto` (conversation)** (`lib/core/conversation/dtos/structures/attachment_dto.dart`) — DTO de anexo de mensagem com campos `kind`, `key`, `name`, `size`.
 - **`FileStorageService`** (`lib/core/storage/interfaces/file_storage_service.dart`) — contrato ja possui `generateUploadUrlsForAttachments`.
 - **`FileStorageDriver`** (`lib/core/storage/interfaces/file_storage_driver.dart`) — contrato com `uploadFiles`, `getFileUrl`.
 - **`ConversationService`** (`lib/core/conversation/interfaces/conversation_service.dart`) — necessita de novo metodo `sendMessage`.
@@ -189,7 +189,7 @@ message_bubble/
 
 ## 5.2 Core
 
-- **Arquivo:** `lib/core/conversation/dtos/structures/message_attachment_dto.dart` (**novo arquivo**)
+- **Arquivo:** `lib/core/conversation/dtos/structures/attachment_dto.dart` (**arquivo mantido com classe renomeada**)
   - **Tipo:** `dto`
   - **Contratos/assinaturas:**
     ```dart
@@ -421,9 +421,16 @@ ChatScreen
 - `lib/drivers/media-picker-driver/image-picker/image_picker_media_picker_driver.dart` — referencia de padrao de driver de picker.
 - `lib/core/storage/interfaces/file_storage_service.dart` — contrato de servico de storage.
 
-# 9. Perguntas em aberto
+# 9. Decisoes finais
 
-- Confirmar path do endpoint `POST /conversation/chats/:chatId/messages` no `Equiny Server` e o shape exato do corpo (especialmente o campo de `attachments` e se o `content` pode ser vazio quando so ha anexos). path correto. content pode ser null. 
-- Definir shape do evento WebSocket para mensagem com anexos: o `MessageSentEvent` precisa enviar as `keys` dos arquivos ja no storage, ou o servidor monta as referencias apos receber o evento? precisa enviar as `keys` dos arquivos.
-- Confirmar se `file_picker` deve ser adicionado ao `pubspec.yaml` ou ja e dependencia indireta de outro package no projeto.
-- Definir comportamento quando o upload de pelo menos um anexo falha: enviar a mensagem somente com os anexos que subiram com sucesso, ou bloquear o envio ate todos estarem prontos?
+- O endpoint de criacao da mensagem foi confirmado como `POST /conversation/chats/:chatId/messages`.
+- `content` pode ser `null` quando a mensagem contem somente anexos.
+- O `MessageSentEvent` envia a lista de anexos com `keys` ja persistidas no storage.
+- `file_picker` foi adicionado ao `pubspec.yaml` como dependencia direta.
+- Em caso de falha de upload, o evento WebSocket e bloqueado ate os retries dos anexos com erro.
+
+# 10. Validacao final
+
+- `dart format .` executado com sucesso.
+- `flutter analyze` executado sem warnings/erros.
+- `flutter test` executado com todos os testes passando.

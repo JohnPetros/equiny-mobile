@@ -8,7 +8,6 @@ class MessageAttachmentListView extends StatelessWidget {
   final Map<String, AttachmentUploadStatus> uploadStatusMap;
   final String Function(String key) resolveFileUrl;
   final void Function(String key) onRetry;
-  final void Function(String url) onOpenDocument;
   final void Function(String url) onOpenImage;
 
   const MessageAttachmentListView({
@@ -16,7 +15,6 @@ class MessageAttachmentListView extends StatelessWidget {
     required this.uploadStatusMap,
     required this.resolveFileUrl,
     required this.onRetry,
-    required this.onOpenDocument,
     required this.onOpenImage,
     super.key,
   });
@@ -39,7 +37,6 @@ class MessageAttachmentListView extends StatelessWidget {
           status: status,
           resolvedUrl: resolvedUrl,
           onRetry: onRetry,
-          onOpenDocument: onOpenDocument,
           onOpenImage: onOpenImage,
         );
       }).toList(),
