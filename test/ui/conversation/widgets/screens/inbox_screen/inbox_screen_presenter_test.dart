@@ -59,6 +59,7 @@ void main() {
       () => profilingChannel.listen(
         onOwnerPresenceRegistered: any(named: 'onOwnerPresenceRegistered'),
         onOwnerPresenceUnregistered: any(named: 'onOwnerPresenceUnregistered'),
+        onHorseMatchNotified: any(named: 'onHorseMatchNotified'),
       ),
     ).thenReturn(() {});
     when(() => cacheDriver.get(any())).thenReturn('owner-id');
