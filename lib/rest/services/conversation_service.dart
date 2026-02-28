@@ -20,7 +20,7 @@ class ConversationService extends Service
   Future<RestResponse<List<ChatDto>>> fetchChats() async {
     super.setAuthHeader();
     final RestResponse<Json> response = await super.restClient.get(
-      '/conversation/chats',
+      '/conversation/chats/list',
     );
 
     if (response.isFailure) {
@@ -34,10 +34,13 @@ class ConversationService extends Service
   }
 
   @override
-  Future<RestResponse<ChatDto>> fetchChat({required String chatId}) async {
+  Future<RestResponse<ChatDto>> createChat({
+    required String recipientId,
+  }) async {
     super.setAuthHeader();
-    final RestResponse<Json> response = await super.restClient.get(
-      '/conversation/chats/$chatId',
+    final RestResponse<Json> response = await super.restClient.post(
+      '/conversation/chats/',
+      body: <String, dynamic>{'recipient_id': recipientId},
     );
 
     if (response.isFailure) {
@@ -51,21 +54,11 @@ class ConversationService extends Service
   }
 
   @override
-  Future<RestResponse<ChatDto>> createChat({
-    required String recipientId,
-    required String senderId,
-    required String recipientHorseId,
-    required String senderHorseId,
-  }) async {
+  Future<RestResponse<ChatDto>> fetchChat({required String recipientId}) async {
     super.setAuthHeader();
     final RestResponse<Json> response = await super.restClient.post(
       '/conversation/chats/',
-      body: <String, dynamic>{
-        'recipient_id': recipientId,
-        'sender_id': senderId,
-        'recipient_horse_id': recipientHorseId,
-        'sender_horse_id': senderHorseId,
-      },
+      queryParams: <String, dynamic>{'recipient_id': recipientId},
     );
 
     if (response.isFailure) {
@@ -111,7 +104,7 @@ class ConversationService extends Service
   }) async {
     super.setAuthHeader();
     final RestResponse<Json> response = await super.restClient.post(
-      '/conversation/chats/$chatId/messages',
+      '/conversation/chats/$chatId/messages/',
       body: <String, dynamic>{
         'content': (content ?? '').trim().isEmpty ? null : content,
         'attachments': attachments.map(MessageAttachmentMapper.toJson).toList(),

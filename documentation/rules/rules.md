@@ -1,9 +1,10 @@
 # Guia de Documentação de Diretrizes do Projeto
 
-Este arquivo serve como índice para as diretrizes de documentação do projeto. Consulte os arquivos específicos abaixo com base na tarefa em questão.
+Este arquivo é um índice para as diretrizes de documentação do projeto. Consulte o guia mais adequado ao tipo de mudança.
 
-## Diretrizes de Interface de Usuário (ui)
-**Arquivo:** `/documentation/rules/ui-layer-rules.md`
+## UI (Interface de Usuário)
+**Arquivo:** [`documentation/rules/ui-layer-rules.md`](./ui-layer-rules.md)
+
 **Quando consultar:**
 - Ao criar um documento relacionado a UI.
 - Ao criar ou modificar Widgets Flutter (MVP Pattern).
@@ -12,47 +13,61 @@ Este arquivo serve como índice para as diretrizes de documentação do projeto.
 - Ao utilizar componentes do `shadcn_flutter`.
 
 ## Convenções de Código
-**Arquivo:** `/documentation/rules/code-conventions-rules.md`
+**Arquivo:** [`documentation/rules/code-conventions-rules.md`](./code-conventions-rules.md)
+
 **Quando consultar:**
 - Ao criar um documento relacionado ao código.
 - Para convenções gerais de nomenclatura (variáveis, funções, classes, arquivos).
 - Para regras sobre Barrel files (index.dart).
 - Para entender a estrutura de diretórios e organização geral.
 
-## Diretrizes da Camada de Drivers
-**Arquivo:** `/documentation/rules/drivers-layer-rules.md`
+## Drivers
+**Arquivo:** [`documentation/rules/drivers-layer-rules.md`](./drivers-layer-rules.md)
+
 **Quando consultar:**
 - Ao criar um documento relacionado a drivers.
-- Ao implementar adaptadores para bibliotecas externas (Env, Navegação, Armazenamento Loal, etc.).
+- Ao implementar adaptadores para bibliotecas externas (Env, Navegação, Armazenamento Local, etc.).
 - Para entender como isolar infraestrutura da camada de domínio (Core).
 - Ao configurar inicializações de ferramentas de terceiros.
 
-## Diretrizes do Pacote Core (core)
-**Arquivo:** `/documentation/rules/core-layer-rules.md`
+## Core
+**Arquivo:** [`documentation/rules/core-layer-rules.md`](./core-layer-rules.md)
+
 **Quando consultar:**
 - Ao criar um documento relacionado à camada core.
 - Para entender a arquitetura de Domínio (Clean Architecture).
 - Ao definir Entidades, Casos de Uso (Use Cases) e Interfaces.
 - Para contratos de abstração que serão implementados por Drivers ou Repositórios.
 
-## Diretrizes da Camada REST
-**Arquivo:** `/documentation/rules/rest-layer-rules.md`
+## REST
+**Arquivo:** [`documentation/rules/rest-layer-rules.md`](./rest-layer-rules.md)
+
 **Quando consultar:**
-- Ao criar um documento relacionado à camada rest.
+- Ao criar um documento relacionado à camada REST.
 - Ao realizar requisições HTTP para APIs externas.
 - Para implementar clientes REST e tratamento de respostas/erros de API.
 
-## Diretrizes de Testes Unitários
-**Arquivo:** `/documentation/rules/unit-tests-rules.md`
+## WebSocket
+**Arquivo:** [`documentation/rules/websocket-layer-rules.md`](./websocket-layer-rules.md)
+
+**Quando consultar:**
+- Ao criar ou modificar canais WebSocket (ex.: chat, presença e eventos realtime).
+- Ao alterar o `WebSocketClient` e o ciclo de vida de conexão/sessão.
+- Ao integrar atualizações em tempo real em presenters sem parse de JSON na UI.
+
+## Testes Unitários
+**Arquivo:** [`documentation/rules/unit-tests-rules.md`](./unit-tests-rules.md)
+
 **Quando consultar:**
 - Ao criar um documento relacionado a testes unitários.
 - Ao escrever testes para Casos de Uso, Presenters e outras classes de lógica.
 - Para entender padrões de Mocks e Fakers.
 - Para boas práticas de estrutura e nomenclatura de testes.
 
-## Diretrizes de Desenvolvimento
-**Arquivo:** `/documentation/rules/developement-rules.md`
+## Desenvolvimento
+**Arquivo:** [`documentation/rules/developement-rules.md`](./developement-rules.md)
+
 **Quando consultar:**
 - Ao criar um documento relacionado ao desenvolvimento.
-- Para fluxo de trabalho Git (Commits, PRs, Branches).
+- Para fluxo de trabalho Git (commits, PRs, branches).
 - Para padrões de mensagens de commit e versionamento.

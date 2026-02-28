@@ -139,13 +139,22 @@ class ChatScreenPresenter {
   }
 
   Future<void> loadChat() async {
-    final response = await _conversationService.fetchChat(chatId: _chatId);
+    final response = await _conversationService.fetchChats();
     if (response.isFailure) {
       errorMessage.value = response.errorMessage;
       return;
     }
 
-    chat.value = response.body;
+    final ChatDto? resolvedChat = response.body.cast<ChatDto?>().firstWhere(
+      (ChatDto? item) => item?.id == _chatId,
+      orElse: () => null,
+    );
+    if (resolvedChat == null) {
+      errorMessage.value = 'Nao foi possivel localizar a conversa.';
+      return;
+    }
+
+    chat.value = resolvedChat;
   }
 
   Future<void> loadInitialMessages() async {
@@ -276,21 +285,6 @@ class ChatScreenPresenter {
 
     isSending.value = true;
 
-    final messageResponse = await _conversationService.sendMessage(
-      chatId: _chatId,
-      content: text.isEmpty ? null : text,
-      attachments: const <MessageAttachmentDto>[],
-    );
-
-    if (messageResponse.isFailure || (messageResponse.body.id ?? '').isEmpty) {
-      errorMessage.value = messageResponse.errorMessage.isNotEmpty
-          ? messageResponse.errorMessage
-          : 'Nao foi possivel preparar o envio da mensagem.';
-      isSending.value = false;
-      return;
-    }
-
-    _pendingMessageId = messageResponse.body.id;
     _pendingMessageText = text;
 
     if (validAttachments.isNotEmpty) {
