@@ -1,26 +1,70 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:equiny/core/storage/dtos/structures/upload_url_dto.dart';
 import 'package:equiny/core/storage/interfaces/file_storage_driver.dart';
 import 'package:equiny/core/shared/interfaces/env_driver.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseFileStorageDriver implements FileStorageDriver {
   final EnvDriver envDriver;
-  late final SupabaseClient _supabase;
+  late final SupabaseClient? _supabase;
+  final Dio _dio;
 
-  SupabaseFileStorageDriver(this.envDriver) {
-    _supabase = SupabaseClient(
-      envDriver.get('SUPABASE_URL'),
-      envDriver.get('SUPABASE_KEY'),
-    );
+  SupabaseFileStorageDriver(this.envDriver, [Dio? dio]) : _dio = dio ?? Dio() {
+    _supabase = _createClient();
   }
 
-  String get _bucket => envDriver.get('SUPABASE_STORAGE_BUCKET');
+  SupabaseClient? _createClient() {
+    try {
+      final String url = envDriver.get('SUPABASE_URL');
+      final String key = envDriver.get('SUPABASE_KEY');
+      if (url.isEmpty || key.isEmpty) {
+        return null;
+      }
+      return SupabaseClient(url, key);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String? get _bucket {
+    try {
+      final String bucket = envDriver.get('SUPABASE_STORAGE_BUCKET');
+      if (bucket.isEmpty) {
+        return null;
+      }
+      return bucket;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  SupabaseClient get _client {
+    final SupabaseClient? client = _supabase;
+    if (client == null) {
+      throw Exception('Supabase nao configurado para operacoes de storage.');
+    }
+    return client;
+  }
+
+  String get _requiredBucket {
+    final String? bucket = _bucket;
+    if ((bucket ?? '').isEmpty) {
+      throw Exception('Bucket do Supabase nao configurado.');
+    }
+    return bucket!;
+  }
 
   @override
   String getFileUrl(String filePath) {
-    return _supabase.storage.from(_bucket).getPublicUrl(filePath);
+    final SupabaseClient? client = _supabase;
+    final String? bucket = _bucket;
+    if (client == null || (bucket ?? '').isEmpty || filePath.isEmpty) {
+      return '';
+    }
+    return client.storage.from(bucket!).getPublicUrl(filePath);
   }
 
   @override
@@ -29,8 +73,8 @@ class SupabaseFileStorageDriver implements FileStorageDriver {
       throw Exception('Arquivo não encontrado: ${file.path}');
     }
 
-    await _supabase.storage
-        .from(_bucket)
+    await _client.storage
+        .from(_requiredBucket)
         .uploadToSignedUrl(
           uploadUrl.filePath,
           uploadUrl.token,
@@ -53,6 +97,18 @@ class SupabaseFileStorageDriver implements FileStorageDriver {
     await Future.wait(
       List.generate(files.length, (i) => uploadFile(files[i], uploadUrls[i])),
     );
+  }
+
+  @override
+  Future<File> downloadFile(String filePath) async {
+    final String fileUrl = getFileUrl(filePath);
+    final Directory documentsDir = await getApplicationDocumentsDirectory();
+    final String fileName = filePath.split('/').last;
+    final String savePath = '${documentsDir.path}/$fileName';
+
+    await _dio.download(fileUrl, savePath);
+
+    return File(savePath);
   }
 
   String _guessContentType(String path) {

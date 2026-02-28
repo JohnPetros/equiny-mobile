@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:equiny/core/storage/dtos/structures/upload_url_dto.dart';
 import 'package:equiny/core/storage/interfaces/file_storage_driver.dart';
 import 'package:equiny/core/shared/interfaces/env_driver.dart';
+import 'package:path_provider/path_provider.dart';
 
 class SupabaseFileStorageDriver implements FileStorageDriver {
   final EnvDriver envDriver;
@@ -46,6 +47,18 @@ class SupabaseFileStorageDriver implements FileStorageDriver {
         (int index) => uploadFile(files[index], uploadUrls[index]),
       ),
     );
+  }
+
+  @override
+  Future<File> downloadFile(String filePath) async {
+    final String fileUrl = getFileUrl(filePath);
+    final Directory documentsDir = await getApplicationDocumentsDirectory();
+    final String fileName = filePath.split('/').last;
+    final String savePath = '${documentsDir.path}/$fileName';
+
+    await _dio.download(fileUrl, savePath);
+
+    return File(savePath);
   }
 
   String _buildUploadEndpoint(UploadUrlDto uploadUrl) {
