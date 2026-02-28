@@ -1,15 +1,6 @@
-class AttachmentDto {
-  final String chatId;
-  final String messageId;
-  final String attachmentId;
-  final String fileKind;
-  final String fileName;
+class StorageAttachmentDto {
+  final String kind;
+  final String name;
 
-  const AttachmentDto({
-    required this.chatId,
-    required this.messageId,
-    required this.attachmentId,
-    required this.fileKind,
-    required this.fileName,
-  });
+  const StorageAttachmentDto({required this.kind, required this.name});
 }

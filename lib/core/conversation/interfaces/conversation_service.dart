@@ -1,5 +1,6 @@
 import 'package:equiny/core/conversation/dtos/entities/chat_dto.dart';
 import 'package:equiny/core/conversation/dtos/entities/message_dto.dart';
+import 'package:equiny/core/conversation/dtos/structures/attachment_dto.dart';
 import 'package:equiny/core/shared/responses/pagination_response.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
 
@@ -16,5 +17,10 @@ abstract class ConversationService {
     required String senderId,
     required String recipientHorseId,
     required String senderHorseId,
+  });
+  Future<RestResponse<MessageDto>> sendMessage({
+    required String chatId,
+    required String? content,
+    required List<MessageAttachmentDto> attachments,
   });
 }

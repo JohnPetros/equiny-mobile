@@ -1,16 +1,19 @@
 import 'dart:async';
 
 import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_error_state/index.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_attachment_picker/index.dart';
 import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_loading_state/index.dart';
 import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_screen_presenter.dart';
 import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_header/index.dart';
 import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_empty_state/index.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_image_viewer/index.dart';
 import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_messages_list/index.dart';
 import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_input_bar/index.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signals_flutter/signals_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ChatScreenView extends ConsumerStatefulWidget {
   final String chatId;
@@ -23,6 +26,34 @@ class ChatScreenView extends ConsumerStatefulWidget {
 
 class _ChatScreenViewState extends ConsumerState<ChatScreenView> {
   bool _isScreenInFocus = false;
+
+  Future<void> _openAttachmentPicker(ChatScreenPresenter presenter) async {
+    await ChatAttachmentPicker.show(
+      context,
+      onPickImages: presenter.pickImageAttachments,
+      onPickDocuments: presenter.pickDocumentAttachments,
+    );
+  }
+
+  Future<void> _openImageViewer(String imageUrl) async {
+    if (imageUrl.isEmpty) {
+      return;
+    }
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ChatImageViewer(imageUrl: imageUrl),
+      ),
+    );
+  }
+
+  Future<void> _openDocument(String url) async {
+    if (url.isEmpty) {
+      return;
+    }
+
+    final Uri uri = Uri.parse(url);
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
 
   void _syncChannelConnection(
     ChatScreenPresenter presenter,
@@ -92,13 +123,23 @@ class _ChatScreenViewState extends ConsumerState<ChatScreenView> {
                         onReachTop: presenter.loadMoreMessages,
                         isMine: presenter.isMine,
                         formatTime: presenter.formatMessageHour,
+                        uploadStatusMap: presenter.uploadStatusMap.value,
+                        resolveFileUrl: presenter.resolveFileUrl,
+                        onRetryAttachment: presenter.retryAttachmentUpload,
+                        onOpenDocument: (String url) =>
+                            unawaited(_openDocument(url)),
+                        onOpenImage: (String url) =>
+                            unawaited(_openImageViewer(url)),
                       ),
               ),
               ChatInputBar(
                 draft: presenter.draft.value,
                 isSending: presenter.isSending.value,
+                pendingAttachments: presenter.pendingAttachments.value,
                 onChanged: presenter.onDraftChanged,
                 onSend: presenter.sendMessage,
+                onAttachmentTap: () => _openAttachmentPicker(presenter),
+                onRemoveAttachment: presenter.removePendingAttachment,
               ),
             ],
           );

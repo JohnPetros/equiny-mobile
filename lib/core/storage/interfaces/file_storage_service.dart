@@ -4,7 +4,9 @@ import 'package:equiny/core/storage/dtos/structures/upload_url_dto.dart';
 
 abstract class FileStorageService {
   Future<RestResponse<List<UploadUrlDto>>> generateUploadUrlsForAttachments({
-    required List<AttachmentDto> attachments,
+    required String chatId,
+    required String messageId,
+    required List<StorageAttachmentDto> attachments,
   });
   Future<RestResponse<List<UploadUrlDto>>> generateUploadUrlsForHorseGallery({
     required String horseId,
