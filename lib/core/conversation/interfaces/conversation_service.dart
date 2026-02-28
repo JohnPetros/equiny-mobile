@@ -6,17 +6,12 @@ import 'package:equiny/core/shared/responses/rest_response.dart';
 
 abstract class ConversationService {
   Future<RestResponse<List<ChatDto>>> fetchChats();
-  Future<RestResponse<ChatDto>> fetchChat({required String chatId});
+  Future<RestResponse<ChatDto>> createChat({required String recipientId});
+  Future<RestResponse<ChatDto>> fetchChat({required String recipientId});
   Future<RestResponse<PaginationResponse<MessageDto>>> fetchMessagesList({
     required String chatId,
     required int limit,
     required String? cursor,
-  });
-  Future<RestResponse<ChatDto>> createChat({
-    required String recipientId,
-    required String senderId,
-    required String recipientHorseId,
-    required String senderHorseId,
   });
   Future<RestResponse<MessageDto>> sendMessage({
     required String chatId,
