@@ -15,7 +15,6 @@ class ChatMessagesListView extends StatefulWidget {
   final Map<String, AttachmentUploadStatus> uploadStatusMap;
   final String Function(String key) resolveFileUrl;
   final void Function(String key) onRetryAttachment;
-  final void Function(String url) onOpenDocument;
   final void Function(String url) onOpenImage;
 
   const ChatMessagesListView({
@@ -27,7 +26,6 @@ class ChatMessagesListView extends StatefulWidget {
     required this.uploadStatusMap,
     required this.resolveFileUrl,
     required this.onRetryAttachment,
-    required this.onOpenDocument,
     required this.onOpenImage,
     super.key,
   });
@@ -104,7 +102,6 @@ class _ChatMessagesListViewState extends State<ChatMessagesListView> {
                 uploadStatusMap: widget.uploadStatusMap,
                 resolveFileUrl: widget.resolveFileUrl,
                 onRetryAttachment: widget.onRetryAttachment,
-                onOpenDocument: widget.onOpenDocument,
                 onOpenImage: widget.onOpenImage,
               ),
           ],

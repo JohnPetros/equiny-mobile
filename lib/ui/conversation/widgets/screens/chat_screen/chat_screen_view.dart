@@ -13,7 +13,6 @@ import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class ChatScreenView extends ConsumerStatefulWidget {
   final String chatId;
@@ -44,15 +43,6 @@ class _ChatScreenViewState extends ConsumerState<ChatScreenView> {
         builder: (_) => ChatImageViewer(imageUrl: imageUrl),
       ),
     );
-  }
-
-  Future<void> _openDocument(String url) async {
-    if (url.isEmpty) {
-      return;
-    }
-
-    final Uri uri = Uri.parse(url);
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   void _syncChannelConnection(
@@ -126,8 +116,6 @@ class _ChatScreenViewState extends ConsumerState<ChatScreenView> {
                         uploadStatusMap: presenter.uploadStatusMap.value,
                         resolveFileUrl: presenter.resolveFileUrl,
                         onRetryAttachment: presenter.retryAttachmentUpload,
-                        onOpenDocument: (String url) =>
-                            unawaited(_openDocument(url)),
                         onOpenImage: (String url) =>
                             unawaited(_openImageViewer(url)),
                       ),
