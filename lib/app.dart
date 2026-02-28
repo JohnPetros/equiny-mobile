@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:equiny/core/profiling/events/horse_match_notified_event.dart';
 import 'package:equiny/core/profiling/events/owner_entered_event.dart';
 import 'package:equiny/core/profiling/events/owner_exited_event.dart';
 import 'package:equiny/core/shared/constants/cache_keys.dart';
@@ -12,6 +13,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:equiny/router.dart';
 import 'package:equiny/shared/providers/auth_state_provider.dart';
+import 'package:equiny/ui/profiling/match_notification/widgets/screens/match_notification_modal/index.dart';
+import 'package:equiny/ui/profiling/match_notification/widgets/screens/match_notification_modal/match_notification_modal_presenter.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:equiny/websocket/channels.dart';
 import 'package:equiny/websocket/websocket_client.dart';
@@ -28,6 +31,8 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   String? _inFlightSessionKey;
   Timer? _offlineGraceTimer;
   bool _isLifecycleResumed = true;
+  void Function()? _profilingRealtimeUnsubscribe;
+  bool _isMatchNotificationModalVisible = false;
 
   static const Duration _offlineGracePeriod = Duration(seconds: 30);
 
@@ -43,6 +48,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _clearProfilingRealtimeSubscription();
     _offlineGraceTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -110,6 +116,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       _offlineGraceTimer = null;
       _activeSessionKey = null;
       _inFlightSessionKey = null;
+      _clearProfilingRealtimeSubscription();
       unawaited(websocketClient.disconnect());
       return;
     }
@@ -158,6 +165,8 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     final cacheDriver = ref.read(cacheDriverProvider);
     final ownerId = cacheDriver.get(CacheKeys.ownerId) ?? '';
 
+    _clearProfilingRealtimeSubscription();
+
     if (ownerId.isNotEmpty) {
       final profilingChannel = ref.read(profilingChannelProvider);
       await profilingChannel.emitOwnerExitedEvent(
@@ -195,11 +204,61 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       await profilingChannel.emitOwnerEnteredEvent(
         OwnerEnteredEvent(ownerId: currentOwnerId),
       );
+      _profilingRealtimeUnsubscribe?.call();
+      _profilingRealtimeUnsubscribe = profilingChannel.listen(
+        onOwnerPresenceRegistered: (_) {},
+        onOwnerPresenceUnregistered: (_) {},
+        onHorseMatchNotified: _handleMatchNotified,
+      );
       _activeSessionKey = sessionKey;
     } finally {
       if (_inFlightSessionKey == sessionKey) {
         _inFlightSessionKey = null;
       }
     }
+  }
+
+  void _clearProfilingRealtimeSubscription() {
+    _profilingRealtimeUnsubscribe?.call();
+    _profilingRealtimeUnsubscribe = null;
+  }
+
+  void _handleMatchNotified(HorseMatchNotifiedEvent event) {
+    if (!mounted) {
+      return;
+    }
+
+    final router = ref.read(routerProvider);
+    final BuildContext? navigatorContext =
+        router.routerDelegate.navigatorKey.currentContext;
+
+    if (navigatorContext == null) {
+      return;
+    }
+
+    final presenter = ref.read(matchNotificationModalPresenterProvider);
+    if (!_isMatchNotificationModalVisible) {
+      presenter.clear();
+      presenter.enqueue(event.payload.horseMatch);
+      _isMatchNotificationModalVisible = true;
+
+      unawaited(
+        showGeneralDialog<void>(
+          context: navigatorContext,
+          useRootNavigator: true,
+          barrierDismissible: false,
+          barrierColor: Colors.black.withValues(alpha: 0.75),
+          barrierLabel: 'Match Notification',
+          transitionDuration: const Duration(milliseconds: 220),
+          pageBuilder: (_, _, _) => const MatchNotificationModal(),
+        ).whenComplete(() {
+          _isMatchNotificationModalVisible = false;
+          ref.invalidate(matchNotificationModalPresenterProvider);
+        }),
+      );
+      return;
+    }
+
+    presenter.enqueue(event.payload.horseMatch);
   }
 }

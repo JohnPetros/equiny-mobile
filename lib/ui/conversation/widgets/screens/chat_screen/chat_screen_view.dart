@@ -25,6 +25,7 @@ class ChatScreenView extends ConsumerStatefulWidget {
 
 class _ChatScreenViewState extends ConsumerState<ChatScreenView> {
   bool _isScreenInFocus = false;
+  ChatScreenPresenter? _cachedPresenter;
 
   Future<void> _openAttachmentPicker(ChatScreenPresenter presenter) async {
     await ChatAttachmentPicker.show(
@@ -68,6 +69,7 @@ class _ChatScreenViewState extends ConsumerState<ChatScreenView> {
     final ChatScreenPresenter presenter = ref.watch(
       chatScreenPresenterProvider(widget.chatId),
     );
+    _cachedPresenter = presenter;
     final bool isCurrentRoute = ModalRoute.of(context)?.isCurrent ?? false;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -138,11 +140,8 @@ class _ChatScreenViewState extends ConsumerState<ChatScreenView> {
 
   @override
   void dispose() {
-    if (_isScreenInFocus) {
-      final ChatScreenPresenter presenter = ref.read(
-        chatScreenPresenterProvider(widget.chatId),
-      );
-      unawaited(presenter.disconnectChannel());
+    if (_isScreenInFocus && _cachedPresenter != null) {
+      unawaited(_cachedPresenter!.disconnectChannel());
     }
     super.dispose();
   }

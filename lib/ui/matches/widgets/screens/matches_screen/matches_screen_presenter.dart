@@ -216,23 +216,8 @@ class MatchesScreenPresenter {
       }
     }
 
-    final ownerResponse = await _profilingService.fetchOwner();
-    if (ownerResponse.isFailure) {
-      errorMessage.value = ownerResponse.errorMessage;
-      return;
-    }
-
-    final String senderId = ownerResponse.body.id ?? '';
-    if (senderId.isEmpty) {
-      errorMessage.value = 'Não foi possível identificar o usuário.';
-      return;
-    }
-
-    final chatResponse = await _conversationService.createChat(
+    final chatResponse = await _conversationService.fetchChat(
       recipientId: match.ownerId,
-      senderId: senderId,
-      recipientHorseId: match.ownerHorseId,
-      senderHorseId: horseId,
     );
 
     if (chatResponse.isFailure) {

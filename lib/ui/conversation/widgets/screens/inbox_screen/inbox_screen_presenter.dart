@@ -90,6 +90,7 @@ class InboxScreenPresenter {
     _unsubscribePresence = _profilingChannel.listen(
       onOwnerPresenceRegistered: _onOwnerPresenceRegistered,
       onOwnerPresenceUnregistered: _onOwnerPresenceUnregistered,
+      onHorseMatchNotified: (_) {},
     );
     _isRealtimeConnected = true;
   }
@@ -259,8 +260,16 @@ class InboxScreenPresenter {
       return;
     }
 
-    final response = await _conversationService.fetchChat(chatId: chatId);
+    final response = await _conversationService.fetchChats();
     if (response.isFailure) {
+      return;
+    }
+
+    final ChatDto? resolvedChat = response.body.cast<ChatDto?>().firstWhere(
+      (ChatDto? item) => item?.id == chatId,
+      orElse: () => null,
+    );
+    if (resolvedChat == null) {
       return;
     }
 
@@ -272,7 +281,7 @@ class InboxScreenPresenter {
       return;
     }
 
-    chats.value = <ChatDto>[...currentChats, response.body];
+    chats.value = <ChatDto>[...currentChats, resolvedChat];
   }
 
   String _getCurrentOwnerId() {

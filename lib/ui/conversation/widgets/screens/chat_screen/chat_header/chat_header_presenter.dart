@@ -64,6 +64,7 @@ class ChatHeaderPresenter {
     _unsubscribePresence = _profilingChannel.listen(
       onOwnerPresenceRegistered: _onOwnerPresenceRegistered,
       onOwnerPresenceUnregistered: _onOwnerPresenceUnregistered,
+      onHorseMatchNotified: (_) {},
     );
   }
 
