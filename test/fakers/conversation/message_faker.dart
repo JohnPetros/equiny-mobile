@@ -8,7 +8,7 @@ class MessageFaker {
     String? senderId,
     String? receiverId,
     DateTime? sentAt,
-    List<AttachmentDto>? attachments,
+    List<MessageAttachmentDto>? attachments,
   }) {
     return MessageDto(
       id: id ?? 'message-id',
@@ -17,7 +17,7 @@ class MessageFaker {
       receiverId: receiverId ?? 'receiver-id',
       sentAt: sentAt ?? DateTime(2026, 1, 1, 10, 30),
       isReadByRecipient: false,
-      attachments: attachments ?? const <AttachmentDto>[],
+      attachments: attachments ?? const <MessageAttachmentDto>[],
     );
   }
 }

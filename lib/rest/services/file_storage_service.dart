@@ -14,28 +14,20 @@ class FileStorageService extends Service
 
   @override
   Future<RestResponse<List<UploadUrlDto>>> generateUploadUrlsForAttachments({
-    required List<AttachmentDto> attachments,
+    required String chatId,
+    required String messageId,
+    required List<StorageAttachmentDto> attachments,
   }) async {
-    if (attachments.isEmpty) {
-      return RestResponse<List<UploadUrlDto>>(
-        statusCode: HttpStatusCode.badRequest,
-        errorMessage: 'Nenhum anexo foi informado para gerar URLs de upload.',
-      );
-    }
-
     super.setAuthHeader();
 
     final RestResponse<Json> response = await super.restClient.post(
-      '/storage/upload/attachments',
+      '/storage/upload/chats/$chatId/messages/$messageId/attachments',
       body: <String, dynamic>{
         'attachments': attachments
             .map(
-              (AttachmentDto a) => <String, dynamic>{
-                'chat_id': a.chatId,
-                'message_id': a.messageId,
-                'attachment_id': a.attachmentId,
-                'file_kind': a.fileKind,
-                'file_name': a.fileName,
+              (StorageAttachmentDto attachment) => <String, dynamic>{
+                'kind': attachment.kind,
+                'name': attachment.name,
               },
             )
             .toList(),

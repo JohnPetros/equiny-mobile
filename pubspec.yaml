@@ -20,8 +20,11 @@ dependencies:
   flutter_dotenv: ^6.0.0
   shared_preferences: ^2.5.3
   image_picker: ^1.2.0
+  file_picker: ^10.3.2
   supabase_flutter: ^2.12.0
   web_socket_channel: ^3.0.3
+  url_launcher: ^6.3.2
+  ulid: ^2.0.1
 
 dev_dependencies:
   flutter_test:

@@ -2,7 +2,10 @@ import 'dart:async';
 
 import 'package:equiny/core/conversation/dtos/entities/chat_dto.dart';
 import 'package:equiny/core/conversation/dtos/entities/message_dto.dart';
+import 'package:equiny/core/conversation/dtos/structures/attachment_dto.dart';
 import 'package:equiny/core/conversation/dtos/structures/chat_date_section_dto.dart';
+import 'package:equiny/core/conversation/dtos/structures/pending_attachment.dart';
+import 'package:equiny/core/conversation/enums/attachment_upload_status.dart';
 import 'package:equiny/core/conversation/events/message_sent_event.dart';
 import 'package:equiny/core/conversation/interfaces/conversation_channel.dart';
 import 'package:equiny/core/conversation/interfaces/conversation_service.dart';
@@ -10,15 +13,23 @@ import 'package:equiny/core/profiling/interfaces/profiling_service.dart';
 import 'package:equiny/core/shared/constants/cache_keys.dart';
 import 'package:equiny/core/shared/constants/routes.dart';
 import 'package:equiny/core/shared/interfaces/cache_driver.dart';
+import 'package:equiny/core/shared/interfaces/document_picker_driver.dart';
+import 'package:equiny/core/shared/interfaces/media_picker_driver.dart';
 import 'package:equiny/core/shared/interfaces/navigation_driver.dart';
+import 'package:equiny/core/storage/dtos/structures/attachment_dto.dart';
+import 'package:equiny/core/storage/interfaces/file_storage_service.dart';
 import 'package:equiny/core/storage/interfaces/file_storage_driver.dart';
 import 'package:equiny/drivers/cache-driver/index.dart';
+import 'package:equiny/drivers/document-picker-driver/index.dart';
 import 'package:equiny/drivers/file-storage-driver/index.dart';
+import 'package:equiny/drivers/media-picker-driver/index.dart';
 import 'package:equiny/drivers/navigation-driver/index.dart';
 import 'package:equiny/rest/services.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_attachment_picker/chat_attachment_picker_presenter.dart';
 import 'package:equiny/websocket/channels.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signals/signals.dart';
+import 'package:ulid/ulid.dart';
 
 class ChatScreenPresenter {
   final String _chatId;
@@ -27,8 +38,15 @@ class ChatScreenPresenter {
   final ProfilingService _profilingService;
   final NavigationDriver _navigationDriver;
   final CacheDriver _cacheDriver;
+  final FileStorageService _fileStorageService;
   final FileStorageDriver _fileStorageDriver;
+  late final ChatAttachmentPickerPresenter _chatAttachmentPickerPresenter;
   void Function()? _conversationChannelSubscription;
+
+  String? _pendingMessageId;
+  String? _pendingMessageText;
+  final Map<String, MessageAttachmentDto> _uploadedAttachmentsByLocalId =
+      <String, MessageAttachmentDto>{};
 
   static const int _pageSize = 30;
 
@@ -42,6 +60,12 @@ class ChatScreenPresenter {
   final Signal<String?> nextCursor = signal(null);
   final Signal<String?> errorMessage = signal(null);
   final Signal<bool> isRecipientOnline = signal(false);
+  final Signal<List<PendingAttachment>> pendingAttachments = signal(
+    <PendingAttachment>[],
+  );
+  final Signal<Map<String, AttachmentUploadStatus>> uploadStatusMap = signal(
+    <String, AttachmentUploadStatus>{},
+  );
 
   late final ReadonlySignal<bool> hasMessages;
   late final ReadonlySignal<bool> showEmptyState;
@@ -57,8 +81,15 @@ class ChatScreenPresenter {
     this._profilingService,
     this._navigationDriver,
     this._cacheDriver,
+    this._fileStorageService,
     this._fileStorageDriver,
+    MediaPickerDriver mediaPickerDriver,
+    DocumentPickerDriver documentPickerDriver,
   ) {
+    _chatAttachmentPickerPresenter = ChatAttachmentPickerPresenter(
+      mediaPickerDriver,
+      documentPickerDriver,
+    );
     hasMessages = computed(() => messages.value.isNotEmpty);
     showEmptyState = computed(
       () =>
@@ -72,7 +103,8 @@ class ChatScreenPresenter {
     canSend = computed(
       () =>
           !isSending.value &&
-          draft.value.trim().isNotEmpty &&
+          (draft.value.trim().isNotEmpty ||
+              pendingAttachments.value.isNotEmpty) &&
           isSocketConnected.value,
     );
     groupedMessages = computed(_buildGroupedMessages);
@@ -174,39 +206,280 @@ class ChatScreenPresenter {
     draft.value = value;
   }
 
-  Future<void> sendMessage({String? content}) async {
-    final String text = (content ?? draft.value).trim();
-    if (text.isEmpty || isSending.value) {
+  Future<void> pickImageAttachments() async {
+    await _pickAttachments(
+      picker: () => _chatAttachmentPickerPresenter.pickImages(
+        remainingSlots: _remainingAttachmentSlots,
+      ),
+    );
+  }
+
+  Future<void> pickDocumentAttachments() async {
+    await _pickAttachments(
+      picker: () => _chatAttachmentPickerPresenter.pickDocuments(
+        remainingSlots: _remainingAttachmentSlots,
+      ),
+    );
+  }
+
+  void addPendingAttachments(List<PendingAttachment> attachments) {
+    if (attachments.isEmpty) {
       return;
     }
 
-    final ChatDto? currentChat = chat.value;
-    final String recipientId = currentChat?.recipient.id ?? '';
+    final List<PendingAttachment> next = <PendingAttachment>[
+      ...pendingAttachments.value,
+      ...attachments,
+    ];
+    pendingAttachments.value = next
+        .take(ChatAttachmentPickerPresenter.maxAttachmentsPerMessage)
+        .toList();
+  }
+
+  void removePendingAttachment(String localId) {
+    pendingAttachments.value = pendingAttachments.value
+        .where((PendingAttachment item) => item.localId != localId)
+        .toList();
+    _uploadedAttachmentsByLocalId.remove(localId);
+  }
+
+  Future<void> retryAttachmentUpload(String key) async {
+    final PendingAttachment? pending = _findPendingByKey(key);
+    if (pending == null) {
+      return;
+    }
+
+    if ((pending.errorMessage ?? '').isNotEmpty) {
+      return;
+    }
+
+    if ((_pendingMessageId ?? '').isEmpty) {
+      await sendMessage();
+      return;
+    }
+
+    await _uploadPendingAttachments(<PendingAttachment>[pending]);
+    if (_failedAttachmentsForSocketEmit.isEmpty) {
+      await _emitPendingSocketMessageIfPossible();
+    }
+  }
+
+  Future<void> sendMessage({String? content}) async {
+    final String text = (content ?? draft.value).trim();
+    final List<PendingAttachment> validAttachments = _validPendingAttachments;
+
+    if (isSending.value ||
+        (text.isEmpty && validAttachments.isEmpty) ||
+        !isSocketConnected.value) {
+      return;
+    }
+
     final String senderId = _resolveCurrentOwnerId();
+    if (senderId.isEmpty) {
+      return;
+    }
+
     isSending.value = true;
 
-    final MessageDto message = MessageDto(
-      content: text,
-      senderId: senderId,
-      receiverId: recipientId,
-      sentAt: DateTime.now(),
-      isReadByRecipient: false,
-      attachments: const [],
-    );
+    _pendingMessageId = Ulid().toString().toUpperCase();
+    _pendingMessageText = text;
 
-    await _conversationChannel.emitMessageSentEvent(
-      MessageSentEvent(
-        messageContent: message.content,
-        chatId: _chatId,
-        senderId: senderId,
-      ),
-    );
-    draft.value = '';
+    if (validAttachments.isNotEmpty) {
+      await _uploadPendingAttachments(validAttachments);
+    }
+
+    await _emitPendingSocketMessageIfPossible(senderId: senderId);
     isSending.value = false;
   }
 
   Future<void> sendSuggestedMessage(String content) async {
     await sendMessage(content: content);
+  }
+
+  String resolveFileUrl(String key) {
+    if (key.isEmpty) {
+      return '';
+    }
+    return _fileStorageDriver.getFileUrl(key);
+  }
+
+  int get _remainingAttachmentSlots {
+    return ChatAttachmentPickerPresenter.maxAttachmentsPerMessage -
+        pendingAttachments.value.length;
+  }
+
+  List<PendingAttachment> get _validPendingAttachments {
+    return pendingAttachments.value.where((PendingAttachment item) {
+      return (item.errorMessage ?? '').isEmpty;
+    }).toList();
+  }
+
+  List<PendingAttachment> get _failedAttachmentsForSocketEmit {
+    return pendingAttachments.value.where((PendingAttachment item) {
+      return item.status == AttachmentUploadStatus.failed;
+    }).toList();
+  }
+
+  PendingAttachment? _findPendingByKey(String key) {
+    for (final PendingAttachment pending in pendingAttachments.value) {
+      if (pending.localId == key || pending.name == key) {
+        return pending;
+      }
+    }
+    return null;
+  }
+
+  Future<void> _pickAttachments({
+    required Future<List<PendingAttachment>> Function() picker,
+  }) async {
+    if (_remainingAttachmentSlots <= 0) {
+      return;
+    }
+
+    final List<PendingAttachment> picked = await picker();
+    addPendingAttachments(picked);
+  }
+
+  void _updatePendingStatus({
+    required String localId,
+    required AttachmentUploadStatus status,
+    String? errorMessage,
+  }) {
+    pendingAttachments.value = pendingAttachments.value.map((
+      PendingAttachment item,
+    ) {
+      if (item.localId != localId) {
+        return item;
+      }
+      return item.copyWith(
+        status: status,
+        errorMessage: errorMessage,
+        clearErrorMessage: errorMessage == null,
+      );
+    }).toList();
+  }
+
+  Future<void> _uploadPendingAttachments(
+    List<PendingAttachment> attachments,
+  ) async {
+    if ((_pendingMessageId ?? '').isEmpty || attachments.isEmpty) {
+      return;
+    }
+
+    final List<StorageAttachmentDto> payload = attachments
+        .map(
+          (PendingAttachment attachment) => StorageAttachmentDto(
+            kind: attachment.kind,
+            name: attachment.name,
+          ),
+        )
+        .toList();
+
+    final uploadUrlsResponse = await _fileStorageService
+        .generateUploadUrlsForAttachments(
+          chatId: _chatId,
+          messageId: _pendingMessageId!,
+          attachments: payload,
+        );
+
+    if (uploadUrlsResponse.isFailure ||
+        uploadUrlsResponse.body.length != attachments.length) {
+      for (final PendingAttachment attachment in attachments) {
+        _updatePendingStatus(
+          localId: attachment.localId,
+          status: AttachmentUploadStatus.failed,
+          errorMessage: 'Nao foi possivel gerar URL de upload.',
+        );
+      }
+      return;
+    }
+
+    await Future.wait(
+      attachments.asMap().entries.map((entry) async {
+        final int index = entry.key;
+        final PendingAttachment attachment = entry.value;
+        final uploadUrl = uploadUrlsResponse.body[index];
+
+        _updatePendingStatus(
+          localId: attachment.localId,
+          status: AttachmentUploadStatus.sending,
+        );
+
+        final Map<String, AttachmentUploadStatus> sendingStatusMap =
+            <String, AttachmentUploadStatus>{...uploadStatusMap.value};
+        sendingStatusMap[uploadUrl.filePath] = AttachmentUploadStatus.sending;
+        uploadStatusMap.value = sendingStatusMap;
+
+        try {
+          await _fileStorageDriver.uploadFile(attachment.file, uploadUrl);
+          final MessageAttachmentDto dto = MessageAttachmentDto(
+            kind: attachment.kind,
+            key: uploadUrl.filePath,
+            name: attachment.name,
+            size: attachment.size,
+          );
+          _uploadedAttachmentsByLocalId[attachment.localId] = dto;
+
+          final Map<String, AttachmentUploadStatus> nextUploadStatus =
+              <String, AttachmentUploadStatus>{...uploadStatusMap.value};
+          nextUploadStatus[dto.key] = AttachmentUploadStatus.ready;
+          uploadStatusMap.value = nextUploadStatus;
+
+          _updatePendingStatus(
+            localId: attachment.localId,
+            status: AttachmentUploadStatus.ready,
+          );
+        } catch (_) {
+          final Map<String, AttachmentUploadStatus> failedStatusMap =
+              <String, AttachmentUploadStatus>{...uploadStatusMap.value};
+          failedStatusMap[uploadUrl.filePath] = AttachmentUploadStatus.failed;
+          uploadStatusMap.value = failedStatusMap;
+
+          _updatePendingStatus(
+            localId: attachment.localId,
+            status: AttachmentUploadStatus.failed,
+            errorMessage: 'Falha no upload. Tente novamente.',
+          );
+        }
+      }).toList(),
+    );
+  }
+
+  Future<void> _emitPendingSocketMessageIfPossible({String? senderId}) async {
+    final List<PendingAttachment> valid = _validPendingAttachments;
+    final bool hasFailedUploads = _failedAttachmentsForSocketEmit.isNotEmpty;
+
+    if (hasFailedUploads) {
+      return;
+    }
+
+    final List<MessageAttachmentDto> attachments = valid
+        .map(
+          (PendingAttachment item) =>
+              _uploadedAttachmentsByLocalId[item.localId],
+        )
+        .whereType<MessageAttachmentDto>()
+        .toList();
+
+    if (valid.length != attachments.length) {
+      return;
+    }
+
+    final String resolvedSenderId = senderId ?? _resolveCurrentOwnerId();
+    await _conversationChannel.emitMessageSentEvent(
+      MessageSentEvent(
+        messageContent: _pendingMessageText ?? draft.value.trim(),
+        chatId: _chatId,
+        senderId: resolvedSenderId,
+        attachments: attachments,
+      ),
+    );
+
+    draft.value = '';
+    pendingAttachments.value = <PendingAttachment>[];
+    _uploadedAttachmentsByLocalId.clear();
+    _pendingMessageId = null;
+    _pendingMessageText = null;
   }
 
   Future<void> refreshPresence() async {
@@ -259,6 +532,13 @@ class ChatScreenPresenter {
   }
 
   void _onMessageReceived(MessageDto message) {
+    final Map<String, AttachmentUploadStatus> nextUploadStatus =
+        <String, AttachmentUploadStatus>{...uploadStatusMap.value};
+    for (final MessageAttachmentDto attachment in message.attachments) {
+      nextUploadStatus[attachment.key] = AttachmentUploadStatus.ready;
+    }
+    uploadStatusMap.value = nextUploadStatus;
+
     messages.value = _sortAndDedupe(<MessageDto>[...messages.value, message]);
   }
 
@@ -362,7 +642,10 @@ final chatScreenPresenterProvider = Provider.autoDispose
         ref.watch(profilingServiceProvider),
         ref.watch(navigationDriverProvider),
         ref.watch(cacheDriverProvider),
+        ref.watch(fileStorageServiceProvider),
         ref.watch(fileStorageDriverProvider),
+        ref.watch(mediaPickerDriverProvider),
+        ref.watch(documentPickerDriverProvider),
       );
       ref.onDispose(() {
         unawaited(presenter.disconnectChannel());

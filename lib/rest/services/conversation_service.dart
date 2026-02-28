@@ -1,11 +1,14 @@
 import 'package:equiny/core/conversation/dtos/entities/chat_dto.dart';
 import 'package:equiny/core/conversation/dtos/entities/message_dto.dart';
+import 'package:equiny/core/conversation/dtos/structures/attachment_dto.dart';
 import 'package:equiny/core/conversation/interfaces/conversation_service.dart'
     as conversation_service;
 import 'package:equiny/core/shared/responses/pagination_response.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/core/shared/types/json.dart';
 import 'package:equiny/rest/mappers/conversation/chat_mapper.dart';
+import 'package:equiny/rest/mappers/conversation/message_attachment_mapper.dart';
+import 'package:equiny/rest/mappers/conversation/message_mapper.dart';
 import 'package:equiny/rest/mappers/conversation/messages_pagination_mapper.dart';
 import 'package:equiny/rest/services/service.dart';
 
@@ -98,5 +101,30 @@ class ConversationService extends Service
     }
 
     return response.mapBody(MessagesPaginationMapper.toPagination);
+  }
+
+  @override
+  Future<RestResponse<MessageDto>> sendMessage({
+    required String chatId,
+    required String? content,
+    required List<MessageAttachmentDto> attachments,
+  }) async {
+    super.setAuthHeader();
+    final RestResponse<Json> response = await super.restClient.post(
+      '/conversation/chats/$chatId/messages',
+      body: <String, dynamic>{
+        'content': (content ?? '').trim().isEmpty ? null : content,
+        'attachments': attachments.map(MessageAttachmentMapper.toJson).toList(),
+      },
+    );
+
+    if (response.isFailure) {
+      return RestResponse<MessageDto>(
+        statusCode: response.statusCode,
+        errorMessage: response.errorMessage,
+      );
+    }
+
+    return response.mapBody(MessageMapper.toDto);
   }
 }

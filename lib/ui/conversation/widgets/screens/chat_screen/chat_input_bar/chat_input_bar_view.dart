@@ -1,17 +1,25 @@
+import 'package:equiny/core/conversation/dtos/structures/pending_attachment.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_input_bar/pending_attachments_preview/index.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class ChatInputBarView extends StatefulWidget {
   final String draft;
   final bool isSending;
+  final List<PendingAttachment> pendingAttachments;
   final void Function(String value) onChanged;
   final Future<void> Function() onSend;
+  final Future<void> Function() onAttachmentTap;
+  final void Function(String localId) onRemoveAttachment;
 
   const ChatInputBarView({
     required this.draft,
     required this.isSending,
+    required this.pendingAttachments,
     required this.onChanged,
     required this.onSend,
+    required this.onAttachmentTap,
+    required this.onRemoveAttachment,
     super.key,
   });
 
@@ -53,27 +61,40 @@ class _ChatInputBarViewState extends State<ChatInputBarView> {
         color: AppThemeColors.background,
         border: Border(top: BorderSide(color: AppThemeColors.border)),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Expanded(
-            child: TextField(
-              controller: _controller,
-              onChanged: widget.onChanged,
-              decoration: const InputDecoration(
-                hintText: 'Digite uma mensagem',
-              ),
-            ),
+          PendingAttachmentsPreview(
+            attachments: widget.pendingAttachments,
+            onRemove: widget.onRemoveAttachment,
           ),
-          const SizedBox(width: AppSpacing.xs),
-          IconButton(
-            onPressed: widget.isSending ? null : widget.onSend,
-            icon: widget.isSending
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.send),
+          Row(
+            children: <Widget>[
+              IconButton(
+                onPressed: widget.isSending ? null : widget.onAttachmentTap,
+                icon: const Icon(Icons.add),
+              ),
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  onChanged: widget.onChanged,
+                  decoration: const InputDecoration(
+                    hintText: 'Digite uma mensagem',
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              IconButton(
+                onPressed: widget.isSending ? null : widget.onSend,
+                icon: widget.isSending
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.send),
+              ),
+            ],
           ),
         ],
       ),

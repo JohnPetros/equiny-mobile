@@ -1,6 +1,6 @@
 import 'package:equiny/core/conversation/dtos/entities/message_dto.dart';
-import 'package:equiny/core/conversation/dtos/structures/attachment_dto.dart';
 import 'package:equiny/core/shared/types/json.dart';
+import 'package:equiny/rest/mappers/conversation/message_attachment_mapper.dart';
 
 class MessageMapper {
   static MessageDto toDto(Json json) {
@@ -16,14 +16,10 @@ class MessageMapper {
           DateTime.tryParse(json['sent_at']?.toString() ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
       isReadByRecipient: json['is_read_by_recipient'] as bool? ?? false,
-      attachments: attachmentsRaw.whereType<Json>().map((Json attachment) {
-        return AttachmentDto(
-          kind: attachment['kind']?.toString() ?? '',
-          key: attachment['key']?.toString() ?? '',
-          name: attachment['name']?.toString() ?? '',
-          size: (attachment['size'] as num?)?.toDouble() ?? 0,
-        );
-      }).toList(),
+      attachments: attachmentsRaw
+          .whereType<Json>()
+          .map(MessageAttachmentMapper.toDto)
+          .toList(),
     );
   }
 
@@ -35,14 +31,9 @@ class MessageMapper {
       'receiver_id': dto.receiverId,
       'sent_at': dto.sentAt.toIso8601String(),
       'is_read_by_recipient': dto.isReadByRecipient,
-      'attachments': dto.attachments.map((AttachmentDto attachment) {
-        return <String, dynamic>{
-          'kind': attachment.kind,
-          'key': attachment.key,
-          'name': attachment.name,
-          'size': attachment.size,
-        };
-      }).toList(),
+      'attachments': dto.attachments
+          .map(MessageAttachmentMapper.toJson)
+          .toList(),
     };
   }
 }

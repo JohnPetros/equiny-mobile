@@ -7,7 +7,7 @@ class MessageDto {
   final String receiverId;
   final bool isReadByRecipient;
   final DateTime sentAt;
-  final List<AttachmentDto> attachments;
+  final List<MessageAttachmentDto> attachments;
 
   const MessageDto({
     this.id,

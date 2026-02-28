@@ -1,5 +1,6 @@
 import 'package:equiny/core/conversation/dtos/entities/message_dto.dart';
 import 'package:equiny/core/conversation/dtos/structures/chat_date_section_dto.dart';
+import 'package:equiny/core/conversation/enums/attachment_upload_status.dart';
 import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_messages_list/date_separator/index.dart';
 import 'package:equiny/ui/conversation/widgets/screens/chat_screen/chat_messages_list/message_bubble/index.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
@@ -11,6 +12,11 @@ class ChatMessagesListView extends StatefulWidget {
   final bool isLoadingMore;
   final bool Function(MessageDto message) isMine;
   final String Function(DateTime sentAt) formatTime;
+  final Map<String, AttachmentUploadStatus> uploadStatusMap;
+  final String Function(String key) resolveFileUrl;
+  final void Function(String key) onRetryAttachment;
+  final void Function(String url) onOpenDocument;
+  final void Function(String url) onOpenImage;
 
   const ChatMessagesListView({
     required this.sections,
@@ -18,6 +24,11 @@ class ChatMessagesListView extends StatefulWidget {
     required this.isLoadingMore,
     required this.isMine,
     required this.formatTime,
+    required this.uploadStatusMap,
+    required this.resolveFileUrl,
+    required this.onRetryAttachment,
+    required this.onOpenDocument,
+    required this.onOpenImage,
     super.key,
   });
 
@@ -89,6 +100,12 @@ class _ChatMessagesListViewState extends State<ChatMessagesListView> {
                 isMine: widget.isMine(message),
                 timeLabel: widget.formatTime(message.sentAt),
                 isReadByRecipient: message.isReadByRecipient,
+                attachments: message.attachments,
+                uploadStatusMap: widget.uploadStatusMap,
+                resolveFileUrl: widget.resolveFileUrl,
+                onRetryAttachment: widget.onRetryAttachment,
+                onOpenDocument: widget.onOpenDocument,
+                onOpenImage: widget.onOpenImage,
               ),
           ],
         ],
