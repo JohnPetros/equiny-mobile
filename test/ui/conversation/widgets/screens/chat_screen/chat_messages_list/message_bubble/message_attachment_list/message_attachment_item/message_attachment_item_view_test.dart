@@ -19,8 +19,6 @@ class MockFileStorageDriver extends Mock implements FileStorageDriver {}
 
 void main() {
   late MockFileStorageDriver fileStorageDriver;
-  late String retriedKey;
-  late String openedImageUrl;
 
   Widget createWidget({
     required MessageAttachmentDto attachment,
@@ -37,8 +35,8 @@ void main() {
             attachment: attachment,
             status: status,
             resolvedUrl: resolvedUrl,
-            onRetry: (String key) => retriedKey = key,
-            onOpenImage: (String url) => openedImageUrl = url,
+            onRetry: (_) {},
+            onOpenImage: (_) {},
           ),
         ),
       ),
@@ -47,8 +45,6 @@ void main() {
 
   setUp(() {
     fileStorageDriver = MockFileStorageDriver();
-    retriedKey = '';
-    openedImageUrl = '';
     when(
       () => fileStorageDriver.getFileUrl(any()),
     ).thenReturn('https://cdn.equiny/file');
@@ -58,10 +54,12 @@ void main() {
     testWidgets('should render loading item when status is sending', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(createWidget(
-        attachment: AttachmentDtoFaker.fakeDto(),
-        status: AttachmentUploadStatus.sending,
-      ));
+      await tester.pumpWidget(
+        createWidget(
+          attachment: AttachmentDtoFaker.fakeDto(),
+          status: AttachmentUploadStatus.sending,
+        ),
+      );
 
       expect(find.byType(AttachmentLoadingItemView), findsOneWidget);
     });
@@ -69,45 +67,55 @@ void main() {
     testWidgets('should render failed item when status is failed', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(createWidget(
-        attachment: AttachmentDtoFaker.fakeDto(),
-        status: AttachmentUploadStatus.failed,
-      ));
+      await tester.pumpWidget(
+        createWidget(
+          attachment: AttachmentDtoFaker.fakeDto(),
+          status: AttachmentUploadStatus.failed,
+        ),
+      );
 
       expect(find.byType(AttachmentFailedItemView), findsOneWidget);
     });
 
-    testWidgets('should render image item when status is ready and kind is image', (
-      WidgetTester tester,
-    ) async {
-      await mockNetworkImagesFor(() async {
-        await tester.pumpWidget(createWidget(
-          attachment: AttachmentDtoFaker.fakeDto(kind: 'image'),
-          status: AttachmentUploadStatus.ready,
-        ));
+    testWidgets(
+      'should render image item when status is ready and kind is image',
+      (WidgetTester tester) async {
+        await mockNetworkImagesFor(() async {
+          await tester.pumpWidget(
+            createWidget(
+              attachment: AttachmentDtoFaker.fakeDto(kind: 'image'),
+              status: AttachmentUploadStatus.ready,
+            ),
+          );
 
-        expect(find.byType(AttachmentImageItemView), findsOneWidget);
-      });
-    });
+          expect(find.byType(AttachmentImageItemView), findsOneWidget);
+        });
+      },
+    );
 
-    testWidgets('should render document item when status is ready and kind is pdf', (
-      WidgetTester tester,
-    ) async {
-      await tester.pumpWidget(createWidget(
-        attachment: AttachmentDtoFaker.fakePdfDto(),
-        status: AttachmentUploadStatus.ready,
-      ));
+    testWidgets(
+      'should render document item when status is ready and kind is pdf',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createWidget(
+            attachment: AttachmentDtoFaker.fakePdfDto(),
+            status: AttachmentUploadStatus.ready,
+          ),
+        );
 
-      expect(find.byType(AttachmentDocumentItemView), findsOneWidget);
-    });
+        expect(find.byType(AttachmentDocumentItemView), findsOneWidget);
+      },
+    );
 
     testWidgets('should render nothing when kind is unsupported', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(createWidget(
-        attachment: AttachmentDtoFaker.fakeDto(kind: 'unknown'),
-        status: AttachmentUploadStatus.ready,
-      ));
+      await tester.pumpWidget(
+        createWidget(
+          attachment: AttachmentDtoFaker.fakeDto(kind: 'unknown'),
+          status: AttachmentUploadStatus.ready,
+        ),
+      );
 
       expect(find.byType(AttachmentImageItemView), findsNothing);
       expect(find.byType(AttachmentDocumentItemView), findsNothing);

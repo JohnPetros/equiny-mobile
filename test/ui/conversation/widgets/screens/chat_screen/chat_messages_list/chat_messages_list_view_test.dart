@@ -83,26 +83,21 @@ void main() {
     testWidgets('should render loading indicator when isLoadingMore is true', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(
-        createWidget(isLoadingMore: true),
-      );
+      await tester.pumpWidget(createWidget(isLoadingMore: true));
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('should not render loading indicator when isLoadingMore is false', (
-      WidgetTester tester,
-    ) async {
-      await tester.pumpWidget(
-        createWidget(isLoadingMore: false),
-      );
+    testWidgets(
+      'should not render loading indicator when isLoadingMore is false',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget(isLoadingMore: false));
 
-      expect(find.byType(CircularProgressIndicator), findsNothing);
-    });
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+      },
+    );
 
-    testWidgets('should render multiple sections', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('should render multiple sections', (WidgetTester tester) async {
       final sections = ChatDateSectionFaker.fakeManyDto(length: 2);
 
       await tester.pumpWidget(createWidget(sections: sections));

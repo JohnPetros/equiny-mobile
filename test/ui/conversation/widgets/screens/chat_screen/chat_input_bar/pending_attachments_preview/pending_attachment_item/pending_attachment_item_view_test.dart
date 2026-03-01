@@ -9,9 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   late bool removeTapped;
 
-  Widget createWidget({
-    required PendingAttachment attachment,
-  }) {
+  Widget createWidget({required PendingAttachment attachment}) {
     return MaterialApp(
       home: Scaffold(
         body: PendingAttachmentItemView(
@@ -45,9 +43,9 @@ void main() {
 
   group('PendingAttachmentItemView', () {
     testWidgets('should render attachment name', (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget(
-        attachment: makePending(name: 'my_photo.jpg'),
-      ));
+      await tester.pumpWidget(
+        createWidget(attachment: makePending(name: 'my_photo.jpg')),
+      );
 
       expect(find.text('my_photo.jpg'), findsOneWidget);
     });
@@ -55,9 +53,9 @@ void main() {
     testWidgets('should render image icon for image kind', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(createWidget(
-        attachment: makePending(kind: 'image'),
-      ));
+      await tester.pumpWidget(
+        createWidget(attachment: makePending(kind: 'image')),
+      );
 
       expect(find.byIcon(Icons.image_outlined), findsOneWidget);
     });
@@ -65,9 +63,9 @@ void main() {
     testWidgets('should render document icon for non-image kind', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(createWidget(
-        attachment: makePending(kind: 'pdf'),
-      ));
+      await tester.pumpWidget(
+        createWidget(attachment: makePending(kind: 'pdf')),
+      );
 
       expect(find.byIcon(Icons.description_outlined), findsOneWidget);
     });
@@ -75,9 +73,7 @@ void main() {
     testWidgets('should render close button and call onRemove when tapped', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(createWidget(
-        attachment: makePending(),
-      ));
+      await tester.pumpWidget(createWidget(attachment: makePending()));
 
       expect(find.byIcon(Icons.close), findsOneWidget);
       await tester.tap(find.byIcon(Icons.close));
@@ -86,25 +82,30 @@ void main() {
       expect(removeTapped, isTrue);
     });
 
-    testWidgets('should render error message when attachment has failed status', (
-      WidgetTester tester,
-    ) async {
-      await tester.pumpWidget(createWidget(
-        attachment: makePending(
-          status: AttachmentUploadStatus.failed,
-          errorMessage: 'Imagem excede 2 MB.',
-        ),
-      ));
+    testWidgets(
+      'should render error message when attachment has failed status',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createWidget(
+            attachment: makePending(
+              status: AttachmentUploadStatus.failed,
+              errorMessage: 'Imagem excede 2 MB.',
+            ),
+          ),
+        );
 
-      expect(find.text('Imagem excede 2 MB.'), findsOneWidget);
-    });
+        expect(find.text('Imagem excede 2 MB.'), findsOneWidget);
+      },
+    );
 
     testWidgets('should not render error message when status is ready', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(createWidget(
-        attachment: makePending(status: AttachmentUploadStatus.ready),
-      ));
+      await tester.pumpWidget(
+        createWidget(
+          attachment: makePending(status: AttachmentUploadStatus.ready),
+        ),
+      );
 
       expect(find.text('Imagem excede 2 MB.'), findsNothing);
     });

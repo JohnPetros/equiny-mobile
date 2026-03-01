@@ -16,9 +16,7 @@ void main() {
       expect(find.text('photo.jpg'), findsOneWidget);
     });
 
-    testWidgets('should render loading indicator', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('should render loading indicator', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget(name: 'photo.jpg'));
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);

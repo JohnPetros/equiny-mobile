@@ -34,15 +34,20 @@ void main() {
 
         expect(result, isEmpty);
         verifyNever(
-          () => mockMediaPickerDriver.pickImages(maxImages: any(named: 'maxImages')),
+          () => mockMediaPickerDriver.pickImages(
+            maxImages: any(named: 'maxImages'),
+          ),
         );
       });
 
-      test('should return empty list when remainingSlots is negative', () async {
-        final result = await presenter.pickImages(remainingSlots: -1);
+      test(
+        'should return empty list when remainingSlots is negative',
+        () async {
+          final result = await presenter.pickImages(remainingSlots: -1);
 
-        expect(result, isEmpty);
-      });
+          expect(result, isEmpty);
+        },
+      );
 
       test('should call pickImages with correct maxImages', () async {
         when(
@@ -51,9 +56,7 @@ void main() {
 
         await presenter.pickImages(remainingSlots: 2);
 
-        verify(
-          () => mockMediaPickerDriver.pickImages(maxImages: 2),
-        ).called(1);
+        verify(() => mockMediaPickerDriver.pickImages(maxImages: 2)).called(1);
       });
 
       test('should return pending attachments for picked images', () async {
@@ -112,7 +115,8 @@ void main() {
       test('should call pickDocuments with allowed extensions', () async {
         when(
           () => mockDocumentPickerDriver.pickDocuments(
-            allowedExtensions: ChatAttachmentPickerPresenter.allowedDocumentExtensions,
+            allowedExtensions:
+                ChatAttachmentPickerPresenter.allowedDocumentExtensions,
           ),
         ).thenAnswer((_) async => <File>[]);
 
@@ -120,7 +124,8 @@ void main() {
 
         verify(
           () => mockDocumentPickerDriver.pickDocuments(
-            allowedExtensions: ChatAttachmentPickerPresenter.allowedDocumentExtensions,
+            allowedExtensions:
+                ChatAttachmentPickerPresenter.allowedDocumentExtensions,
           ),
         ).called(1);
       });
@@ -128,15 +133,21 @@ void main() {
       test('should respect remainingSlots by truncating file list', () async {
         final separator = Platform.pathSeparator;
         final mockFile1 = MockFile();
-        when(() => mockFile1.path).thenReturn('${separator}path${separator}to${separator}doc1.pdf');
+        when(
+          () => mockFile1.path,
+        ).thenReturn('${separator}path${separator}to${separator}doc1.pdf');
         when(() => mockFile1.lengthSync()).thenReturn(1024);
 
         final mockFile2 = MockFile();
-        when(() => mockFile2.path).thenReturn('${separator}path${separator}to${separator}doc2.pdf');
+        when(
+          () => mockFile2.path,
+        ).thenReturn('${separator}path${separator}to${separator}doc2.pdf');
         when(() => mockFile2.lengthSync()).thenReturn(1024);
 
         final mockFile3 = MockFile();
-        when(() => mockFile3.path).thenReturn('${separator}path${separator}to${separator}doc3.pdf');
+        when(
+          () => mockFile3.path,
+        ).thenReturn('${separator}path${separator}to${separator}doc3.pdf');
         when(() => mockFile3.lengthSync()).thenReturn(1024);
 
         when(
@@ -153,7 +164,9 @@ void main() {
       test('should resolve kind from pdf extension', () async {
         final separator = Platform.pathSeparator;
         final mockFile = MockFile();
-        when(() => mockFile.path).thenReturn('${separator}path${separator}to${separator}report.pdf');
+        when(
+          () => mockFile.path,
+        ).thenReturn('${separator}path${separator}to${separator}report.pdf');
         when(() => mockFile.lengthSync()).thenReturn(1024);
 
         when(
@@ -170,7 +183,9 @@ void main() {
       test('should resolve kind from docx extension', () async {
         final separator = Platform.pathSeparator;
         final mockFile = MockFile();
-        when(() => mockFile.path).thenReturn('${separator}path${separator}to${separator}report.docx');
+        when(
+          () => mockFile.path,
+        ).thenReturn('${separator}path${separator}to${separator}report.docx');
         when(() => mockFile.lengthSync()).thenReturn(1024);
 
         when(
@@ -187,7 +202,9 @@ void main() {
       test('should resolve kind from txt extension', () async {
         final separator = Platform.pathSeparator;
         final mockFile = MockFile();
-        when(() => mockFile.path).thenReturn('${separator}path${separator}to${separator}notes.txt');
+        when(
+          () => mockFile.path,
+        ).thenReturn('${separator}path${separator}to${separator}notes.txt');
         when(() => mockFile.lengthSync()).thenReturn(1024);
 
         when(
@@ -204,7 +221,9 @@ void main() {
       test('should resolve unknown extension as document', () async {
         final separator = Platform.pathSeparator;
         final mockFile = MockFile();
-        when(() => mockFile.path).thenReturn('${separator}path${separator}to${separator}data.csv');
+        when(
+          () => mockFile.path,
+        ).thenReturn('${separator}path${separator}to${separator}data.csv');
         when(() => mockFile.lengthSync()).thenReturn(1024);
 
         when(

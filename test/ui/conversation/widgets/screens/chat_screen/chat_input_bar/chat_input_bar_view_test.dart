@@ -8,10 +8,7 @@ void main() {
   late bool attachmentTapCalled;
   late List<String> removedAttachmentIds;
 
-  Widget createWidget({
-    String draft = '',
-    bool isSending = false,
-  }) {
+  Widget createWidget({String draft = '', bool isSending = false}) {
     return MaterialApp(
       home: Scaffold(
         body: ChatInputBarView(
@@ -50,9 +47,7 @@ void main() {
       expect(find.byIcon(Icons.send), findsOneWidget);
     });
 
-    testWidgets('should render attachment button', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('should render attachment button', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
 
       expect(find.byIcon(Icons.add), findsOneWidget);
@@ -80,16 +75,17 @@ void main() {
       expect(sendCalled, isTrue);
     });
 
-    testWidgets('should call onAttachmentTap when attachment button is tapped', (
-      WidgetTester tester,
-    ) async {
-      await tester.pumpWidget(createWidget());
+    testWidgets(
+      'should call onAttachmentTap when attachment button is tapped',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
 
-      await tester.tap(find.byIcon(Icons.add));
-      await tester.pump();
+        await tester.tap(find.byIcon(Icons.add));
+        await tester.pump();
 
-      expect(attachmentTapCalled, isTrue);
-    });
+        expect(attachmentTapCalled, isTrue);
+      },
+    );
 
     testWidgets('should show loading indicator when isSending is true', (
       WidgetTester tester,

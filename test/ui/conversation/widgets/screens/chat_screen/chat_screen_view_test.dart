@@ -1,6 +1,5 @@
 import 'package:equiny/core/conversation/dtos/entities/chat_dto.dart';
 import 'package:equiny/core/conversation/dtos/entities/message_dto.dart';
-import 'package:equiny/core/conversation/dtos/entities/recipient_dto.dart';
 import 'package:equiny/core/conversation/dtos/structures/chat_date_section_dto.dart';
 import 'package:equiny/core/conversation/dtos/structures/pending_attachment.dart';
 import 'package:equiny/core/conversation/enums/attachment_upload_status.dart';
@@ -62,9 +61,7 @@ void main() {
         chatHeaderPresenterProvider.overrideWithValue(headerPresenter),
         fileStorageDriverProvider.overrideWithValue(fileStorageDriver),
       ],
-      child: const MaterialApp(
-        home: ChatScreenView(chatId: chatId),
-      ),
+      child: const MaterialApp(home: ChatScreenView(chatId: chatId)),
     );
   }
 
@@ -96,9 +93,7 @@ void main() {
     showEmptyState = signal(true);
     canLoadMore = signal(false);
     canSend = signal(false);
-    groupedMessages = signal<List<ChatDateSectionDto>>(
-      <ChatDateSectionDto>[],
-    );
+    groupedMessages = signal<List<ChatDateSectionDto>>(<ChatDateSectionDto>[]);
     headerSubtitle = signal('');
 
     headerIsRecipientOnline = signal(false);
@@ -140,9 +135,9 @@ void main() {
     when(() => presenter.pickImageAttachments()).thenAnswer((_) async {});
     when(() => presenter.pickDocumentAttachments()).thenAnswer((_) async {});
 
-    when(() => headerPresenter.isRecipientOnline).thenReturn(
-      headerIsRecipientOnline,
-    );
+    when(
+      () => headerPresenter.isRecipientOnline,
+    ).thenReturn(headerIsRecipientOnline);
     when(() => headerPresenter.presenceLabel).thenReturn(headerPresenceLabel);
     when(() => headerPresenter.resolveAvatarUrl(any())).thenReturn('');
     when(() => headerPresenter.loadPresence(any())).thenAnswer((_) async {});
@@ -163,30 +158,32 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('should render error state when errorMessage is set and chat is null', (
-      WidgetTester tester,
-    ) async {
-      errorMessage.value = 'Erro ao carregar conversa.';
+    testWidgets(
+      'should render error state when errorMessage is set and chat is null',
+      (WidgetTester tester) async {
+        errorMessage.value = 'Erro ao carregar conversa.';
 
-      await tester.pumpWidget(createWidget());
-      await tester.pump();
+        await tester.pumpWidget(createWidget());
+        await tester.pump();
 
-      expect(find.text('Erro ao carregar conversa.'), findsOneWidget);
-    });
+        expect(find.text('Erro ao carregar conversa.'), findsOneWidget);
+      },
+    );
 
-    testWidgets('should call retry when retry button is tapped in error state', (
-      WidgetTester tester,
-    ) async {
-      errorMessage.value = 'Erro ao carregar conversa.';
+    testWidgets(
+      'should call retry when retry button is tapped in error state',
+      (WidgetTester tester) async {
+        errorMessage.value = 'Erro ao carregar conversa.';
 
-      await tester.pumpWidget(createWidget());
-      await tester.pump();
+        await tester.pumpWidget(createWidget());
+        await tester.pump();
 
-      await tester.tap(find.text('Tentar novamente'));
-      await tester.pump();
+        await tester.tap(find.text('Tentar novamente'));
+        await tester.pump();
 
-      verify(() => presenter.retry()).called(1);
-    });
+        verify(() => presenter.retry()).called(1);
+      },
+    );
 
     testWidgets('should render empty state when showEmptyState is true', (
       WidgetTester tester,

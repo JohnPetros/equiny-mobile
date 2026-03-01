@@ -12,10 +12,7 @@ void main() {
   Widget createWidget({String message = 'Erro ao carregar conversa.'}) {
     return MaterialApp(
       home: Scaffold(
-        body: ChatErrorStateView(
-          message: message,
-          onRetry: () => retryCount++,
-        ),
+        body: ChatErrorStateView(message: message, onRetry: () => retryCount++),
       ),
     );
   }

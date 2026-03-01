@@ -47,9 +47,7 @@ void main() {
     ) async {
       await tester.pumpWidget(createWidget(name: 'photo.jpg'));
 
-      await tester.tap(
-        find.widgetWithText(TextButton, 'Tentar novamente'),
-      );
+      await tester.tap(find.widgetWithText(TextButton, 'Tentar novamente'));
       await tester.pump();
 
       expect(retryTapped, isTrue);
