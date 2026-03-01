@@ -35,6 +35,7 @@ void main() {
         onOwnerPresenceRegistered: any(named: 'onOwnerPresenceRegistered'),
         onOwnerPresenceUnregistered: any(named: 'onOwnerPresenceUnregistered'),
         onHorseMatchNotified: any(named: 'onHorseMatchNotified'),
+        onOwnerCreated: any(named: 'onOwnerCreated'),
       ),
     ).thenReturn(() {});
 
@@ -231,6 +232,7 @@ void main() {
               named: 'onOwnerPresenceUnregistered',
             ),
             onHorseMatchNotified: any(named: 'onHorseMatchNotified'),
+            onOwnerCreated: any(named: 'onOwnerCreated'),
           ),
         ).called(1);
       });
@@ -251,6 +253,7 @@ void main() {
                 named: 'onOwnerPresenceUnregistered',
               ),
               onHorseMatchNotified: any(named: 'onHorseMatchNotified'),
+              onOwnerCreated: any(named: 'onOwnerCreated'),
             ),
           ).thenAnswer((invocation) {
             onRegistered =
@@ -296,6 +299,7 @@ void main() {
                 named: 'onOwnerPresenceUnregistered',
               ),
               onHorseMatchNotified: any(named: 'onHorseMatchNotified'),
+              onOwnerCreated: any(named: 'onOwnerCreated'),
             ),
           ).thenAnswer((invocation) {
             onRegistered =
@@ -340,6 +344,7 @@ void main() {
                 named: 'onOwnerPresenceUnregistered',
               ),
               onHorseMatchNotified: any(named: 'onHorseMatchNotified'),
+              onOwnerCreated: any(named: 'onOwnerCreated'),
             ),
           ).thenAnswer((invocation) {
             onUnregistered =

@@ -1,10 +1,10 @@
 import 'package:equiny/ui/profiling/widgets/screens/onboarding_screen/onboarding_screen_presenter.dart';
 import 'package:equiny/ui/profiling/widgets/screens/onboarding_screen/onboarding_screen_view.dart';
 import 'package:equiny/core/profiling/dtos/structures/image_dto.dart';
+import 'package:equiny/core/shared/interfaces/location_service.dart';
 import 'package:equiny/drivers/cache-driver/index.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/rest/services.dart';
-import 'package:equiny/rest/services/location_service.dart' as location_service;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,8 +18,7 @@ import '../../../../../fakers/profiling/image_faker.dart';
 class MockOnboardingScreenPresenter extends Mock
     implements OnboardingScreenPresenter {}
 
-class MockLocationService extends Mock
-    implements location_service.LocationService {}
+class MockLocationService extends Mock implements LocationService {}
 
 void main() {
   late MockOnboardingScreenPresenter presenter;

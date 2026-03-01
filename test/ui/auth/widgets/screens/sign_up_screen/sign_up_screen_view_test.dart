@@ -41,6 +41,8 @@ void main() {
     ).thenReturn(signal(false));
     when(() => presenter.isLoading).thenReturn(signal(false));
     when(() => presenter.generalError).thenReturn(signal(null));
+    when(() => presenter.emailVerificationSent).thenReturn(signal(false));
+    when(() => presenter.registeredEmail).thenReturn(signal(null));
     when(() => presenter.submit()).thenAnswer((_) async {});
     when(() => presenter.goToSignIn()).thenReturn(null);
     when(() => presenter.togglePasswordVisibility()).thenReturn(null);
@@ -64,6 +66,23 @@ void main() {
       expect(find.text('Confirmar senha'), findsOneWidget);
       expect(find.byType(ElevatedButton), findsOneWidget);
     });
+
+    testWidgets(
+      'should render verification notice when success state is active',
+      (WidgetTester tester) async {
+        when(() => presenter.emailVerificationSent).thenReturn(signal(true));
+        when(
+          () => presenter.registeredEmail,
+        ).thenReturn(signal('john@mail.com'));
+
+        await tester.pumpWidget(createWidget());
+
+        expect(find.text('Ir para login'), findsOneWidget);
+        expect(find.text('john@mail.com'), findsOneWidget);
+        expect(find.text('Nome do dono'), findsNothing);
+        expect(find.text('Entrar'), findsNothing);
+      },
+    );
 
     testWidgets('should render general error when presenter has one', (
       WidgetTester tester,

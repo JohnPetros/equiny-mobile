@@ -38,11 +38,12 @@ void main() {
     fileStorageDriver = MockFileStorageDriver();
 
     when(() => cacheDriver.get(CacheKeys.ownerId)).thenReturn('sender-id');
+    when(() => fileStorageDriver.getFileUrl(any())).thenAnswer(
+      (invocation) => 'https://cdn/${invocation.positionalArguments.first}',
+    );
     when(
-      () => fileStorageDriver.getFileUrl(any()),
-    ).thenAnswer((invocation) => 'https://cdn/${invocation.positionalArguments.first}');
-    when(
-      () => conversationService.fetchChat(recipientId: any(named: 'recipientId')),
+      () =>
+          conversationService.fetchChat(recipientId: any(named: 'recipientId')),
     ).thenAnswer(
       (_) async => RestResponse<ChatDto>(body: ChatFaker.fakeDto(id: 'chat-1')),
     );
@@ -65,15 +66,18 @@ void main() {
       expect(presenter.chatError.value, isNull);
     });
 
-    test('should expose current match and next state when queue has entries', () {
-      final matches = HorseMatchFaker.fakeManyDto(length: 2);
+    test(
+      'should expose current match and next state when queue has entries',
+      () {
+        final matches = HorseMatchFaker.fakeManyDto(length: 2);
 
-      presenter.enqueue(matches[0]);
-      presenter.enqueue(matches[1]);
+        presenter.enqueue(matches[0]);
+        presenter.enqueue(matches[1]);
 
-      expect(presenter.currentMatch.value, matches[0]);
-      expect(presenter.hasNext.value, isTrue);
-    });
+        expect(presenter.currentMatch.value, matches[0]);
+        expect(presenter.hasNext.value, isTrue);
+      },
+    );
 
     test('should resolve horse image url when current match has image key', () {
       presenter.enqueue(
@@ -95,30 +99,42 @@ void main() {
       verifyNever(() => fileStorageDriver.getFileUrl(any()));
     });
 
-    test('should create and open chat when fetch chat fails and create succeeds', () async {
-      final match = HorseMatchFaker.fakeDto(ownerId: 'recipient-id');
-      presenter.enqueue(match);
+    test(
+      'should create and open chat when fetch chat fails and create succeeds',
+      () async {
+        final match = HorseMatchFaker.fakeDto(ownerId: 'recipient-id');
+        presenter.enqueue(match);
 
-      when(
-        () => conversationService.fetchChat(recipientId: 'recipient-id'),
-      ).thenAnswer(
-        (_) async => RestResponse<ChatDto>(statusCode: 404, errorMessage: 'Not found'),
-      );
-      when(
-        () => conversationService.createChat(recipientId: 'recipient-id'),
-      ).thenAnswer(
-        (_) async => RestResponse<ChatDto>(body: ChatFaker.fakeDto(id: 'created-chat-id')),
-      );
+        when(
+          () => conversationService.fetchChat(recipientId: 'recipient-id'),
+        ).thenAnswer(
+          (_) async =>
+              RestResponse<ChatDto>(statusCode: 404, errorMessage: 'Not found'),
+        );
+        when(
+          () => conversationService.createChat(recipientId: 'recipient-id'),
+        ).thenAnswer(
+          (_) async => RestResponse<ChatDto>(
+            body: ChatFaker.fakeDto(id: 'created-chat-id'),
+          ),
+        );
 
-      final didOpen = await presenter.handleGoToChat();
+        final didOpen = await presenter.handleGoToChat();
 
-      expect(didOpen, isTrue);
-      expect(presenter.isCreatingChat.value, isFalse);
-      expect(presenter.chatError.value, isNull);
-      verify(() => conversationService.fetchChat(recipientId: 'recipient-id')).called(1);
-      verify(() => conversationService.createChat(recipientId: 'recipient-id')).called(1);
-      verify(() => navigationDriver.goTo(Routes.chat, data: 'created-chat-id')).called(1);
-    });
+        expect(didOpen, isTrue);
+        expect(presenter.isCreatingChat.value, isFalse);
+        expect(presenter.chatError.value, isNull);
+        verify(
+          () => conversationService.fetchChat(recipientId: 'recipient-id'),
+        ).called(1);
+        verify(
+          () => conversationService.createChat(recipientId: 'recipient-id'),
+        ).called(1);
+        verify(
+          () => navigationDriver.goTo(Routes.chat, data: 'created-chat-id'),
+        ).called(1);
+      },
+    );
 
     test('should set error when sender id is missing', () async {
       presenter.enqueue(HorseMatchFaker.fakeDto(ownerId: 'recipient-id'));
@@ -127,7 +143,10 @@ void main() {
       final didOpen = await presenter.handleGoToChat();
 
       expect(didOpen, isFalse);
-      expect(presenter.chatError.value, 'Nao foi possivel identificar o usuario.');
+      expect(
+        presenter.chatError.value,
+        'Nao foi possivel identificar o usuario.',
+      );
       verifyNever(() => navigationDriver.goTo(any(), data: any(named: 'data')));
     });
 
@@ -148,16 +167,19 @@ void main() {
       );
     });
 
-    test('should remove current match and keep modal open when queue has next item', () {
-      final matches = HorseMatchFaker.fakeManyDto(length: 2);
-      presenter.queue.value = matches;
+    test(
+      'should remove current match and keep modal open when queue has next item',
+      () {
+        final matches = HorseMatchFaker.fakeManyDto(length: 2);
+        presenter.queue.value = matches;
 
-      final shouldClose = presenter.handleContinue();
+        final shouldClose = presenter.handleContinue();
 
-      expect(shouldClose, isFalse);
-      expect(presenter.currentMatch.value, matches[1]);
-      expect(presenter.queue.value.length, 1);
-    });
+        expect(shouldClose, isFalse);
+        expect(presenter.currentMatch.value, matches[1]);
+        expect(presenter.queue.value.length, 1);
+      },
+    );
 
     test('should clear queue state and errors', () {
       presenter.queue.value = HorseMatchFaker.fakeManyDto(length: 2);
