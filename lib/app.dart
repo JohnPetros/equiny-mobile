@@ -279,6 +279,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
         onOwnerPresenceRegistered: (_) {},
         onOwnerPresenceUnregistered: (_) {},
         onHorseMatchNotified: _handleMatchNotified,
+        onOwnerCreated: (_) {},
       );
       _activeSessionKey = sessionKey;
     } finally {
