@@ -1,10 +1,10 @@
 import 'package:equiny/core/shared/types/json.dart';
 
-class LocationMapper {
+class IbgeLocationMapper {
   static List<String> toStateList(Json json) {
     final List<dynamic> items = json['items'] as List<dynamic>;
     return items
-        .map((dynamic item) => (item as Json)['sigla'] as String)
+        .map((dynamic item) => (item as Json)['nome'] as String)
         .toList();
   }
 

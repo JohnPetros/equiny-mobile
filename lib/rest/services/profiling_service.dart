@@ -187,7 +187,7 @@ class ProfilingService extends Service
   Future<RestResponse<List<String>>> fetchBreeds() async {
     super.setAuthHeader();
     final RestResponse<Json> response = await super.restClient.get(
-      '/profiling/breeds',
+      '/profiling/horses/breeds',
     );
 
     if (response.isFailure) {
@@ -207,7 +207,7 @@ class ProfilingService extends Service
   Future<RestResponse<HorseDto>> createHorse({required HorseDto horse}) async {
     super.setAuthHeader();
     final RestResponse<Json> response = await super.restClient.post(
-      '/profiling/horses',
+      '/profiling/horses/',
       body: HorseMapper.toJson(horse),
     );
 
