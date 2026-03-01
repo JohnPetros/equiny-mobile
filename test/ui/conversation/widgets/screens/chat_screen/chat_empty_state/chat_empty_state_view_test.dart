@@ -37,9 +37,7 @@ void main() {
       );
     });
 
-    testWidgets('should render chat bubble icon', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('should render chat bubble icon', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
 
       expect(find.byIcon(Icons.chat_bubble_outline), findsOneWidget);
@@ -51,30 +49,22 @@ void main() {
       await tester.pumpWidget(createWidget());
 
       expect(find.byType(ActionChip), findsNWidgets(3));
-      expect(
-        find.text('Oi! Tudo bem com seu cavalo?'),
-        findsOneWidget,
-      );
-      expect(
-        find.text('Podemos falar sobre localizacao?'),
-        findsOneWidget,
-      );
-      expect(
-        find.text('Tem disponibilidade esta semana?'),
-        findsOneWidget,
-      );
+      expect(find.text('Oi! Tudo bem com seu cavalo?'), findsOneWidget);
+      expect(find.text('Podemos falar sobre localizacao?'), findsOneWidget);
+      expect(find.text('Tem disponibilidade esta semana?'), findsOneWidget);
     });
 
-    testWidgets('should call onSuggestionTap with correct text when chip is tapped', (
-      WidgetTester tester,
-    ) async {
-      await tester.pumpWidget(createWidget());
+    testWidgets(
+      'should call onSuggestionTap with correct text when chip is tapped',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
 
-      await tester.tap(find.text('Oi! Tudo bem com seu cavalo?'));
-      await tester.pump();
+        await tester.tap(find.text('Oi! Tudo bem com seu cavalo?'));
+        await tester.pump();
 
-      expect(tappedSuggestions, <String>['Oi! Tudo bem com seu cavalo?']);
-    });
+        expect(tappedSuggestions, <String>['Oi! Tudo bem com seu cavalo?']);
+      },
+    );
 
     testWidgets('should call onSuggestionTap for each tapped chip', (
       WidgetTester tester,

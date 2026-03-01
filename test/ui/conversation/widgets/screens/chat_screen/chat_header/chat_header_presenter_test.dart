@@ -68,30 +68,33 @@ void main() {
         expect(presenter.presenceLabel.value, 'online');
       });
 
-      test('should set presenceLabel with last seen date when offline', () async {
-        final lastSeen = DateTime(2025, 6, 15, 14, 30);
-        final recipient = RecipientFaker.fakeDto(id: 'owner-1');
+      test(
+        'should set presenceLabel with last seen date when offline',
+        () async {
+          final lastSeen = DateTime(2025, 6, 15, 14, 30);
+          final recipient = RecipientFaker.fakeDto(id: 'owner-1');
 
-        when(
-          () => profilingService.fetchOwnerPresence(ownerId: 'owner-1'),
-        ).thenAnswer(
-          (_) async => RestResponse<OwnerPresenceDto>(
-            body: OwnerPresenceDto(
-              ownerId: 'owner-1',
-              isOnline: false,
-              lastSeenAt: lastSeen,
+          when(
+            () => profilingService.fetchOwnerPresence(ownerId: 'owner-1'),
+          ).thenAnswer(
+            (_) async => RestResponse<OwnerPresenceDto>(
+              body: OwnerPresenceDto(
+                ownerId: 'owner-1',
+                isOnline: false,
+                lastSeenAt: lastSeen,
+              ),
             ),
-          ),
-        );
+          );
 
-        await presenter.loadPresence(recipient);
+          await presenter.loadPresence(recipient);
 
-        expect(presenter.isRecipientOnline.value, isFalse);
-        expect(
-          presenter.presenceLabel.value,
-          contains('visto por ultimo em'),
-        );
-      });
+          expect(presenter.isRecipientOnline.value, isFalse);
+          expect(
+            presenter.presenceLabel.value,
+            contains('visto por ultimo em'),
+          );
+        },
+      );
 
       test('should set fallback label when recipient id is empty', () async {
         final recipient = RecipientFaker.fakeDto(id: '');
@@ -128,39 +131,37 @@ void main() {
         when(
           () => profilingService.fetchOwnerPresence(ownerId: 'owner-1'),
         ).thenAnswer(
-          (_) async => RestResponse<OwnerPresenceDto>(
-            errorMessage: 'Network error',
-          ),
+          (_) async =>
+              RestResponse<OwnerPresenceDto>(errorMessage: 'Network error'),
         );
 
         await presenter.loadPresence(recipient);
 
         expect(presenter.isRecipientOnline.value, isFalse);
-        expect(
-          presenter.presenceLabel.value,
-          contains('visto por ultimo em'),
-        );
+        expect(presenter.presenceLabel.value, contains('visto por ultimo em'));
       });
 
-      test('should set fallback when fetch fails and no lastPresenceAt', () async {
-        final recipient = RecipientFaker.fakeDto(id: 'owner-1');
+      test(
+        'should set fallback when fetch fails and no lastPresenceAt',
+        () async {
+          final recipient = RecipientFaker.fakeDto(id: 'owner-1');
 
-        when(
-          () => profilingService.fetchOwnerPresence(ownerId: 'owner-1'),
-        ).thenAnswer(
-          (_) async => RestResponse<OwnerPresenceDto>(
-            errorMessage: 'Network error',
-          ),
-        );
+          when(
+            () => profilingService.fetchOwnerPresence(ownerId: 'owner-1'),
+          ).thenAnswer(
+            (_) async =>
+                RestResponse<OwnerPresenceDto>(errorMessage: 'Network error'),
+          );
 
-        await presenter.loadPresence(recipient);
+          await presenter.loadPresence(recipient);
 
-        expect(presenter.isRecipientOnline.value, isFalse);
-        expect(
-          presenter.presenceLabel.value,
-          'visto por ultimo em --/-- --:--',
-        );
-      });
+          expect(presenter.isRecipientOnline.value, isFalse);
+          expect(
+            presenter.presenceLabel.value,
+            'visto por ultimo em --/-- --:--',
+          );
+        },
+      );
     });
 
     group('resolveAvatarUrl', () {
@@ -226,7 +227,9 @@ void main() {
         verify(
           () => profilingChannel.listen(
             onOwnerPresenceRegistered: any(named: 'onOwnerPresenceRegistered'),
-            onOwnerPresenceUnregistered: any(named: 'onOwnerPresenceUnregistered'),
+            onOwnerPresenceUnregistered: any(
+              named: 'onOwnerPresenceUnregistered',
+            ),
             onHorseMatchNotified: any(named: 'onHorseMatchNotified'),
           ),
         ).called(1);
@@ -234,125 +237,142 @@ void main() {
     });
 
     group('realtime events', () {
-      test('should set online when OwnerPresenceRegisteredEvent matches', () async {
-        late void Function(OwnerPresenceRegisteredEvent) onRegistered;
+      test(
+        'should set online when OwnerPresenceRegisteredEvent matches',
+        () async {
+          late void Function(OwnerPresenceRegisteredEvent) onRegistered;
 
-        when(
-          () => profilingChannel.listen(
-            onOwnerPresenceRegistered: any(named: 'onOwnerPresenceRegistered'),
-            onOwnerPresenceUnregistered: any(named: 'onOwnerPresenceUnregistered'),
-            onHorseMatchNotified: any(named: 'onHorseMatchNotified'),
-          ),
-        ).thenAnswer((invocation) {
-          onRegistered = invocation.namedArguments[#onOwnerPresenceRegistered]
-              as void Function(OwnerPresenceRegisteredEvent);
-          return () {};
-        });
-
-        final recipient = RecipientFaker.fakeDto(id: 'owner-1');
-
-        when(
-          () => profilingService.fetchOwnerPresence(ownerId: 'owner-1'),
-        ).thenAnswer(
-          (_) async => RestResponse<OwnerPresenceDto>(
-            body: const OwnerPresenceDto(
-              ownerId: 'owner-1',
-              isOnline: false,
-              lastSeenAt: null,
+          when(
+            () => profilingChannel.listen(
+              onOwnerPresenceRegistered: any(
+                named: 'onOwnerPresenceRegistered',
+              ),
+              onOwnerPresenceUnregistered: any(
+                named: 'onOwnerPresenceUnregistered',
+              ),
+              onHorseMatchNotified: any(named: 'onHorseMatchNotified'),
             ),
-          ),
-        );
+          ).thenAnswer((invocation) {
+            onRegistered =
+                invocation.namedArguments[#onOwnerPresenceRegistered]
+                    as void Function(OwnerPresenceRegisteredEvent);
+            return () {};
+          });
 
-        await presenter.loadPresence(recipient);
+          final recipient = RecipientFaker.fakeDto(id: 'owner-1');
 
-        onRegistered(
-          OwnerPresenceRegisteredEvent(ownerId: 'owner-1'),
-        );
-
-        expect(presenter.isRecipientOnline.value, isTrue);
-        expect(presenter.presenceLabel.value, 'online');
-      });
-
-      test('should ignore OwnerPresenceRegisteredEvent for different owner', () async {
-        late void Function(OwnerPresenceRegisteredEvent) onRegistered;
-
-        when(
-          () => profilingChannel.listen(
-            onOwnerPresenceRegistered: any(named: 'onOwnerPresenceRegistered'),
-            onOwnerPresenceUnregistered: any(named: 'onOwnerPresenceUnregistered'),
-            onHorseMatchNotified: any(named: 'onHorseMatchNotified'),
-          ),
-        ).thenAnswer((invocation) {
-          onRegistered = invocation.namedArguments[#onOwnerPresenceRegistered]
-              as void Function(OwnerPresenceRegisteredEvent);
-          return () {};
-        });
-
-        final recipient = RecipientFaker.fakeDto(id: 'owner-1');
-
-        when(
-          () => profilingService.fetchOwnerPresence(ownerId: 'owner-1'),
-        ).thenAnswer(
-          (_) async => RestResponse<OwnerPresenceDto>(
-            body: const OwnerPresenceDto(
-              ownerId: 'owner-1',
-              isOnline: false,
-              lastSeenAt: null,
+          when(
+            () => profilingService.fetchOwnerPresence(ownerId: 'owner-1'),
+          ).thenAnswer(
+            (_) async => RestResponse<OwnerPresenceDto>(
+              body: const OwnerPresenceDto(
+                ownerId: 'owner-1',
+                isOnline: false,
+                lastSeenAt: null,
+              ),
             ),
-          ),
-        );
+          );
 
-        await presenter.loadPresence(recipient);
+          await presenter.loadPresence(recipient);
 
-        onRegistered(
-          OwnerPresenceRegisteredEvent(ownerId: 'other-owner'),
-        );
+          onRegistered(OwnerPresenceRegisteredEvent(ownerId: 'owner-1'));
 
-        expect(presenter.isRecipientOnline.value, isFalse);
-      });
+          expect(presenter.isRecipientOnline.value, isTrue);
+          expect(presenter.presenceLabel.value, 'online');
+        },
+      );
 
-      test('should set offline when OwnerPresenceUnregisteredEvent matches', () async {
-        late void Function(OwnerPresenceUnregisteredEvent) onUnregistered;
+      test(
+        'should ignore OwnerPresenceRegisteredEvent for different owner',
+        () async {
+          late void Function(OwnerPresenceRegisteredEvent) onRegistered;
 
-        when(
-          () => profilingChannel.listen(
-            onOwnerPresenceRegistered: any(named: 'onOwnerPresenceRegistered'),
-            onOwnerPresenceUnregistered: any(named: 'onOwnerPresenceUnregistered'),
-            onHorseMatchNotified: any(named: 'onHorseMatchNotified'),
-          ),
-        ).thenAnswer((invocation) {
-          onUnregistered = invocation
-                  .namedArguments[#onOwnerPresenceUnregistered]
-              as void Function(OwnerPresenceUnregisteredEvent);
-          return () {};
-        });
-
-        final recipient = RecipientFaker.fakeDto(id: 'owner-1');
-
-        when(
-          () => profilingService.fetchOwnerPresence(ownerId: 'owner-1'),
-        ).thenAnswer(
-          (_) async => RestResponse<OwnerPresenceDto>(
-            body: const OwnerPresenceDto(
-              ownerId: 'owner-1',
-              isOnline: true,
-              lastSeenAt: null,
+          when(
+            () => profilingChannel.listen(
+              onOwnerPresenceRegistered: any(
+                named: 'onOwnerPresenceRegistered',
+              ),
+              onOwnerPresenceUnregistered: any(
+                named: 'onOwnerPresenceUnregistered',
+              ),
+              onHorseMatchNotified: any(named: 'onHorseMatchNotified'),
             ),
-          ),
-        );
+          ).thenAnswer((invocation) {
+            onRegistered =
+                invocation.namedArguments[#onOwnerPresenceRegistered]
+                    as void Function(OwnerPresenceRegisteredEvent);
+            return () {};
+          });
 
-        await presenter.loadPresence(recipient);
+          final recipient = RecipientFaker.fakeDto(id: 'owner-1');
 
-        onUnregistered(
-          OwnerPresenceUnregisteredEvent(ownerId: 'owner-1'),
-        );
+          when(
+            () => profilingService.fetchOwnerPresence(ownerId: 'owner-1'),
+          ).thenAnswer(
+            (_) async => RestResponse<OwnerPresenceDto>(
+              body: const OwnerPresenceDto(
+                ownerId: 'owner-1',
+                isOnline: false,
+                lastSeenAt: null,
+              ),
+            ),
+          );
 
-        expect(presenter.isRecipientOnline.value, isFalse);
-        expect(
-          presenter.presenceLabel.value,
-          contains('visto por ultimo em'),
-        );
-      });
+          await presenter.loadPresence(recipient);
+
+          onRegistered(OwnerPresenceRegisteredEvent(ownerId: 'other-owner'));
+
+          expect(presenter.isRecipientOnline.value, isFalse);
+        },
+      );
+
+      test(
+        'should set offline when OwnerPresenceUnregisteredEvent matches',
+        () async {
+          late void Function(OwnerPresenceUnregisteredEvent) onUnregistered;
+
+          when(
+            () => profilingChannel.listen(
+              onOwnerPresenceRegistered: any(
+                named: 'onOwnerPresenceRegistered',
+              ),
+              onOwnerPresenceUnregistered: any(
+                named: 'onOwnerPresenceUnregistered',
+              ),
+              onHorseMatchNotified: any(named: 'onHorseMatchNotified'),
+            ),
+          ).thenAnswer((invocation) {
+            onUnregistered =
+                invocation.namedArguments[#onOwnerPresenceUnregistered]
+                    as void Function(OwnerPresenceUnregisteredEvent);
+            return () {};
+          });
+
+          final recipient = RecipientFaker.fakeDto(id: 'owner-1');
+
+          when(
+            () => profilingService.fetchOwnerPresence(ownerId: 'owner-1'),
+          ).thenAnswer(
+            (_) async => RestResponse<OwnerPresenceDto>(
+              body: const OwnerPresenceDto(
+                ownerId: 'owner-1',
+                isOnline: true,
+                lastSeenAt: null,
+              ),
+            ),
+          );
+
+          await presenter.loadPresence(recipient);
+
+          onUnregistered(OwnerPresenceUnregisteredEvent(ownerId: 'owner-1'));
+
+          expect(presenter.isRecipientOnline.value, isFalse);
+          expect(
+            presenter.presenceLabel.value,
+            contains('visto por ultimo em'),
+          );
+        },
+      );
     });
   });
 }

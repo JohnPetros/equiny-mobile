@@ -4,9 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   Widget createWidget() {
-    return const MaterialApp(
-      home: Scaffold(body: ChatLoadingStateView()),
-    );
+    return const MaterialApp(home: Scaffold(body: ChatLoadingStateView()));
   }
 
   group('ChatLoadingStateView', () {

@@ -126,11 +126,13 @@ void main() {
       WidgetTester tester,
     ) async {
       await mockNetworkImagesFor(() async {
-        await tester.pumpWidget(createWidget(
-          attachments: <MessageAttachmentDto>[
-            AttachmentDtoFaker.fakeDto(kind: 'image'),
-          ],
-        ));
+        await tester.pumpWidget(
+          createWidget(
+            attachments: <MessageAttachmentDto>[
+              AttachmentDtoFaker.fakeDto(kind: 'image'),
+            ],
+          ),
+        );
 
         expect(find.text('image.jpg'), findsOneWidget);
       });

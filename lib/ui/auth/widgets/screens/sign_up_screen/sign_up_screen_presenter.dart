@@ -149,6 +149,8 @@ class SignUpScreenPresenter {
       return;
     }
 
+    await _cacheDriver.set(CacheKeys.ownerId, ownerResponse.body.id ?? '');
+
     final bool hasCompletedOnboarding =
         ownerResponse.body.hasCompletedOnboarding;
 

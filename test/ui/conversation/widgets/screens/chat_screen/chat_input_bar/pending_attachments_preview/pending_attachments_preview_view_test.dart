@@ -54,12 +54,14 @@ void main() {
     testWidgets('should render one item per attachment', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(createWidget(
-        attachments: <PendingAttachment>[
-          makePending(localId: 'a', name: 'a.jpg'),
-          makePending(localId: 'b', name: 'b.jpg'),
-        ],
-      ));
+      await tester.pumpWidget(
+        createWidget(
+          attachments: <PendingAttachment>[
+            makePending(localId: 'a', name: 'a.jpg'),
+            makePending(localId: 'b', name: 'b.jpg'),
+          ],
+        ),
+      );
 
       expect(find.byType(PendingAttachmentItemView), findsNWidgets(2));
     });
@@ -67,11 +69,13 @@ void main() {
     testWidgets('should call onRemove with correct localId', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(createWidget(
-        attachments: <PendingAttachment>[
-          makePending(localId: 'remove-me', name: 'photo.jpg'),
-        ],
-      ));
+      await tester.pumpWidget(
+        createWidget(
+          attachments: <PendingAttachment>[
+            makePending(localId: 'remove-me', name: 'photo.jpg'),
+          ],
+        ),
+      );
 
       await tester.tap(find.byIcon(Icons.close));
       await tester.pump();

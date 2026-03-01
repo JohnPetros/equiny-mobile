@@ -5,16 +5,18 @@ import 'package:equiny/core/profiling/events/owner_entered_event.dart';
 import 'package:equiny/core/profiling/events/owner_exited_event.dart';
 import 'package:equiny/core/shared/constants/cache_keys.dart';
 import 'package:equiny/core/shared/constants/env_keys.dart';
+import 'package:equiny/core/shared/interfaces/push_notification_driver.dart';
 import 'package:equiny/core/shared/interfaces/websocket_client.dart';
 import 'package:equiny/drivers/cache-driver/index.dart';
 import 'package:equiny/drivers/env-driver/index.dart';
+import 'package:equiny/drivers/push-notification-driver/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:equiny/router.dart';
 import 'package:equiny/shared/providers/auth_state_provider.dart';
-import 'package:equiny/ui/profiling/match_notification/widgets/screens/match_notification_modal/index.dart';
-import 'package:equiny/ui/profiling/match_notification/widgets/screens/match_notification_modal/match_notification_modal_presenter.dart';
+import 'package:equiny/ui/profiling/components/match_notification_modal/index.dart';
+import 'package:equiny/ui/profiling/components/match_notification_modal/match_notification_modal_presenter.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:equiny/websocket/channels.dart';
 import 'package:equiny/websocket/websocket_client.dart';
@@ -29,6 +31,9 @@ class App extends ConsumerStatefulWidget {
 class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   String? _activeSessionKey;
   String? _inFlightSessionKey;
+  String? _activePushOwnerId;
+  String? _inFlightPushOwnerId;
+  ProviderSubscription<bool>? _authStateSubscription;
   Timer? _offlineGraceTimer;
   bool _isLifecycleResumed = true;
   void Function()? _profilingRealtimeUnsubscribe;
@@ -44,10 +49,17 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
         WidgetsBinding.instance.lifecycleState;
     _isLifecycleResumed =
         lifecycleState == null || lifecycleState == AppLifecycleState.resumed;
+
+    _authStateSubscription = ref.listenManual<bool>(
+      authStateProvider,
+      (_, _) => _syncSessionsFromState(),
+      fireImmediately: true,
+    );
   }
 
   @override
   void dispose() {
+    _authStateSubscription?.close();
     _clearProfilingRealtimeSubscription();
     _offlineGraceTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
@@ -62,7 +74,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       _isLifecycleResumed = true;
       _offlineGraceTimer?.cancel();
       _offlineGraceTimer = null;
-      _syncWebSocketSessionFromCurrentState();
+      _syncSessionsFromState();
       return;
     }
 
@@ -79,21 +91,6 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
-
-    final websocketClient = ref.watch(websocketClientProvider);
-    final envDriver = ref.watch(envDriverProvider);
-    final isAuthenticated = ref.watch(authStateProvider);
-    final cacheDriver = ref.watch(cacheDriverProvider);
-    final ownerId = cacheDriver.get(CacheKeys.ownerId) ?? '';
-    final accessToken = cacheDriver.get(CacheKeys.accessToken) ?? '';
-
-    _syncWebSocketSession(
-      websocketClient: websocketClient,
-      webSocketBaseUrl: envDriver.get(EnvKeys.equinyWebsocketUrl),
-      isAuthenticated: isAuthenticated,
-      ownerId: ownerId,
-      accessToken: accessToken,
-    );
 
     return MaterialApp.router(
       title: 'Equiny',
@@ -143,13 +140,16 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     );
   }
 
-  void _syncWebSocketSessionFromCurrentState() {
+  void _syncSessionsFromState() {
     final websocketClient = ref.read(websocketClientProvider);
     final envDriver = ref.read(envDriverProvider);
+    final pushNotificationDriver = ref.read(pushNotificationDriverProvider);
     final isAuthenticated = ref.read(authStateProvider);
     final cacheDriver = ref.read(cacheDriverProvider);
     final ownerId = cacheDriver.get(CacheKeys.ownerId) ?? '';
     final accessToken = cacheDriver.get(CacheKeys.accessToken) ?? '';
+    final hasCompletedOnboarding =
+        (cacheDriver.get(CacheKeys.onboardingCompleted) ?? '') == 'true';
 
     _syncWebSocketSession(
       websocketClient: websocketClient,
@@ -158,6 +158,76 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       ownerId: ownerId,
       accessToken: accessToken,
     );
+
+    _syncPushSession(
+      pushNotificationDriver: pushNotificationDriver,
+      isAuthenticated: isAuthenticated,
+      ownerId: ownerId,
+      hasCompletedOnboarding: hasCompletedOnboarding,
+    );
+  }
+
+  void _syncPushSession({
+    required PushNotificationDriver pushNotificationDriver,
+    required bool isAuthenticated,
+    required String ownerId,
+    required bool hasCompletedOnboarding,
+  }) {
+    if (!isAuthenticated || ownerId.isEmpty) {
+      if (_activePushOwnerId == null && _inFlightPushOwnerId == null) {
+        return;
+      }
+
+      _activePushOwnerId = null;
+      _inFlightPushOwnerId = null;
+      unawaited(pushNotificationDriver.unregister());
+      return;
+    }
+
+    if (_activePushOwnerId == ownerId || _inFlightPushOwnerId == ownerId) {
+      return;
+    }
+
+    _inFlightPushOwnerId = ownerId;
+
+    unawaited(
+      _initializeAndBindPushSession(
+        pushNotificationDriver: pushNotificationDriver,
+        ownerId: ownerId,
+        hasCompletedOnboarding: hasCompletedOnboarding,
+      ),
+    );
+  }
+
+  Future<void> _initializeAndBindPushSession({
+    required PushNotificationDriver pushNotificationDriver,
+    required String ownerId,
+    required bool hasCompletedOnboarding,
+  }) async {
+    try {
+      if (hasCompletedOnboarding) {
+        await pushNotificationDriver.requestPermission();
+      }
+
+      final bool isAuthenticated = ref.read(authStateProvider);
+      final cacheDriver = ref.read(cacheDriverProvider);
+      final String currentOwnerId = cacheDriver.get(CacheKeys.ownerId) ?? '';
+      if (!isAuthenticated || currentOwnerId != ownerId) {
+        return;
+      }
+
+      await pushNotificationDriver.register(ownerId: ownerId);
+      _activePushOwnerId = ownerId;
+    } catch (error, stackTrace) {
+      debugPrint(
+        'Failed to bind OneSignal session for ownerId=$ownerId: $error\n$stackTrace',
+      );
+      _activePushOwnerId = null;
+    } finally {
+      if (_inFlightPushOwnerId == ownerId) {
+        _inFlightPushOwnerId = null;
+      }
+    }
   }
 
   Future<void> _emitOwnerExitedAndDisconnect() async {

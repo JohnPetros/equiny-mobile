@@ -66,12 +66,14 @@ void main() {
   const String chatId = 'chat-id';
 
   setUpAll(() {
-    registerFallbackValue(MessageSentEvent(
-      messageContent: '',
-      chatId: '',
-      senderId: '',
-      attachments: const <MessageAttachmentDto>[],
-    ));
+    registerFallbackValue(
+      MessageSentEvent(
+        messageContent: '',
+        chatId: '',
+        senderId: '',
+        attachments: const <MessageAttachmentDto>[],
+      ),
+    );
     registerFallbackValue(MockFile());
     registerFallbackValue(const UploadUrlDto(url: '', token: '', filePath: ''));
   });
@@ -129,9 +131,12 @@ void main() {
         expect(presenter.hasMessages.value, isFalse);
       });
 
-      test('should compute showEmptyState as true when not loading and no error and no messages', () {
-        expect(presenter.showEmptyState.value, isTrue);
-      });
+      test(
+        'should compute showEmptyState as true when not loading and no error and no messages',
+        () {
+          expect(presenter.showEmptyState.value, isTrue);
+        },
+      );
 
       test('should compute canLoadMore as false when nextCursor is null', () {
         expect(presenter.canLoadMore.value, isFalse);
@@ -164,42 +169,57 @@ void main() {
         expect(presenter.showEmptyState.value, isFalse);
       });
 
-      test('should compute canLoadMore as true when not loading and nextCursor is non-empty', () {
-        presenter.nextCursor.value = 'cursor-abc';
-        expect(presenter.canLoadMore.value, isTrue);
-      });
+      test(
+        'should compute canLoadMore as true when not loading and nextCursor is non-empty',
+        () {
+          presenter.nextCursor.value = 'cursor-abc';
+          expect(presenter.canLoadMore.value, isTrue);
+        },
+      );
 
-      test('should compute canLoadMore as false when isLoadingMore is true', () {
-        presenter.isLoadingMore.value = true;
-        presenter.nextCursor.value = 'cursor-abc';
-        expect(presenter.canLoadMore.value, isFalse);
-      });
+      test(
+        'should compute canLoadMore as false when isLoadingMore is true',
+        () {
+          presenter.isLoadingMore.value = true;
+          presenter.nextCursor.value = 'cursor-abc';
+          expect(presenter.canLoadMore.value, isFalse);
+        },
+      );
 
-      test('should compute canLoadMore as false when nextCursor is empty string', () {
-        presenter.nextCursor.value = '';
-        expect(presenter.canLoadMore.value, isFalse);
-      });
+      test(
+        'should compute canLoadMore as false when nextCursor is empty string',
+        () {
+          presenter.nextCursor.value = '';
+          expect(presenter.canLoadMore.value, isFalse);
+        },
+      );
 
-      test('should compute canSend as true when not sending and draft non-empty and socket connected', () {
-        presenter.draft.value = 'hello';
-        presenter.isSocketConnected.value = true;
-        expect(presenter.canSend.value, isTrue);
-      });
+      test(
+        'should compute canSend as true when not sending and draft non-empty and socket connected',
+        () {
+          presenter.draft.value = 'hello';
+          presenter.isSocketConnected.value = true;
+          expect(presenter.canSend.value, isTrue);
+        },
+      );
 
-      test('should compute canSend as true when not sending and pending attachments exist and socket connected', () {
-        presenter.isSocketConnected.value = true;
-        presenter.pendingAttachments.value = <PendingAttachment>[
-          PendingAttachment(
-            localId: 'local-1',
-            file: MockFile(),
-            kind: 'image',
-            name: 'img.jpg',
-            size: 100,
-            status: AttachmentUploadStatus.ready,
-          ),
-        ];
-        expect(presenter.canSend.value, isTrue);
-      });
+      test(
+        'should compute canSend as true when not sending and pending attachments exist and socket connected',
+        () {
+          presenter.isSocketConnected.value = true;
+          presenter.pendingAttachments.value = <PendingAttachment>[
+            PendingAttachment(
+              localId: 'local-1',
+              file: MockFile(),
+              kind: 'image',
+              name: 'img.jpg',
+              size: 100,
+              status: AttachmentUploadStatus.ready,
+            ),
+          ];
+          expect(presenter.canSend.value, isTrue);
+        },
+      );
 
       test('should compute canSend as false when isSending is true', () {
         presenter.isSending.value = true;
@@ -208,49 +228,64 @@ void main() {
         expect(presenter.canSend.value, isFalse);
       });
 
-      test('should compute canSend as false when draft is empty and no pending attachments', () {
-        presenter.isSocketConnected.value = true;
-        expect(presenter.canSend.value, isFalse);
-      });
+      test(
+        'should compute canSend as false when draft is empty and no pending attachments',
+        () {
+          presenter.isSocketConnected.value = true;
+          expect(presenter.canSend.value, isFalse);
+        },
+      );
 
-      test('should compute headerSubtitle as Online agora when recipient is online', () {
-        presenter.isRecipientOnline.value = true;
-        expect(presenter.headerSubtitle.value, 'Online agora');
-      });
+      test(
+        'should compute headerSubtitle as Online agora when recipient is online',
+        () {
+          presenter.isRecipientOnline.value = true;
+          expect(presenter.headerSubtitle.value, 'Online agora');
+        },
+      );
 
-      test('should compute headerSubtitle as Visto recentemente when recipient is offline and no lastPresenceAt', () {
-        presenter.isRecipientOnline.value = false;
-        presenter.chat.value = ChatFaker.fakeDto(
-          recipient: RecipientFaker.fakeDto(),
-        );
-        expect(presenter.headerSubtitle.value, 'Visto recentemente');
-      });
+      test(
+        'should compute headerSubtitle as Visto recentemente when recipient is offline and no lastPresenceAt',
+        () {
+          presenter.isRecipientOnline.value = false;
+          presenter.chat.value = ChatFaker.fakeDto(
+            recipient: RecipientFaker.fakeDto(),
+          );
+          expect(presenter.headerSubtitle.value, 'Visto recentemente');
+        },
+      );
 
-      test('should compute headerSubtitle with formatted date when recipient has lastPresenceAt', () {
-        presenter.isRecipientOnline.value = false;
-        presenter.chat.value = ChatFaker.fakeDto(
-          recipient: const RecipientDto(
-            id: 'recipient-id',
-            name: 'Recipient',
-            lastPresenceAt: null,
-          ),
-        );
-        expect(presenter.headerSubtitle.value, 'Visto recentemente');
-      });
+      test(
+        'should compute headerSubtitle with formatted date when recipient has lastPresenceAt',
+        () {
+          presenter.isRecipientOnline.value = false;
+          presenter.chat.value = ChatFaker.fakeDto(
+            recipient: const RecipientDto(
+              id: 'recipient-id',
+              name: 'Recipient',
+              lastPresenceAt: null,
+            ),
+          );
+          expect(presenter.headerSubtitle.value, 'Visto recentemente');
+        },
+      );
     });
 
     group('loadChat', () {
-      test('should set chat when fetchChats returns chat with matching id', () async {
-        final chat = ChatFaker.fakeDto(id: chatId);
-        when(() => conversationService.fetchChats()).thenAnswer(
-          (_) async => RestResponse<List<ChatDto>>(body: <ChatDto>[chat]),
-        );
+      test(
+        'should set chat when fetchChats returns chat with matching id',
+        () async {
+          final chat = ChatFaker.fakeDto(id: chatId);
+          when(() => conversationService.fetchChats()).thenAnswer(
+            (_) async => RestResponse<List<ChatDto>>(body: <ChatDto>[chat]),
+          );
 
-        await presenter.loadChat();
+          await presenter.loadChat();
 
-        expect(presenter.chat.value, chat);
-        expect(presenter.errorMessage.value, isNull);
-      });
+          expect(presenter.chat.value, chat);
+          expect(presenter.errorMessage.value, isNull);
+        },
+      );
 
       test('should set error when fetchChats fails', () async {
         when(() => conversationService.fetchChats()).thenAnswer(
@@ -266,54 +301,73 @@ void main() {
         expect(presenter.errorMessage.value, 'Erro de rede');
       });
 
-      test('should set error when chat with matching id is not found', () async {
-        final otherChat = ChatFaker.fakeDto(id: 'other-chat-id');
-        when(() => conversationService.fetchChats()).thenAnswer(
-          (_) async => RestResponse<List<ChatDto>>(body: <ChatDto>[otherChat]),
-        );
+      test(
+        'should set error when chat with matching id is not found',
+        () async {
+          final otherChat = ChatFaker.fakeDto(id: 'other-chat-id');
+          when(() => conversationService.fetchChats()).thenAnswer(
+            (_) async =>
+                RestResponse<List<ChatDto>>(body: <ChatDto>[otherChat]),
+          );
 
-        await presenter.loadChat();
+          await presenter.loadChat();
 
-        expect(presenter.chat.value, isNull);
-        expect(
-          presenter.errorMessage.value,
-          'Nao foi possivel localizar a conversa.',
-        );
-      });
+          expect(presenter.chat.value, isNull);
+          expect(
+            presenter.errorMessage.value,
+            'Nao foi possivel localizar a conversa.',
+          );
+        },
+      );
     });
 
     group('loadInitialMessages', () {
-      test('should set messages and nextCursor when fetchMessagesList succeeds', () async {
-        final messages = <MessageDto>[
-          MessageFaker.fakeDto(id: 'msg-1', sentAt: DateTime(2026, 1, 1, 10, 0)),
-          MessageFaker.fakeDto(id: 'msg-2', sentAt: DateTime(2026, 1, 1, 11, 0)),
-        ];
-        when(
-          () => conversationService.fetchMessagesList(
-            chatId: chatId,
-            limit: 30,
-            cursor: null,
-          ),
-        ).thenAnswer(
-          (_) async => RestResponse<PaginationResponse<MessageDto>>(
-            body: PaginationResponse<MessageDto>(
-              items: messages,
-              nextCursor: 'cursor-1',
+      test(
+        'should set messages and nextCursor when fetchMessagesList succeeds',
+        () async {
+          final messages = <MessageDto>[
+            MessageFaker.fakeDto(
+              id: 'msg-1',
+              sentAt: DateTime(2026, 1, 1, 10, 0),
             ),
-          ),
-        );
+            MessageFaker.fakeDto(
+              id: 'msg-2',
+              sentAt: DateTime(2026, 1, 1, 11, 0),
+            ),
+          ];
+          when(
+            () => conversationService.fetchMessagesList(
+              chatId: chatId,
+              limit: 30,
+              cursor: null,
+            ),
+          ).thenAnswer(
+            (_) async => RestResponse<PaginationResponse<MessageDto>>(
+              body: PaginationResponse<MessageDto>(
+                items: messages,
+                nextCursor: 'cursor-1',
+              ),
+            ),
+          );
 
-        await presenter.loadInitialMessages();
+          await presenter.loadInitialMessages();
 
-        expect(presenter.messages.value.length, 2);
-        expect(presenter.nextCursor.value, 'cursor-1');
-        expect(presenter.errorMessage.value, isNull);
-      });
+          expect(presenter.messages.value.length, 2);
+          expect(presenter.nextCursor.value, 'cursor-1');
+          expect(presenter.errorMessage.value, isNull);
+        },
+      );
 
       test('should sort messages by sentAt ascending', () async {
         final messages = <MessageDto>[
-          MessageFaker.fakeDto(id: 'msg-late', sentAt: DateTime(2026, 1, 1, 12, 0)),
-          MessageFaker.fakeDto(id: 'msg-early', sentAt: DateTime(2026, 1, 1, 8, 0)),
+          MessageFaker.fakeDto(
+            id: 'msg-late',
+            sentAt: DateTime(2026, 1, 1, 12, 0),
+          ),
+          MessageFaker.fakeDto(
+            id: 'msg-early',
+            sentAt: DateTime(2026, 1, 1, 8, 0),
+          ),
         ];
         when(
           () => conversationService.fetchMessagesList(
@@ -354,37 +408,46 @@ void main() {
     });
 
     group('loadMoreMessages', () {
-      test('should append older messages and update nextCursor when loading more succeeds', () async {
-        presenter.messages.value = <MessageDto>[
-          MessageFaker.fakeDto(id: 'msg-1', sentAt: DateTime(2026, 1, 1, 10, 0)),
-        ];
-        presenter.nextCursor.value = 'cursor-1';
-
-        final olderMessages = <MessageDto>[
-          MessageFaker.fakeDto(id: 'msg-0', sentAt: DateTime(2026, 1, 1, 9, 0)),
-        ];
-        when(
-          () => conversationService.fetchMessagesList(
-            chatId: chatId,
-            limit: 30,
-            cursor: 'cursor-1',
-          ),
-        ).thenAnswer(
-          (_) async => RestResponse<PaginationResponse<MessageDto>>(
-            body: PaginationResponse<MessageDto>(
-              items: olderMessages,
-              nextCursor: 'cursor-2',
+      test(
+        'should append older messages and update nextCursor when loading more succeeds',
+        () async {
+          presenter.messages.value = <MessageDto>[
+            MessageFaker.fakeDto(
+              id: 'msg-1',
+              sentAt: DateTime(2026, 1, 1, 10, 0),
             ),
-          ),
-        );
+          ];
+          presenter.nextCursor.value = 'cursor-1';
 
-        await presenter.loadMoreMessages();
+          final olderMessages = <MessageDto>[
+            MessageFaker.fakeDto(
+              id: 'msg-0',
+              sentAt: DateTime(2026, 1, 1, 9, 0),
+            ),
+          ];
+          when(
+            () => conversationService.fetchMessagesList(
+              chatId: chatId,
+              limit: 30,
+              cursor: 'cursor-1',
+            ),
+          ).thenAnswer(
+            (_) async => RestResponse<PaginationResponse<MessageDto>>(
+              body: PaginationResponse<MessageDto>(
+                items: olderMessages,
+                nextCursor: 'cursor-2',
+              ),
+            ),
+          );
 
-        expect(presenter.messages.value.length, 2);
-        expect(presenter.messages.value.first.id, 'msg-0');
-        expect(presenter.nextCursor.value, 'cursor-2');
-        expect(presenter.isLoadingMore.value, isFalse);
-      });
+          await presenter.loadMoreMessages();
+
+          expect(presenter.messages.value.length, 2);
+          expect(presenter.messages.value.first.id, 'msg-0');
+          expect(presenter.nextCursor.value, 'cursor-2');
+          expect(presenter.isLoadingMore.value, isFalse);
+        },
+      );
 
       test('should not load more when canLoadMore is false', () async {
         presenter.nextCursor.value = null;
@@ -402,7 +465,10 @@ void main() {
 
       test('should deduplicate messages when loading more', () async {
         presenter.messages.value = <MessageDto>[
-          MessageFaker.fakeDto(id: 'msg-1', sentAt: DateTime(2026, 1, 1, 10, 0)),
+          MessageFaker.fakeDto(
+            id: 'msg-1',
+            sentAt: DateTime(2026, 1, 1, 10, 0),
+          ),
         ];
         presenter.nextCursor.value = 'cursor-1';
 
@@ -416,8 +482,14 @@ void main() {
           (_) async => RestResponse<PaginationResponse<MessageDto>>(
             body: PaginationResponse<MessageDto>(
               items: <MessageDto>[
-                MessageFaker.fakeDto(id: 'msg-1', sentAt: DateTime(2026, 1, 1, 10, 0)),
-                MessageFaker.fakeDto(id: 'msg-0', sentAt: DateTime(2026, 1, 1, 9, 0)),
+                MessageFaker.fakeDto(
+                  id: 'msg-1',
+                  sentAt: DateTime(2026, 1, 1, 10, 0),
+                ),
+                MessageFaker.fakeDto(
+                  id: 'msg-0',
+                  sentAt: DateTime(2026, 1, 1, 9, 0),
+                ),
               ],
               nextCursor: '',
             ),
@@ -431,7 +503,10 @@ void main() {
 
       test('should not update messages when loadMoreMessages fails', () async {
         presenter.messages.value = <MessageDto>[
-          MessageFaker.fakeDto(id: 'msg-1', sentAt: DateTime(2026, 1, 1, 10, 0)),
+          MessageFaker.fakeDto(
+            id: 'msg-1',
+            sentAt: DateTime(2026, 1, 1, 10, 0),
+          ),
         ];
         presenter.nextCursor.value = 'cursor-1';
 
@@ -472,25 +547,31 @@ void main() {
         ).called(1);
       });
 
-      test('should not subscribe twice when connectChannel called multiple times', () async {
-        await presenter.connectChannel();
-        await presenter.connectChannel();
+      test(
+        'should not subscribe twice when connectChannel called multiple times',
+        () async {
+          await presenter.connectChannel();
+          await presenter.connectChannel();
 
-        verify(
-          () => conversationChannel.listen(
-            onMessageReceived: any(named: 'onMessageReceived'),
-          ),
-        ).called(1);
-      });
+          verify(
+            () => conversationChannel.listen(
+              onMessageReceived: any(named: 'onMessageReceived'),
+            ),
+          ).called(1);
+        },
+      );
     });
 
     group('disconnectChannel', () {
-      test('should set isSocketConnected to false when disconnecting', () async {
-        await presenter.connectChannel();
-        await presenter.disconnectChannel();
+      test(
+        'should set isSocketConnected to false when disconnecting',
+        () async {
+          await presenter.connectChannel();
+          await presenter.disconnectChannel();
 
-        expect(presenter.isSocketConnected.value, isFalse);
-      });
+          expect(presenter.isSocketConnected.value, isFalse);
+        },
+      );
     });
 
     group('onDraftChanged', () {
@@ -524,23 +605,26 @@ void main() {
         expect(presenter.pendingAttachments.value, isEmpty);
       });
 
-      test('should limit total pending attachments to maxAttachmentsPerMessage', () {
-        final attachments = List<PendingAttachment>.generate(
-          5,
-          (int index) => PendingAttachment(
-            localId: 'local-$index',
-            file: MockFile(),
-            kind: 'image',
-            name: 'photo-$index.jpg',
-            size: 1024,
-            status: AttachmentUploadStatus.ready,
-          ),
-        );
+      test(
+        'should limit total pending attachments to maxAttachmentsPerMessage',
+        () {
+          final attachments = List<PendingAttachment>.generate(
+            5,
+            (int index) => PendingAttachment(
+              localId: 'local-$index',
+              file: MockFile(),
+              kind: 'image',
+              name: 'photo-$index.jpg',
+              size: 1024,
+              status: AttachmentUploadStatus.ready,
+            ),
+          );
 
-        presenter.addPendingAttachments(attachments);
+          presenter.addPendingAttachments(attachments);
 
-        expect(presenter.pendingAttachments.value.length, 3);
-      });
+          expect(presenter.pendingAttachments.value.length, 3);
+        },
+      );
     });
 
     group('removePendingAttachment', () {
@@ -577,9 +661,7 @@ void main() {
 
         await presenter.sendMessage();
 
-        verifyNever(
-          () => conversationChannel.emitMessageSentEvent(any()),
-        );
+        verifyNever(() => conversationChannel.emitMessageSentEvent(any()));
       });
 
       test('should not send when socket is not connected', () async {
@@ -587,9 +669,7 @@ void main() {
 
         await presenter.sendMessage();
 
-        verifyNever(
-          () => conversationChannel.emitMessageSentEvent(any()),
-        );
+        verifyNever(() => conversationChannel.emitMessageSentEvent(any()));
       });
 
       test('should not send when already sending', () async {
@@ -599,9 +679,7 @@ void main() {
 
         await presenter.sendMessage();
 
-        verifyNever(
-          () => conversationChannel.emitMessageSentEvent(any()),
-        );
+        verifyNever(() => conversationChannel.emitMessageSentEvent(any()));
       });
 
       test('should not send when ownerId is empty', () async {
@@ -611,9 +689,7 @@ void main() {
 
         await presenter.sendMessage();
 
-        verifyNever(
-          () => conversationChannel.emitMessageSentEvent(any()),
-        );
+        verifyNever(() => conversationChannel.emitMessageSentEvent(any()));
       });
 
       test('should emit message via channel when draft is non-empty', () async {
@@ -626,9 +702,11 @@ void main() {
 
         await presenter.sendMessage();
 
-        final MessageSentEvent captured = verify(
-          () => conversationChannel.emitMessageSentEvent(captureAny()),
-        ).captured.first as MessageSentEvent;
+        final MessageSentEvent captured =
+            verify(
+                  () => conversationChannel.emitMessageSentEvent(captureAny()),
+                ).captured.first
+                as MessageSentEvent;
 
         expect(captured.messageContent, 'Hello!');
         expect(captured.chatId, chatId);
@@ -660,9 +738,11 @@ void main() {
 
         await presenter.sendMessage(content: 'Suggested message');
 
-        final MessageSentEvent captured = verify(
-          () => conversationChannel.emitMessageSentEvent(captureAny()),
-        ).captured.first as MessageSentEvent;
+        final MessageSentEvent captured =
+            verify(
+                  () => conversationChannel.emitMessageSentEvent(captureAny()),
+                ).captured.first
+                as MessageSentEvent;
 
         expect(captured.messageContent, 'Suggested message');
       });
@@ -678,9 +758,11 @@ void main() {
 
         await presenter.sendSuggestedMessage('Ola!');
 
-        final MessageSentEvent captured = verify(
-          () => conversationChannel.emitMessageSentEvent(captureAny()),
-        ).captured.first as MessageSentEvent;
+        final MessageSentEvent captured =
+            verify(
+                  () => conversationChannel.emitMessageSentEvent(captureAny()),
+                ).captured.first
+                as MessageSentEvent;
 
         expect(captured.messageContent, 'Ola!');
       });
@@ -695,125 +777,136 @@ void main() {
         when(() => mockFile.lengthSync()).thenReturn(1024);
       });
 
-      test('should not upload attachments when pendingMessageId is not set', () async {
-        presenter.draft.value = 'With photo';
-        presenter.isSocketConnected.value = true;
-        presenter.pendingAttachments.value = <PendingAttachment>[
-          PendingAttachment(
-            localId: 'local-1',
-            file: mockFile,
-            kind: 'image',
-            name: 'photo.jpg',
-            size: 1024,
-            status: AttachmentUploadStatus.ready,
-          ),
-        ];
+      test(
+        'should not upload attachments when pendingMessageId is not set',
+        () async {
+          presenter.draft.value = 'With photo';
+          presenter.isSocketConnected.value = true;
+          presenter.pendingAttachments.value = <PendingAttachment>[
+            PendingAttachment(
+              localId: 'local-1',
+              file: mockFile,
+              kind: 'image',
+              name: 'photo.jpg',
+              size: 1024,
+              status: AttachmentUploadStatus.ready,
+            ),
+          ];
 
-        when(
-          () => conversationChannel.emitMessageSentEvent(any()),
-        ).thenAnswer((_) async {});
+          when(
+            () => conversationChannel.emitMessageSentEvent(any()),
+          ).thenAnswer((_) async {});
 
-        await presenter.sendMessage();
+          await presenter.sendMessage();
 
-        verifyNever(
-          () => fileStorageService.generateUploadUrlsForAttachments(
-            chatId: any(named: 'chatId'),
-            messageId: any(named: 'messageId'),
-            attachments: any(named: 'attachments'),
-          ),
-        );
-      });
+          verifyNever(
+            () => fileStorageService.generateUploadUrlsForAttachments(
+              chatId: any(named: 'chatId'),
+              messageId: any(named: 'messageId'),
+              attachments: any(named: 'attachments'),
+            ),
+          );
+        },
+      );
 
-      test('should not emit socket message when valid pending attachments have no uploaded counterparts', () async {
-        presenter.draft.value = 'With photo';
-        presenter.isSocketConnected.value = true;
-        presenter.pendingAttachments.value = <PendingAttachment>[
-          PendingAttachment(
-            localId: 'local-1',
-            file: mockFile,
-            kind: 'image',
-            name: 'photo.jpg',
-            size: 1024,
-            status: AttachmentUploadStatus.ready,
-          ),
-        ];
+      test(
+        'should not emit socket message when valid pending attachments have no uploaded counterparts',
+        () async {
+          presenter.draft.value = 'With photo';
+          presenter.isSocketConnected.value = true;
+          presenter.pendingAttachments.value = <PendingAttachment>[
+            PendingAttachment(
+              localId: 'local-1',
+              file: mockFile,
+              kind: 'image',
+              name: 'photo.jpg',
+              size: 1024,
+              status: AttachmentUploadStatus.ready,
+            ),
+          ];
 
-        await presenter.sendMessage();
+          await presenter.sendMessage();
 
-        verifyNever(
-          () => conversationChannel.emitMessageSentEvent(any()),
-        );
-      });
+          verifyNever(() => conversationChannel.emitMessageSentEvent(any()));
+        },
+      );
 
-      test('should set isSending to false after sendMessage with unuploaded attachments', () async {
-        presenter.draft.value = 'With photo';
-        presenter.isSocketConnected.value = true;
-        presenter.pendingAttachments.value = <PendingAttachment>[
-          PendingAttachment(
-            localId: 'local-1',
-            file: mockFile,
-            kind: 'image',
-            name: 'photo.jpg',
-            size: 1024,
-            status: AttachmentUploadStatus.ready,
-          ),
-        ];
+      test(
+        'should set isSending to false after sendMessage with unuploaded attachments',
+        () async {
+          presenter.draft.value = 'With photo';
+          presenter.isSocketConnected.value = true;
+          presenter.pendingAttachments.value = <PendingAttachment>[
+            PendingAttachment(
+              localId: 'local-1',
+              file: mockFile,
+              kind: 'image',
+              name: 'photo.jpg',
+              size: 1024,
+              status: AttachmentUploadStatus.ready,
+            ),
+          ];
 
-        await presenter.sendMessage();
+          await presenter.sendMessage();
 
-        expect(presenter.isSending.value, isFalse);
-      });
+          expect(presenter.isSending.value, isFalse);
+        },
+      );
 
-      test('should emit socket message when only text and all pending have errors', () async {
-        presenter.draft.value = 'Hello';
-        presenter.isSocketConnected.value = true;
-        presenter.pendingAttachments.value = <PendingAttachment>[
-          PendingAttachment(
-            localId: 'local-1',
-            file: mockFile,
-            kind: 'image',
-            name: 'photo.jpg',
-            size: 1024,
-            status: AttachmentUploadStatus.failed,
-            errorMessage: 'Imagem excede 2 MB.',
-          ),
-        ];
+      test(
+        'should emit socket message when only text and all pending have errors',
+        () async {
+          presenter.draft.value = 'Hello';
+          presenter.isSocketConnected.value = true;
+          presenter.pendingAttachments.value = <PendingAttachment>[
+            PendingAttachment(
+              localId: 'local-1',
+              file: mockFile,
+              kind: 'image',
+              name: 'photo.jpg',
+              size: 1024,
+              status: AttachmentUploadStatus.failed,
+              errorMessage: 'Imagem excede 2 MB.',
+            ),
+          ];
 
-        when(
-          () => conversationChannel.emitMessageSentEvent(any()),
-        ).thenAnswer((_) async {});
+          when(
+            () => conversationChannel.emitMessageSentEvent(any()),
+          ).thenAnswer((_) async {});
 
-        await presenter.sendMessage();
+          await presenter.sendMessage();
 
-        verifyNever(
-          () => fileStorageService.generateUploadUrlsForAttachments(
-            chatId: any(named: 'chatId'),
-            messageId: any(named: 'messageId'),
-            attachments: any(named: 'attachments'),
-          ),
-        );
-      });
+          verifyNever(
+            () => fileStorageService.generateUploadUrlsForAttachments(
+              chatId: any(named: 'chatId'),
+              messageId: any(named: 'messageId'),
+              attachments: any(named: 'attachments'),
+            ),
+          );
+        },
+      );
 
-      test('should not send when only pending attachments with errors exist and draft is empty', () async {
-        presenter.isSocketConnected.value = true;
-        presenter.pendingAttachments.value = <PendingAttachment>[
-          PendingAttachment(
-            localId: 'local-1',
-            file: mockFile,
-            kind: 'image',
-            name: 'photo.jpg',
-            size: 1024,
-            status: AttachmentUploadStatus.failed,
-            errorMessage: 'Imagem excede 2 MB.',
-          ),
-        ];
+      test(
+        'should not send when only pending attachments with errors exist and draft is empty',
+        () async {
+          presenter.isSocketConnected.value = true;
+          presenter.pendingAttachments.value = <PendingAttachment>[
+            PendingAttachment(
+              localId: 'local-1',
+              file: mockFile,
+              kind: 'image',
+              name: 'photo.jpg',
+              size: 1024,
+              status: AttachmentUploadStatus.failed,
+              errorMessage: 'Imagem excede 2 MB.',
+            ),
+          ];
 
-        await presenter.sendMessage();
+          await presenter.sendMessage();
 
-        verifyNever(
-          () => conversationChannel.emitMessageSentEvent(any()),
-        );
-      });
+          verifyNever(() => conversationChannel.emitMessageSentEvent(any()));
+        },
+      );
     });
 
     group('pickImageAttachments', () {
@@ -847,7 +940,8 @@ void main() {
         await presenter.pickImageAttachments();
 
         verifyNever(
-          () => mediaPickerDriver.pickImages(maxImages: any(named: 'maxImages')),
+          () =>
+              mediaPickerDriver.pickImages(maxImages: any(named: 'maxImages')),
         );
       });
     });
@@ -871,59 +965,68 @@ void main() {
     });
 
     group('refreshPresence', () {
-      test('should set isRecipientOnline when presence fetch succeeds', () async {
-        presenter.chat.value = ChatFaker.fakeDto(
-          id: chatId,
-          recipient: RecipientFaker.fakeDto(id: 'recipient-1'),
-        );
+      test(
+        'should set isRecipientOnline when presence fetch succeeds',
+        () async {
+          presenter.chat.value = ChatFaker.fakeDto(
+            id: chatId,
+            recipient: RecipientFaker.fakeDto(id: 'recipient-1'),
+          );
 
-        when(
-          () => profilingService.fetchOwnerPresence(ownerId: 'recipient-1'),
-        ).thenAnswer(
-          (_) async => RestResponse<OwnerPresenceDto>(
-            body: const OwnerPresenceDto(
-              ownerId: 'recipient-1',
-              isOnline: true,
-              lastSeenAt: null,
+          when(
+            () => profilingService.fetchOwnerPresence(ownerId: 'recipient-1'),
+          ).thenAnswer(
+            (_) async => RestResponse<OwnerPresenceDto>(
+              body: const OwnerPresenceDto(
+                ownerId: 'recipient-1',
+                isOnline: true,
+                lastSeenAt: null,
+              ),
             ),
-          ),
-        );
+          );
 
-        await presenter.refreshPresence();
+          await presenter.refreshPresence();
 
-        expect(presenter.isRecipientOnline.value, isTrue);
-      });
+          expect(presenter.isRecipientOnline.value, isTrue);
+        },
+      );
 
-      test('should set isRecipientOnline to false when recipient id is empty', () async {
-        presenter.chat.value = ChatFaker.fakeDto(
-          id: chatId,
-          recipient: RecipientFaker.fakeDto(id: ''),
-        );
+      test(
+        'should set isRecipientOnline to false when recipient id is empty',
+        () async {
+          presenter.chat.value = ChatFaker.fakeDto(
+            id: chatId,
+            recipient: RecipientFaker.fakeDto(id: ''),
+          );
 
-        await presenter.refreshPresence();
+          await presenter.refreshPresence();
 
-        expect(presenter.isRecipientOnline.value, isFalse);
-      });
+          expect(presenter.isRecipientOnline.value, isFalse);
+        },
+      );
 
-      test('should not update isRecipientOnline when presence fetch fails', () async {
-        presenter.chat.value = ChatFaker.fakeDto(
-          id: chatId,
-          recipient: RecipientFaker.fakeDto(id: 'recipient-1'),
-        );
+      test(
+        'should not update isRecipientOnline when presence fetch fails',
+        () async {
+          presenter.chat.value = ChatFaker.fakeDto(
+            id: chatId,
+            recipient: RecipientFaker.fakeDto(id: 'recipient-1'),
+          );
 
-        when(
-          () => profilingService.fetchOwnerPresence(ownerId: 'recipient-1'),
-        ).thenAnswer(
-          (_) async => RestResponse<OwnerPresenceDto>(
-            statusCode: 500,
-            errorMessage: 'Erro',
-          ),
-        );
+          when(
+            () => profilingService.fetchOwnerPresence(ownerId: 'recipient-1'),
+          ).thenAnswer(
+            (_) async => RestResponse<OwnerPresenceDto>(
+              statusCode: 500,
+              errorMessage: 'Erro',
+            ),
+          );
 
-        await presenter.refreshPresence();
+          await presenter.refreshPresence();
 
-        expect(presenter.isRecipientOnline.value, isFalse);
-      });
+          expect(presenter.isRecipientOnline.value, isFalse);
+        },
+      );
     });
 
     group('retry', () {
@@ -958,14 +1061,17 @@ void main() {
     });
 
     group('isMine', () {
-      test('should return true when message senderId differs from recipient id', () {
-        presenter.chat.value = ChatFaker.fakeDto(
-          recipient: RecipientFaker.fakeDto(id: 'recipient-id'),
-        );
+      test(
+        'should return true when message senderId differs from recipient id',
+        () {
+          presenter.chat.value = ChatFaker.fakeDto(
+            recipient: RecipientFaker.fakeDto(id: 'recipient-id'),
+          );
 
-        final message = MessageFaker.fakeDto(senderId: 'owner-id');
-        expect(presenter.isMine(message), isTrue);
-      });
+          final message = MessageFaker.fakeDto(senderId: 'owner-id');
+          expect(presenter.isMine(message), isTrue);
+        },
+      );
 
       test('should return false when message senderId equals recipient id', () {
         presenter.chat.value = ChatFaker.fakeDto(
@@ -995,7 +1101,10 @@ void main() {
           () => fileStorageDriver.getFileUrl('some-key'),
         ).thenReturn('https://cdn.equiny/some-key');
 
-        expect(presenter.resolveFileUrl('some-key'), 'https://cdn.equiny/some-key');
+        expect(
+          presenter.resolveFileUrl('some-key'),
+          'https://cdn.equiny/some-key',
+        );
       });
 
       test('should return empty string when key is empty', () {
@@ -1059,8 +1168,14 @@ void main() {
     group('groupedMessages', () {
       test('should group messages by date', () {
         presenter.messages.value = <MessageDto>[
-          MessageFaker.fakeDto(id: 'msg-1', sentAt: DateTime(2026, 1, 1, 10, 0)),
-          MessageFaker.fakeDto(id: 'msg-2', sentAt: DateTime(2026, 1, 1, 11, 0)),
+          MessageFaker.fakeDto(
+            id: 'msg-1',
+            sentAt: DateTime(2026, 1, 1, 10, 0),
+          ),
+          MessageFaker.fakeDto(
+            id: 'msg-2',
+            sentAt: DateTime(2026, 1, 1, 11, 0),
+          ),
           MessageFaker.fakeDto(id: 'msg-3', sentAt: DateTime(2026, 1, 2, 9, 0)),
         ];
 
@@ -1073,7 +1188,10 @@ void main() {
 
       test('should sort groups by date ascending', () {
         presenter.messages.value = <MessageDto>[
-          MessageFaker.fakeDto(id: 'msg-1', sentAt: DateTime(2026, 1, 5, 10, 0)),
+          MessageFaker.fakeDto(
+            id: 'msg-1',
+            sentAt: DateTime(2026, 1, 5, 10, 0),
+          ),
           MessageFaker.fakeDto(id: 'msg-2', sentAt: DateTime(2026, 1, 3, 9, 0)),
         ];
 
@@ -1105,7 +1223,13 @@ void main() {
         presenter.messages.value = <MessageDto>[
           MessageFaker.fakeDto(
             id: 'msg-1',
-            sentAt: DateTime(yesterday.year, yesterday.month, yesterday.day, 10, 0),
+            sentAt: DateTime(
+              yesterday.year,
+              yesterday.month,
+              yesterday.day,
+              10,
+              0,
+            ),
           ),
         ];
 
@@ -1127,7 +1251,10 @@ void main() {
     group('message received via channel', () {
       test('should add received message to messages list', () async {
         presenter.messages.value = <MessageDto>[
-          MessageFaker.fakeDto(id: 'msg-1', sentAt: DateTime(2026, 1, 1, 10, 0)),
+          MessageFaker.fakeDto(
+            id: 'msg-1',
+            sentAt: DateTime(2026, 1, 1, 10, 0),
+          ),
         ];
 
         late void Function(MessageReceivedEvent) onMessageReceivedCallback;
@@ -1136,8 +1263,9 @@ void main() {
             onMessageReceived: any(named: 'onMessageReceived'),
           ),
         ).thenAnswer((Invocation invocation) {
-          onMessageReceivedCallback = invocation.namedArguments[#onMessageReceived]
-              as void Function(MessageReceivedEvent);
+          onMessageReceivedCallback =
+              invocation.namedArguments[#onMessageReceived]
+                  as void Function(MessageReceivedEvent);
           return () {};
         });
 
@@ -1155,45 +1283,52 @@ void main() {
         expect(presenter.messages.value.last.id, 'msg-new');
       });
 
-      test('should update upload status map for received message attachments', () async {
-        late void Function(MessageReceivedEvent) onMessageReceivedCallback;
-        when(
-          () => conversationChannel.listen(
-            onMessageReceived: any(named: 'onMessageReceived'),
-          ),
-        ).thenAnswer((Invocation invocation) {
-          onMessageReceivedCallback = invocation.namedArguments[#onMessageReceived]
-              as void Function(MessageReceivedEvent);
-          return () {};
-        });
-
-        await presenter.connectChannel();
-
-        final newMessage = MessageFaker.fakeDto(
-          id: 'msg-new',
-          sentAt: DateTime(2026, 1, 1, 12, 0),
-          attachments: <MessageAttachmentDto>[
-            const MessageAttachmentDto(
-              kind: 'image',
-              key: 'file-key',
-              name: 'photo.jpg',
-              size: 1024,
+      test(
+        'should update upload status map for received message attachments',
+        () async {
+          late void Function(MessageReceivedEvent) onMessageReceivedCallback;
+          when(
+            () => conversationChannel.listen(
+              onMessageReceived: any(named: 'onMessageReceived'),
             ),
-          ],
-        );
-        onMessageReceivedCallback(
-          MessageReceivedEvent(message: newMessage, chatId: chatId),
-        );
+          ).thenAnswer((Invocation invocation) {
+            onMessageReceivedCallback =
+                invocation.namedArguments[#onMessageReceived]
+                    as void Function(MessageReceivedEvent);
+            return () {};
+          });
 
-        expect(
-          presenter.uploadStatusMap.value['file-key'],
-          AttachmentUploadStatus.ready,
-        );
-      });
+          await presenter.connectChannel();
+
+          final newMessage = MessageFaker.fakeDto(
+            id: 'msg-new',
+            sentAt: DateTime(2026, 1, 1, 12, 0),
+            attachments: <MessageAttachmentDto>[
+              const MessageAttachmentDto(
+                kind: 'image',
+                key: 'file-key',
+                name: 'photo.jpg',
+                size: 1024,
+              ),
+            ],
+          );
+          onMessageReceivedCallback(
+            MessageReceivedEvent(message: newMessage, chatId: chatId),
+          );
+
+          expect(
+            presenter.uploadStatusMap.value['file-key'],
+            AttachmentUploadStatus.ready,
+          );
+        },
+      );
 
       test('should deduplicate received message if already present', () async {
         presenter.messages.value = <MessageDto>[
-          MessageFaker.fakeDto(id: 'msg-1', sentAt: DateTime(2026, 1, 1, 10, 0)),
+          MessageFaker.fakeDto(
+            id: 'msg-1',
+            sentAt: DateTime(2026, 1, 1, 10, 0),
+          ),
         ];
 
         late void Function(MessageReceivedEvent) onMessageReceivedCallback;
@@ -1202,8 +1337,9 @@ void main() {
             onMessageReceived: any(named: 'onMessageReceived'),
           ),
         ).thenAnswer((Invocation invocation) {
-          onMessageReceivedCallback = invocation.namedArguments[#onMessageReceived]
-              as void Function(MessageReceivedEvent);
+          onMessageReceivedCallback =
+              invocation.namedArguments[#onMessageReceived]
+                  as void Function(MessageReceivedEvent);
           return () {};
         });
 
@@ -1211,7 +1347,10 @@ void main() {
 
         onMessageReceivedCallback(
           MessageReceivedEvent(
-            message: MessageFaker.fakeDto(id: 'msg-1', sentAt: DateTime(2026, 1, 1, 10, 0)),
+            message: MessageFaker.fakeDto(
+              id: 'msg-1',
+              sentAt: DateTime(2026, 1, 1, 10, 0),
+            ),
             chatId: chatId,
           ),
         );

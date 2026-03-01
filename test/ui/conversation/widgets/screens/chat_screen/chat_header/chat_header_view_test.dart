@@ -35,12 +35,8 @@ void main() {
 
     when(() => presenter.isRecipientOnline).thenReturn(isRecipientOnline);
     when(() => presenter.presenceLabel).thenReturn(presenceLabel);
-    when(
-      () => presenter.resolveAvatarUrl(any()),
-    ).thenReturn('');
-    when(
-      () => presenter.loadPresence(any()),
-    ).thenAnswer((_) async {});
+    when(() => presenter.resolveAvatarUrl(any())).thenReturn('');
+    when(() => presenter.loadPresence(any())).thenAnswer((_) async {});
   });
 
   Widget createWidget({RecipientDto? recipient}) {

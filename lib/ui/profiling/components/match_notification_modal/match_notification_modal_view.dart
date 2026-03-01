@@ -1,7 +1,7 @@
 import 'package:equiny/core/profiling/dtos/structures/horse_match_dto.dart';
-import 'package:equiny/ui/profiling/match_notification/widgets/screens/match_notification_modal/confetti_overlay/index.dart';
-import 'package:equiny/ui/profiling/match_notification/widgets/screens/match_notification_modal/match_horse_avatar/index.dart';
-import 'package:equiny/ui/profiling/match_notification/widgets/screens/match_notification_modal/match_notification_modal_presenter.dart';
+import 'package:equiny/ui/profiling/components/match_notification_modal/confetti_overlay/index.dart';
+import 'package:equiny/ui/profiling/components/match_notification_modal/match_horse_avatar/index.dart';
+import 'package:equiny/ui/profiling/components/match_notification_modal/match_notification_modal_presenter.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';

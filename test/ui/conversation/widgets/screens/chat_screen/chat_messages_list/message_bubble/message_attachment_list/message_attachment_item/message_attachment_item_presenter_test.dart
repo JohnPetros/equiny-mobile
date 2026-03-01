@@ -29,10 +29,7 @@ void main() {
     });
 
     test('should return correct icon data for document', () {
-      expect(
-        presenter.attachmentIconData('pdf'),
-        Icons.description_outlined,
-      );
+      expect(presenter.attachmentIconData('pdf'), Icons.description_outlined);
     });
 
     test('should return fallback icon for unknown kind', () {

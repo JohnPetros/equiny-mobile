@@ -61,9 +61,9 @@ void main() {
       WidgetTester tester,
     ) async {
       await mockNetworkImagesFor(() async {
-        await tester.pumpWidget(createWidget(
-          attachments: AttachmentDtoFaker.fakeManyDto(length: 2),
-        ));
+        await tester.pumpWidget(
+          createWidget(attachments: AttachmentDtoFaker.fakeManyDto(length: 2)),
+        );
 
         expect(find.byType(MessageAttachmentItemView), findsNWidgets(2));
       });
@@ -77,12 +77,14 @@ void main() {
         kind: 'image',
       );
 
-      await tester.pumpWidget(createWidget(
-        attachments: <MessageAttachmentDto>[attachment],
-        uploadStatusMap: <String, AttachmentUploadStatus>{
-          'file-key': AttachmentUploadStatus.sending,
-        },
-      ));
+      await tester.pumpWidget(
+        createWidget(
+          attachments: <MessageAttachmentDto>[attachment],
+          uploadStatusMap: <String, AttachmentUploadStatus>{
+            'file-key': AttachmentUploadStatus.sending,
+          },
+        ),
+      );
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
