@@ -1,10 +1,10 @@
+import 'package:equiny/ui/profiling/widgets/screens/onboarding_screen/onboarding_step_location/location_autofill_cta/index.dart';
+import 'package:equiny/ui/profiling/widgets/screens/onboarding_screen/onboarding_step_location/onboarding_step_location_presenter.dart';
+import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 import 'package:signals_flutter/signals_flutter.dart';
-
-import 'package:equiny/ui/shared/theme/app_theme.dart';
-import 'package:equiny/ui/profiling/widgets/screens/onboarding_screen/onboarding_step_location/onboarding_step_location_presenter.dart';
 
 class OnboardingStepLocationView extends ConsumerStatefulWidget {
   final FormGroup form;
@@ -45,6 +45,31 @@ class _OnboardingStepLocationViewState
 
     if (state.isNotEmpty) {
       ref.read(onboardingStepLocationPresenterProvider).loadCities(state);
+    }
+  }
+
+  Future<void> _detectCurrentLocation(
+    OnboardingStepLocationPresenter presenter,
+  ) async {
+    await presenter.detectAndApplyCurrentLocation(widget.form);
+
+    final String detectedState =
+        widget.form.control('state').value as String? ?? '';
+    final String detectedCity =
+        widget.form.control('city').value as String? ?? '';
+
+    _stateController.text = detectedState;
+    _stateController.selection = TextSelection.collapsed(
+      offset: _stateController.text.length,
+    );
+
+    _cityController.text = detectedCity;
+    _cityController.selection = TextSelection.collapsed(
+      offset: _cityController.text.length,
+    );
+
+    if (mounted) {
+      setState(() {});
     }
   }
 
@@ -94,6 +119,16 @@ class _OnboardingStepLocationViewState
                 fontSize: 14,
               ),
             ),
+            const SizedBox(height: AppSpacing.md),
+            Watch((context) {
+              return LocationAutofillCta(
+                isLoading: presenter.isDetectingLocation.value,
+                message: presenter.geolocationMessage.value,
+                showSettingsAction: presenter.canOpenSettings.value,
+                onTapDetect: () => _detectCurrentLocation(presenter),
+                onTapOpenSettings: presenter.openRelevantSettings,
+              );
+            }),
             const SizedBox(height: AppSpacing.xl),
             Watch((context) {
               final isLoading = presenter.isLoadingStates.value;
@@ -125,7 +160,7 @@ class _OnboardingStepLocationViewState
                       return TextField(
                         controller: fieldTextEditingController,
                         focusNode: focusNode,
-                        textCapitalization: TextCapitalization.characters,
+                        textCapitalization: TextCapitalization.words,
                         style: const TextStyle(color: AppThemeColors.textMain),
                         decoration: InputDecoration(
                           labelText: 'Estado',

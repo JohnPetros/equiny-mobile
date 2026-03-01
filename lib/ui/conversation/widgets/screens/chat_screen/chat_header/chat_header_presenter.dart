@@ -65,6 +65,7 @@ class ChatHeaderPresenter {
       onOwnerPresenceRegistered: _onOwnerPresenceRegistered,
       onOwnerPresenceUnregistered: _onOwnerPresenceUnregistered,
       onHorseMatchNotified: (_) {},
+      onOwnerCreated: (_) {},
     );
   }
 

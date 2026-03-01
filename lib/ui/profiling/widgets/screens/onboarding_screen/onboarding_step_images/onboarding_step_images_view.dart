@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:equiny/core/profiling/dtos/structures/image_dto.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
@@ -128,9 +130,15 @@ class OnboardingStepImagesView extends StatelessWidget {
                       ),
                       child: Row(
                         children: <Widget>[
-                          const Icon(
-                            Icons.image,
-                            color: AppThemeColors.primary,
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(AppRadius.md),
+                            child: SizedBox(
+                              width: 52,
+                              height: 52,
+                              child: _UploadedImagePreview(
+                                imagePath: image.key,
+                              ),
+                            ),
                           ),
                           const SizedBox(width: AppSpacing.sm),
                           Expanded(
@@ -167,6 +175,26 @@ class OnboardingStepImagesView extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _UploadedImagePreview extends StatelessWidget {
+  final String imagePath;
+
+  const _UploadedImagePreview({required this.imagePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.file(
+      File(imagePath),
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: AppThemeColors.background,
+          child: const Icon(Icons.image, color: AppThemeColors.primary),
+        );
+      },
     );
   }
 }

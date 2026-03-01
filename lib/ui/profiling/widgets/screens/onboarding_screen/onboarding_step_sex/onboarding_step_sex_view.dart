@@ -67,7 +67,10 @@ class OnboardingStepSexView extends StatelessWidget {
                     return Column(
                       children: sexOptions.map((String sex) {
                         final bool isSelected = selectedSex == sex;
-                        final bool isMale = sex.toLowerCase() == 'macho';
+                        final String normalizedSex = sex.trim().toLowerCase();
+                        final bool isMale =
+                            normalizedSex == 'male' || normalizedSex == 'macho';
+                        final String displayLabel = isMale ? 'Macho' : 'Femea';
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -114,7 +117,7 @@ class OnboardingStepSexView extends StatelessWidget {
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
-                                          sex,
+                                          displayLabel,
                                           style: const TextStyle(
                                             color: AppThemeColors.textMain,
                                             fontSize: 16,
