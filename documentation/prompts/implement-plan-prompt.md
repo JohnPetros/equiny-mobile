@@ -28,7 +28,7 @@ description: Implementar um plano de implementacao derivado de uma spec tecnica.
 
 5. **Verificacao (obrigatorio) para cada fase**
    - Garanta que o projeto compila e que fluxos impactados funcionam.
-   - Rode checks existentes (ex.: analyzers/tests) quando aplicavel e corrija falhas antes de seguir.
+   - Rode checks existentes analyzer e test quando aplicavel e corrija falhas antes de seguir.
 
 6. **Progresso e reporte**
    - atualize o checklist de tarefas implementadas.

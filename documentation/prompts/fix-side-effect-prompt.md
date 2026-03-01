@@ -1,10 +1,11 @@
-# Fix Side Effect Skill
+# Prompt: Fix Side Effects
 
 **Objetivo:**
 Identificar e corrigir regressões ou erros de compilação (efeitos colaterais) resultantes de alterações manuais no código-fonte. O foco é restabelecer a integridade do projeto, atualizando dependências e validando testes.
 
 **Entrada:**
 *   Caminho do arquivo ou diretório onde ocorreram as edições manuais.
+*   Spec da feature afetada.
 
 **Diretrizes de Execução:**
 
@@ -22,7 +23,7 @@ Identificar e corrigir regressões ou erros de compilação (efeitos colaterais)
     *   **Critério de Sucesso:** A tarefa só está concluída quando não houver erros de análise estática e os testes estiverem passando (verde).
 
 4.  **Sincronização de Documentação (Spec e PRD):**
-    *   **Verificação:** Verifique se as alterações no código divergem do que está documentado no **PRD** ou nos **Specs** da feature correspondente (localizados em `documentation/features/`).
+    *   **Verificação:** Verifique se as alterações no código divergem do que está documentado no **PRD** ou nos **Specs** da feature correspondente.
     *   **Atualização:** Caso o comportamento do sistema tenha mudado em relação às definições originais, atualize os documentos relevantes para garantir que a documentação reflita com precisão o estado atual do projeto.
 
   
