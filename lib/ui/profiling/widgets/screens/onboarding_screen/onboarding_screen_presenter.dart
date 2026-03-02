@@ -75,7 +75,7 @@ class OnboardingScreenPresenter {
     'Outro',
   ];
 
-  final List<String> sexOptions = const <String>['Macho', 'Femea'];
+  final List<String> sexOptions = const <String>['male', 'female'];
 
   OnboardingScreenPresenter(
     this._profilingService,
@@ -166,7 +166,7 @@ class OnboardingScreenPresenter {
         validators: <Validator<dynamic>>[
           Validators.required,
           Validators.minLength(2),
-          Validators.maxLength(2),
+          Validators.maxLength(60),
         ],
       ),
     });
@@ -238,7 +238,6 @@ class OnboardingScreenPresenter {
 
       _pendingFiles.value = <File>[..._pendingFiles.value, ...files];
 
-      // Show local file previews while the real upload is deferred to submit.
       final List<ImageDto> previews = files.map((File file) {
         return ImageDto(key: file.path, name: file.uri.pathSegments.last);
       }).toList();

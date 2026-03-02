@@ -1,4 +1,5 @@
 import 'package:equiny/core/profiling/events/horse_match_notified_event.dart';
+import 'package:equiny/core/profiling/events/owner_created_event.dart';
 import 'package:equiny/core/profiling/events/owner_entered_event.dart';
 import 'package:equiny/core/profiling/events/owner_exited_event.dart';
 import 'package:equiny/core/profiling/events/owner_presence_registered_event.dart';
@@ -15,5 +16,6 @@ abstract class ProfilingChannel {
     required void Function(OwnerPresenceUnregisteredEvent event)
     onOwnerPresenceUnregistered,
     required void Function(HorseMatchNotifiedEvent event) onHorseMatchNotified,
+    required void Function(OwnerCreatedEvent event) onOwnerCreated,
   });
 }

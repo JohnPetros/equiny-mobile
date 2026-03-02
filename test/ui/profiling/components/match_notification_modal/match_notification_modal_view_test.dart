@@ -67,29 +67,27 @@ void main() {
       });
 
       expect(find.text('Deu match!'), findsOneWidget);
-      expect(
-        find.text('Você e Aurora curtiram um ao outro.'),
-        findsOneWidget,
-      );
+      expect(find.text('Você e Aurora curtiram um ao outro.'), findsOneWidget);
       expect(find.text('Ir para o chat'), findsOneWidget);
       expect(find.text('Continuar deslizando'), findsOneWidget);
     });
 
-    testWidgets('should call continue and close modal when continue button is tapped', (
-      WidgetTester tester,
-    ) async {
-      currentMatch.value = HorseMatchFaker.fakeDto(ownerHorseName: 'Aurora');
+    testWidgets(
+      'should call continue and close modal when continue button is tapped',
+      (WidgetTester tester) async {
+        currentMatch.value = HorseMatchFaker.fakeDto(ownerHorseName: 'Aurora');
 
-      await mockNetworkImagesFor(() async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-      });
+        await mockNetworkImagesFor(() async {
+          await tester.pumpWidget(createWidget());
+          await tester.pumpAndSettle();
+        });
 
-      await tester.tap(find.text('Continuar deslizando'));
-      await tester.pump();
+        await tester.tap(find.text('Continuar deslizando'));
+        await tester.pump();
 
-      verify(() => presenter.handleContinue()).called(1);
-    });
+        verify(() => presenter.handleContinue()).called(1);
+      },
+    );
 
     testWidgets('should show loading state in chat button when creating chat', (
       WidgetTester tester,

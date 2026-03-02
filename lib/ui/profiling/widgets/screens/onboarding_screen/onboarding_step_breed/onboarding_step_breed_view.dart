@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
+import 'package:equiny/rest/services.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 
-class OnboardingStepBreedView extends StatelessWidget {
+class OnboardingStepBreedView extends ConsumerStatefulWidget {
   final FormGroup form;
   final bool submitAttempted;
   final List<String> breedOptions;
@@ -14,6 +16,47 @@ class OnboardingStepBreedView extends StatelessWidget {
     required this.breedOptions,
     super.key,
   });
+
+  @override
+  ConsumerState<OnboardingStepBreedView> createState() =>
+      _OnboardingStepBreedViewState();
+}
+
+class _OnboardingStepBreedViewState
+    extends ConsumerState<OnboardingStepBreedView> {
+  late List<String> _breedOptions;
+
+  @override
+  void initState() {
+    super.initState();
+    _breedOptions = <String>[...widget.breedOptions];
+    _loadBreeds();
+  }
+
+  Future<void> _loadBreeds() async {
+    try {
+      final response = await ref.read(profilingServiceProvider).fetchBreeds();
+      if (response.isFailure) {
+        return;
+      }
+
+      final List<String> breeds = response.body
+          .map((String breed) => breed.trim())
+          .where((String breed) => breed.isNotEmpty)
+          .toSet()
+          .toList();
+
+      if (!mounted || breeds.isEmpty) {
+        return;
+      }
+
+      setState(() {
+        _breedOptions = breeds;
+      });
+    } on Object {
+      return;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +75,7 @@ class OnboardingStepBreedView extends StatelessWidget {
         ],
       ),
       child: ReactiveForm(
-        formGroup: form,
+        formGroup: widget.form,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -65,7 +108,7 @@ class OnboardingStepBreedView extends StatelessWidget {
                     final String selectedBreed = control.value ?? '';
 
                     return Column(
-                      children: breedOptions.map((String breed) {
+                      children: _breedOptions.map((String breed) {
                         final bool isSelected = selectedBreed == breed;
 
                         return Container(
@@ -83,8 +126,8 @@ class OnboardingStepBreedView extends StatelessWidget {
                           child: InkWell(
                             borderRadius: BorderRadius.circular(AppRadius.lg),
                             onTap: () {
-                              form.control('breed').value = breed;
-                              form.control('breed').markAsTouched();
+                              widget.form.control('breed').value = breed;
+                              widget.form.control('breed').markAsTouched();
                             },
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
@@ -138,8 +181,9 @@ class OnboardingStepBreedView extends StatelessWidget {
               builder:
                   (BuildContext context, FormGroup formGroup, Widget? child) {
                     final bool hasError =
-                        form.control('breed').invalid &&
-                        (form.control('breed').touched || submitAttempted);
+                        widget.form.control('breed').invalid &&
+                        (widget.form.control('breed').touched ||
+                            widget.submitAttempted);
 
                     if (!hasError) {
                       return const SizedBox.shrink();

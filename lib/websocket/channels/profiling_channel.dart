@@ -1,5 +1,6 @@
 import 'package:equiny/core/profiling/dtos/structures/horse_match_dto.dart';
 import 'package:equiny/core/profiling/events/horse_match_notified_event.dart';
+import 'package:equiny/core/profiling/events/owner_created_event.dart';
 import 'package:equiny/core/profiling/events/owner_entered_event.dart';
 import 'package:equiny/core/profiling/events/owner_exited_event.dart';
 import 'package:equiny/core/profiling/events/owner_presence_registered_event.dart';
@@ -25,6 +26,7 @@ class ProfilingChannel extends Channel
     required void Function(OwnerPresenceUnregisteredEvent event)
     onOwnerPresenceUnregistered,
     required void Function(HorseMatchNotifiedEvent event) onHorseMatchNotified,
+    required void Function(OwnerCreatedEvent event) onOwnerCreated,
   }) {
     return super.websocketClient.onData((Json data) {
       final (String name, Json payload) = parseEvent(data);
@@ -46,6 +48,9 @@ class ProfilingChannel extends Channel
             payload['horse_match'],
           );
           onHorseMatchNotified(HorseMatchNotifiedEvent(horseMatch: dto));
+          break;
+        case OwnerCreatedEvent.name:
+          onOwnerCreated(OwnerCreatedEvent(ownerId: _resolveOwnerId(payload)));
           break;
         default:
           break;

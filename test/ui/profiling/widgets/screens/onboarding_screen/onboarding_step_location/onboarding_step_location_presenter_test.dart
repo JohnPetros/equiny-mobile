@@ -1,4 +1,5 @@
 import 'package:equiny/core/shared/interfaces/location_service.dart';
+import 'package:equiny/core/shared/interfaces/geolocation_driver.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/ui/profiling/widgets/screens/onboarding_screen/onboarding_step_location/onboarding_step_location_presenter.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,13 +7,20 @@ import 'package:mocktail/mocktail.dart';
 
 class MockLocationService extends Mock implements LocationService {}
 
+class MockGeolocationDriver extends Mock implements GeolocationDriver {}
+
 void main() {
   late MockLocationService locationService;
+  late MockGeolocationDriver geolocationDriver;
   late OnboardingStepLocationPresenter presenter;
 
   setUp(() {
     locationService = MockLocationService();
-    presenter = OnboardingStepLocationPresenter(locationService);
+    geolocationDriver = MockGeolocationDriver();
+    presenter = OnboardingStepLocationPresenter(
+      locationService,
+      geolocationDriver,
+    );
   });
 
   tearDown(() {

@@ -1,5 +1,6 @@
 ---
 title: Onboarding obrigatorio do primeiro cavalo
+prd: documentation\features\profiling\onboarding\prd.md
 status: em progresso
 last_updated_at: 2026-02-16
 ---

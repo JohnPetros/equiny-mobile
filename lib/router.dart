@@ -23,36 +23,46 @@ final routerProvider = Provider<GoRouter>((ref) {
   final cacheDriver = ref.watch(cacheDriverProvider);
   final profilingService = ref.watch(profilingServiceProvider);
 
+  Future<String?> handleRedirect(
+    BuildContext context,
+    GoRouterState state,
+  ) async {
+    final String currentRoute = state.matchedLocation;
+    final bool isAuthenticated =
+        (cacheDriver.get(CacheKeys.accessToken) ?? '').isNotEmpty;
+
+    final bool isSignIn = currentRoute == Routes.signIn;
+    final bool isSignUp = currentRoute == Routes.signUp;
+
+    if (!isAuthenticated) {
+      if (isSignIn || isSignUp) {
+        return null;
+      }
+      return Routes.signIn;
+    }
+
+    if (isSignIn || isSignUp) {
+      return Routes.feed;
+    }
+
+    final ownerResponse = await profilingService.fetchOwner();
+    if (ownerResponse.isFailure) {
+      unawaited(cacheDriver.set(CacheKeys.accessToken, ''));
+      unawaited(cacheDriver.set(CacheKeys.onboardingCompleted, ''));
+      return isSignIn || isSignUp ? null : Routes.signIn;
+    }
+
+    final hasCompletedOnboarding = ownerResponse.body.hasCompletedOnboarding;
+    if (hasCompletedOnboarding) {
+      return null;
+    }
+
+    return Routes.onboarding;
+  }
+
   return GoRouter(
     initialLocation: Routes.signIn,
-    redirect: (BuildContext context, GoRouterState state) async {
-      final String currentRoute = state.matchedLocation;
-      final bool isAuthenticated =
-          (cacheDriver.get(CacheKeys.accessToken) ?? '').isNotEmpty;
-
-      final bool isSignIn = currentRoute == Routes.signIn;
-      final bool isSignUp = currentRoute == Routes.signUp;
-
-      if (!isAuthenticated) {
-        if (isSignIn || isSignUp) {
-          return null;
-        }
-        return Routes.signIn;
-      }
-
-      if (isSignIn || isSignUp) {
-        return Routes.feed;
-      }
-
-      final ownerResponse = await profilingService.fetchOwner();
-      if (ownerResponse.isFailure) {
-        unawaited(cacheDriver.set(CacheKeys.accessToken, ''));
-        unawaited(cacheDriver.set(CacheKeys.onboardingCompleted, ''));
-        return isSignIn || isSignUp ? null : Routes.signIn;
-      }
-
-      return null;
-    },
+    redirect: handleRedirect,
     routes: <RouteBase>[
       GoRoute(
         path: Routes.signIn,
@@ -81,6 +91,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           );
         },
+        redirect: handleRedirect,
         routes: <RouteBase>[
           GoRoute(
             path: Routes.feed,

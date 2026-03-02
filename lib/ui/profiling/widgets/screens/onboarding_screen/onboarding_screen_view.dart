@@ -161,7 +161,7 @@ class OnboardingScreenView extends ConsumerWidget {
       case 4:
         return 'Use uma medida aproximada em metros.';
       case 5:
-        return 'Cidade e UF ajudam a mostrar perfis mais relevantes.';
+        return 'Cidade e estado ajudam a mostrar perfis mais relevantes.';
       case 6:
         return 'Adicione ao menos uma imagem para concluir o cadastro.';
       default:

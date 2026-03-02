@@ -1,14 +1,9 @@
 import 'package:equiny/core/auth/interfaces/auth_service.dart';
-import 'package:equiny/core/profiling/interfaces/profiling_service.dart';
-import 'package:equiny/core/shared/constants/cache_keys.dart';
 import 'package:equiny/core/shared/constants/routes.dart';
-import 'package:equiny/core/shared/interfaces/cache_driver.dart';
 import 'package:equiny/core/shared/interfaces/navigation_driver.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
-import 'package:equiny/drivers/cache-driver/index.dart';
 import 'package:equiny/drivers/navigation-driver/index.dart';
 import 'package:equiny/rest/services.dart';
-import 'package:equiny/shared/providers/auth_state_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 import 'package:signals/signals.dart';
@@ -16,9 +11,6 @@ import 'package:signals/signals.dart';
 class SignUpScreenPresenter {
   final AuthService _authService;
   final NavigationDriver _navigationDriver;
-  final CacheDriver _cacheDriver;
-  final ProfilingService _profilingService;
-  final AuthStateNotifier _authStateNotifier;
 
   final Signal<FormGroup> form = signal(
     FormGroup(<String, AbstractControl<Object?>>{}),
@@ -28,19 +20,18 @@ class SignUpScreenPresenter {
   final Signal<bool> isPasswordVisible = signal(false);
   final Signal<bool> isPasswordConfirmationVisible = signal(false);
   final Signal<bool> submitAttempted = signal(false);
+  final Signal<bool> emailVerificationSent = signal(false);
+  final Signal<String?> registeredEmail = signal(null);
 
   late final ReadonlySignal<bool> canSubmit;
   late final ReadonlySignal<bool> hasAnyFieldError;
 
-  SignUpScreenPresenter(
-    this._authService,
-    this._profilingService,
-    this._navigationDriver,
-    this._cacheDriver,
-    this._authStateNotifier,
-  ) {
+  SignUpScreenPresenter(this._authService, this._navigationDriver) {
     form.value = buildForm();
-    canSubmit = computed(() => form.value.valid && !isLoading.value);
+    canSubmit = computed(
+      () =>
+          form.value.valid && !isLoading.value && !emailVerificationSent.value,
+    );
     hasAnyFieldError = computed(() {
       if (!submitAttempted.value) {
         return false;
@@ -139,29 +130,9 @@ class SignUpScreenPresenter {
       return;
     }
 
-    await _cacheDriver.set(CacheKeys.accessToken, response.body.accessToken);
-    _authStateNotifier.setAuthenticated(true);
-
-    final ownerResponse = await _profilingService.fetchOwner();
-    if (ownerResponse.isFailure) {
-      isLoading.value = false;
-      generalError.value = ownerResponse.errorMessage;
-      return;
-    }
-
-    await _cacheDriver.set(CacheKeys.ownerId, ownerResponse.body.id ?? '');
-
-    final bool hasCompletedOnboarding =
-        ownerResponse.body.hasCompletedOnboarding;
-
-    _cacheDriver.set(
-      CacheKeys.onboardingCompleted,
-      hasCompletedOnboarding.toString(),
-    );
+    registeredEmail.value = response.body.email;
+    emailVerificationSent.value = true;
     isLoading.value = false;
-    _navigationDriver.goTo(
-      hasCompletedOnboarding ? Routes.home : Routes.onboarding,
-    );
   }
 
   void togglePasswordConfirmationVisibility() {
@@ -177,9 +148,6 @@ final signUpScreenPresenterProvider =
     Provider.autoDispose<SignUpScreenPresenter>((ref) {
       return SignUpScreenPresenter(
         ref.watch(authServiceProvider),
-        ref.watch(profilingServiceProvider),
         ref.watch(navigationDriverProvider),
-        ref.watch(cacheDriverProvider),
-        ref.read(authStateProvider.notifier),
       );
     });

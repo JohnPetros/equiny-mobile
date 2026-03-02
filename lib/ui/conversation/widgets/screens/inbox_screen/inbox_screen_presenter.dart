@@ -91,6 +91,7 @@ class InboxScreenPresenter {
       onOwnerPresenceRegistered: _onOwnerPresenceRegistered,
       onOwnerPresenceUnregistered: _onOwnerPresenceUnregistered,
       onHorseMatchNotified: (_) {},
+      onOwnerCreated: (_) {},
     );
     _isRealtimeConnected = true;
   }

@@ -1,16 +1,15 @@
-import 'package:equiny/core/shared/interfaces/location_service.dart'
-    as location_service;
+import 'dart:io';
+
+import 'package:equiny/core/shared/interfaces/location_service.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/core/shared/types/json.dart';
+import 'package:equiny/rest/ibge/constants/states.dart';
 
-import 'package:equiny/rest/mappers/location/location_mapper.dart';
+import 'package:equiny/rest/ibge/mappers/ibge_location_mapper.dart';
 import 'package:equiny/rest/services/service.dart';
 
-class LocationService extends Service
-    implements location_service.LocationService {
-  LocationService(super.restClient, super._cacheDriver) {
-    super.restClient.setBaseUrl('https://servicodados.ibge.gov.br/api/v1');
-  }
+class IbgeLocationService extends Service implements LocationService {
+  IbgeLocationService(super.restClient, super._cacheDriver);
 
   @override
   Future<RestResponse<List<String>>> fetchStates() async {
@@ -26,13 +25,20 @@ class LocationService extends Service
       );
     }
 
-    return response.mapBody(LocationMapper.toStateList);
+    return response.mapBody(IbgeLocationMapper.toStateList);
   }
 
   @override
   Future<RestResponse<List<String>>> fetchCities(String state) async {
+    if (!stateCodes.containsKey(state)) {
+      return RestResponse<List<String>>(
+        statusCode: HttpStatus.badRequest,
+        errorMessage: 'State not found',
+      );
+    }
+    final String stateCode = stateCodes[state]!;
     final RestResponse<Json> response = await super.restClient.get(
-      '/localidades/estados/$state/municipios',
+      '/localidades/estados/$stateCode/municipios',
     );
 
     if (response.isFailure) {
@@ -42,6 +48,6 @@ class LocationService extends Service
       );
     }
 
-    return response.mapBody(LocationMapper.toCityList);
+    return response.mapBody(IbgeLocationMapper.toCityList);
   }
 }

@@ -9,10 +9,13 @@ class OwnerMapper {
       name: body['name']?.toString() ?? '',
       email: body['email']?.toString() ?? '',
       accountId: body['account_id']?.toString() ?? '',
-      avatar: ImageMapper.toDto(body['avatar']),
+      avatar: body['avatar'] != null ? ImageMapper.toDto(body['avatar']) : null,
       phone: body['phone']?.toString(),
       bio: body['bio']?.toString(),
       hasCompletedOnboarding: body['has_completed_onboarding'],
+      lastPresenceAt: body['last_presence_at'] != null
+          ? DateTime.tryParse(body['last_presence_at'] as String)!
+          : null,
     );
   }
 

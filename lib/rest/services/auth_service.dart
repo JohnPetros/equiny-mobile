@@ -1,7 +1,9 @@
 import 'package:equiny/core/auth/interfaces/auth_service.dart' as auth_service;
+import 'package:equiny/core/auth/dtos/account_dto.dart';
 import 'package:equiny/core/auth/dtos/jwt_dto.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/core/shared/types/json.dart';
+import 'package:equiny/rest/mappers/auth/account_mapper.dart';
 import 'package:equiny/rest/mappers/auth/jwt_mapper.dart';
 import 'package:equiny/rest/services/service.dart';
 
@@ -34,7 +36,7 @@ class AuthService extends Service implements auth_service.AuthService {
   }
 
   @override
-  Future<RestResponse<JwtDto>> signUp({
+  Future<RestResponse<AccountDto>> signUp({
     required String ownerName,
     required String accountEmail,
     required String accountPassword,
@@ -49,13 +51,16 @@ class AuthService extends Service implements auth_service.AuthService {
     );
 
     if (response.isFailure) {
-      return RestResponse<JwtDto>(
+      return RestResponse<AccountDto>(
         statusCode: response.statusCode,
         errorMessage: response.errorMessage,
       );
     }
-    final jwtDto = JwtMapper.toDto(response.body);
+    final accountDto = AccountMapper.toDto(response.body);
 
-    return RestResponse<JwtDto>(body: jwtDto, statusCode: response.statusCode);
+    return RestResponse<AccountDto>(
+      body: accountDto,
+      statusCode: response.statusCode,
+    );
   }
 }

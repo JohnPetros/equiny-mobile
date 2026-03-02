@@ -9,6 +9,7 @@ class OwnerDto {
   final ImageDto? avatar;
   final String? phone;
   final String? bio;
+  final DateTime? lastPresenceAt;
 
   const OwnerDto({
     this.id,
@@ -19,5 +20,6 @@ class OwnerDto {
     this.avatar,
     this.phone,
     this.bio,
+    this.lastPresenceAt,
   });
 }
