@@ -45,7 +45,7 @@ class TabNavigationView extends StatelessWidget {
     switch (route) {
       case Routes.matches:
         return 1;
-      case Routes.conversations:
+      case Routes.inbox:
         return 2;
       case Routes.profile:
         return 3;
@@ -62,7 +62,7 @@ class TabNavigationView extends StatelessWidget {
       case 1:
         return Routes.matches;
       case 2:
-        return Routes.conversations;
+        return Routes.inbox;
       case 3:
       default:
         return Routes.profile;

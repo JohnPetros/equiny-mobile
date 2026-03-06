@@ -5,6 +5,7 @@ import 'package:signals_flutter/signals_flutter.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/sign_up_footer/index.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/sign_up_form/index.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/sign_up_header/index.dart';
+import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/sign_up_verification_notice/index.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/sign_up_screen_presenter.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 
@@ -88,25 +89,35 @@ class SignUpScreenView extends ConsumerWidget {
                               ),
                             ),
                           ),
-                        SignUpForm(
-                          form: presenter.form.value,
-                          submitAttempted: presenter.submitAttempted.value,
-                          isPasswordVisible: presenter.isPasswordVisible.value,
-                          isPasswordConfirmationVisible:
-                              presenter.isPasswordConfirmationVisible.value,
-                          onTogglePasswordVisibility:
-                              presenter.togglePasswordVisibility,
-                          onTogglePasswordConfirmationVisibility:
-                              presenter.togglePasswordConfirmationVisibility,
-                          onSubmit: presenter.submit,
-                          isLoading: presenter.isLoading.value,
-                        ),
-                        const SizedBox(height: AppSpacing.xxl),
-                        SignUpFooter(
-                          promptText: 'Já tem uma conta? ',
-                          actionText: 'Entrar',
-                          onTapAction: presenter.goToSignIn,
-                        ),
+                        if (presenter.emailVerificationSent.value)
+                          SignUpVerificationNotice(
+                            email: presenter.registeredEmail.value ?? '',
+                            onTapGoToSignIn: presenter.goToSignIn,
+                            isLoading: presenter.isLoading.value,
+                          )
+                        else
+                          SignUpForm(
+                            form: presenter.form.value,
+                            submitAttempted: presenter.submitAttempted.value,
+                            isPasswordVisible:
+                                presenter.isPasswordVisible.value,
+                            isPasswordConfirmationVisible:
+                                presenter.isPasswordConfirmationVisible.value,
+                            onTogglePasswordVisibility:
+                                presenter.togglePasswordVisibility,
+                            onTogglePasswordConfirmationVisibility:
+                                presenter.togglePasswordConfirmationVisibility,
+                            onSubmit: presenter.submit,
+                            isLoading: presenter.isLoading.value,
+                          ),
+                        if (!presenter.emailVerificationSent.value) ...<Widget>[
+                          const SizedBox(height: AppSpacing.xxl),
+                          SignUpFooter(
+                            promptText: 'Já tem uma conta? ',
+                            actionText: 'Entrar',
+                            onTapAction: presenter.goToSignIn,
+                          ),
+                        ],
                       ],
                     ),
                   );

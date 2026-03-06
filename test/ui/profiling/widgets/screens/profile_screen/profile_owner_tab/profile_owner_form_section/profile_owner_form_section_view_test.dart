@@ -25,7 +25,15 @@ void main() {
         body: SingleChildScrollView(
           child: ReactiveForm(
             formGroup: form,
-            child: ProfileOwnerFormSectionView(form: form),
+            child: ProfileOwnerFormSectionView(
+              form: form,
+              avatarUrl: null,
+              isUploadingAvatar: false,
+              avatarError: null,
+              onPickAvatar: () {},
+              onReplaceAvatar: () {},
+              onRemoveAvatar: () {},
+            ),
           ),
         ),
       ),

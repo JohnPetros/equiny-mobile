@@ -17,7 +17,7 @@ class GallerySlotPresenter {
     return null;
   }
 
-  String? getImageUrl({
+  String? getFileUrl({
     required ImageDto? image,
     required String Function(String) getUrlFromKey,
   }) {

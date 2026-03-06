@@ -1,17 +1,24 @@
 import 'package:equiny/ui/profiling/widgets/screens/onboarding_screen/onboarding_screen_presenter.dart';
 import 'package:equiny/ui/profiling/widgets/screens/onboarding_screen/onboarding_screen_view.dart';
 import 'package:equiny/core/profiling/dtos/structures/image_dto.dart';
+import 'package:equiny/core/shared/interfaces/location_service.dart';
+import 'package:equiny/drivers/cache-driver/index.dart';
+import 'package:equiny/core/shared/responses/rest_response.dart';
+import 'package:equiny/rest/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reactive_forms/reactive_forms.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:signals/signals.dart';
 
 import '../../../../../fakers/profiling/image_faker.dart';
 
 class MockOnboardingScreenPresenter extends Mock
     implements OnboardingScreenPresenter {}
+
+class MockLocationService extends Mock implements LocationService {}
 
 void main() {
   late MockOnboardingScreenPresenter presenter;
@@ -26,6 +33,8 @@ void main() {
   late Signal<bool> isLastStep;
   late Signal<bool> canAdvance;
   late Signal<bool> canFinish;
+  late SharedPreferences sharedPreferences;
+  late MockLocationService locationService;
 
   FormGroup buildForm() {
     return FormGroup(<String, AbstractControl<Object?>>{
@@ -44,6 +53,8 @@ void main() {
     return ProviderScope(
       overrides: <Override>[
         onboardingScreenPresenterProvider.overrideWithValue(presenter),
+        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+        locationServiceProvider.overrideWithValue(locationService),
       ],
       child: const MaterialApp(home: OnboardingScreenView()),
     );
@@ -53,8 +64,12 @@ void main() {
     registerFallbackValue(ImageFaker.fakeDto());
   });
 
-  setUp(() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    sharedPreferences = await SharedPreferences.getInstance();
+
     presenter = MockOnboardingScreenPresenter();
+    locationService = MockLocationService();
     formSignal = signal(buildForm());
     currentStepIndex = signal(0);
     isSubmitting = signal(false);
@@ -86,6 +101,13 @@ void main() {
     when(() => presenter.pickAndUploadImages()).thenAnswer((_) async {});
     when(() => presenter.retryImageUpload()).thenAnswer((_) async {});
     when(() => presenter.removeImage(any())).thenReturn(null);
+
+    when(
+      () => locationService.fetchStates(),
+    ).thenAnswer((_) async => RestResponse<List<String>>(body: <String>[]));
+    when(
+      () => locationService.fetchCities(any()),
+    ).thenAnswer((_) async => RestResponse<List<String>>(body: <String>[]));
   });
 
   group('OnboardingScreenView', () {

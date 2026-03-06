@@ -8,11 +8,23 @@ class ProfileOwnerTabView extends StatelessWidget {
   final FormGroup form;
   final bool isLoading;
   final String? generalError;
+  final String? avatarUrl;
+  final bool isUploadingAvatar;
+  final String? avatarError;
+  final VoidCallback onPickAvatar;
+  final VoidCallback onReplaceAvatar;
+  final VoidCallback onRemoveAvatar;
 
   const ProfileOwnerTabView({
     required this.form,
     required this.isLoading,
     required this.generalError,
+    required this.avatarUrl,
+    required this.isUploadingAvatar,
+    required this.avatarError,
+    required this.onPickAvatar,
+    required this.onReplaceAvatar,
+    required this.onRemoveAvatar,
     super.key,
   });
 
@@ -44,7 +56,15 @@ class ProfileOwnerTabView extends StatelessWidget {
                   style: const TextStyle(color: AppThemeColors.errorText),
                 ),
               ),
-            ProfileOwnerFormSection(form: form),
+            ProfileOwnerFormSection(
+              form: form,
+              avatarUrl: avatarUrl,
+              isUploadingAvatar: isUploadingAvatar,
+              avatarError: avatarError,
+              onPickAvatar: onPickAvatar,
+              onReplaceAvatar: onReplaceAvatar,
+              onRemoveAvatar: onRemoveAvatar,
+            ),
             const SizedBox(height: AppSpacing.lg),
             const ProfileOwnerVerifiedSection(),
             const SizedBox(height: AppSpacing.md),

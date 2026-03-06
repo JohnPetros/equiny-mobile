@@ -1,3 +1,7 @@
+---
+description: Sugerir issues para o projeto baseado em um PRD
+---
+
 # Prompt: Sugerir Issues
 
 **Objetivo:**
@@ -14,6 +18,8 @@ Sugerir issues para o projeto baseado em um PRD
 3. Sugerir issues para o projeto baseado no PRD e no contexto e arquitetura do projeto.
 
 A funcionalidade geralmente pode cabe em uma só issue, porém se a funcionalidade for muito grande, divida em issues diferentes
+
+> Repositorio do projeto: https://github.com/JohnPetros/equiny
 
 ## 🎯 Objetivo
 <!-- O que esta issue quer alcançar? Qual o resultado esperado? -->

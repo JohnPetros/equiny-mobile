@@ -39,7 +39,7 @@ class ProfileHorseFormSectionPresenter {
         validators: <Validator<dynamic>>[
           Validators.required,
           Validators.minLength(2),
-          Validators.maxLength(2),
+          Validators.maxLength(60),
         ],
       ),
       'description': FormControl<String>(),

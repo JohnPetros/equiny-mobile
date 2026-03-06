@@ -101,7 +101,7 @@ description: Criar um prompt genérico para gerar documento de regras de uma cam
 - Proximos passos para refinamento
 ```
 
-4. **Regras:**
+4. **Restricoes:**
 
 - Usar Markdown como formato de saida.
 - Nao omitir secoes obrigatorias do template.

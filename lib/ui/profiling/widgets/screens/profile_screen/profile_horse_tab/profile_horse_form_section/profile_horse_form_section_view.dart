@@ -253,8 +253,8 @@ class ProfileHorseFormSectionView extends StatelessWidget {
               Expanded(
                 child: ReactiveTextField<String>(
                   formControlName: 'state',
-                  decoration: _pillDecoration(hintText: 'UF'),
-                  textCapitalization: TextCapitalization.characters,
+                  decoration: _pillDecoration(hintText: 'Estado'),
+                  textCapitalization: TextCapitalization.words,
                 ),
               ),
             ],

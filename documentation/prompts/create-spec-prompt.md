@@ -42,6 +42,7 @@ description: Criar spec tecnica detalhada para implementacao no equiny_mobile
    - Seja direto; prefira listas e blocos curtos.
    - Use **negrito** para decisoes e `code` para termos tecnicos (ex: `Riverpod`, `Signals`, `GoRouter`, `Dio`, `shadcn_flutter`).
    - Escreva em PT-BR; mantenha termos de programacao em Ingles e em `code`.
+   - Se prever que será necessario criar widgets internos, seja explícito e detalhe a estrutura de pastas e arquivos.
 
 ## Estrutura do documento (modelo obrigatorio)
 

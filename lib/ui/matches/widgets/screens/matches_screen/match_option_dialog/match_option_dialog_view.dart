@@ -5,6 +5,7 @@ import 'option_card/index.dart';
 
 class MatchOptionDialogView extends StatelessWidget {
   final String matchName;
+  final String? ownerAvatarUrl;
   final VoidCallback onViewProfile;
   final Future<void> Function() onSendMessage;
   final VoidCallback onCancel;
@@ -14,11 +15,27 @@ class MatchOptionDialogView extends StatelessWidget {
     required this.onViewProfile,
     required this.onSendMessage,
     required this.onCancel,
+    this.ownerAvatarUrl,
     super.key,
   });
 
+  String _buildInitials(String name) {
+    final List<String> parts = name
+        .trim()
+        .split(' ')
+        .where((String part) => part.trim().isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
+    return '${parts.first.substring(0, 1)}${parts.last.substring(0, 1)}'
+        .toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bool hasAvatar =
+        ownerAvatarUrl != null && ownerAvatarUrl!.trim().isNotEmpty;
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
@@ -37,6 +54,26 @@ class MatchOptionDialogView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 22),
+            Center(
+              child: CircleAvatar(
+                radius: 40,
+                backgroundColor: AppThemeColors.backgroundAlt,
+                backgroundImage: hasAvatar
+                    ? NetworkImage(ownerAvatarUrl!)
+                    : null,
+                child: hasAvatar
+                    ? null
+                    : Text(
+                        _buildInitials(matchName),
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: AppThemeColors.textMain,
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(height: 12),
             Text(
               'Opções para $matchName',
               textAlign: TextAlign.center,

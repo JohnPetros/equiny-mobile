@@ -70,7 +70,7 @@ Entregar a tela de `Matches` no app mobile com lista simples (sem paginacao), ag
 
 ## 4.4 Drivers (`lib/drivers/`)
 - **`GoRouterNavigationDriver`** (`lib/drivers/navigation-driver/go-router/go_router_navigation_driver.dart`) - permite `goTo(route, data: extra)` para abrir `Conversations` com contexto do match.
-- **`fileStorageDriverProvider`** (`lib/drivers/file-storage-driver/index.dart`) - resolver URL da thumbnail com `FileStorageDriver.getImageUrl`.
+- **`fileStorageDriverProvider`** (`lib/drivers/file-storage-driver/index.dart`) - resolver URL da thumbnail com `FileStorageDriver.getFileUrl`.
 
 # 5. O que deve ser criado
 

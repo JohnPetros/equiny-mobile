@@ -24,6 +24,12 @@ void main() {
           form: form ?? createForm(),
           isLoading: isLoading,
           generalError: generalError,
+          avatarUrl: null,
+          isUploadingAvatar: false,
+          avatarError: null,
+          onPickAvatar: () {},
+          onReplaceAvatar: () {},
+          onRemoveAvatar: () {},
         ),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:equiny/core/auth/dtos/account_dto.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/core/auth/dtos/jwt_dto.dart';
 
@@ -6,7 +7,7 @@ abstract class AuthService {
     required String accountEmail,
     required String accountPassword,
   });
-  Future<RestResponse<JwtDto>> signUp({
+  Future<RestResponse<AccountDto>> signUp({
     required String ownerName,
     required String accountEmail,
     required String accountPassword,

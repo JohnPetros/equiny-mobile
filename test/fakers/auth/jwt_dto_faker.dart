@@ -1,12 +1,8 @@
 import 'package:equiny/core/auth/dtos/jwt_dto.dart';
-import 'package:equiny/core/profiling/dtos/entities/owner_dto.dart';
 
 class JwtDtoFaker {
-  static JwtDto fakeDto({String? accessToken, OwnerDto? owner}) {
-    return JwtDto(
-      accessToken: accessToken ?? 'fake-access-token',
-      owner: owner,
-    );
+  static JwtDto fakeDto({String? accessToken}) {
+    return JwtDto(accessToken: accessToken ?? 'fake-access-token');
   }
 
   static List<JwtDto> fakeManyDto({int length = 2}) {

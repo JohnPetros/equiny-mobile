@@ -10,6 +10,8 @@ import 'package:equiny/core/shared/interfaces/cache_driver.dart';
 import 'package:equiny/core/shared/interfaces/media_picker_driver.dart';
 import 'package:equiny/core/shared/interfaces/navigation_driver.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
+import 'package:equiny/core/storage/dtos/structures/upload_url_dto.dart';
+import 'package:equiny/core/storage/interfaces/file_storage_driver.dart';
 import 'package:equiny/core/storage/interfaces/file_storage_service.dart';
 import 'package:equiny/ui/profiling/widgets/screens/onboarding_screen/onboarding_screen_presenter.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,6 +25,8 @@ class MockProfilingService extends Mock implements ProfilingService {}
 
 class MockFileStorageService extends Mock implements FileStorageService {}
 
+class MockFileStorageDriver extends Mock implements FileStorageDriver {}
+
 class MockMediaPickerDriver extends Mock implements MediaPickerDriver {}
 
 class MockNavigationDriver extends Mock implements NavigationDriver {}
@@ -32,6 +36,7 @@ class MockCacheDriver extends Mock implements CacheDriver {}
 void main() {
   late MockProfilingService profilingService;
   late MockFileStorageService fileStorageService;
+  late MockFileStorageDriver fileStorageDriver;
   late MockMediaPickerDriver mediaPickerDriver;
   late MockNavigationDriver navigationDriver;
   late MockCacheDriver cacheDriver;
@@ -41,17 +46,21 @@ void main() {
     registerFallbackValue(HorsesFaker.fakeDto());
     registerFallbackValue(GalleryFaker.fakeDto());
     registerFallbackValue(<File>[File('test.png')]);
+    registerFallbackValue(<UploadUrlDto>[]);
+    registerFallbackValue(const UploadUrlDto(url: '', token: '', filePath: ''));
   });
 
   setUp(() {
     profilingService = MockProfilingService();
     fileStorageService = MockFileStorageService();
+    fileStorageDriver = MockFileStorageDriver();
     mediaPickerDriver = MockMediaPickerDriver();
     navigationDriver = MockNavigationDriver();
     cacheDriver = MockCacheDriver();
     presenter = OnboardingScreenPresenter(
       profilingService,
       fileStorageService,
+      fileStorageDriver,
       mediaPickerDriver,
       navigationDriver,
       cacheDriver,
@@ -108,43 +117,37 @@ void main() {
       expect(presenter.currentStepIndex.value, 0);
     });
 
-    test('should upload images and update state', () async {
+    test('should add image preview after picking a file', () async {
       when(
         () => mediaPickerDriver.pickImages(maxImages: any(named: 'maxImages')),
-      ).thenAnswer((_) async => <File>[File('image.png')]);
-      when(
-        () => fileStorageService.uploadImageFiles(files: any(named: 'files')),
-      ).thenAnswer(
-        (_) async => RestResponse<List<ImageDto>>(
-          body: ImageFaker.fakeManyDto(length: 2),
-        ),
-      );
+      ).thenAnswer((_) async => <File>[File('horses/image.png')]);
 
       await presenter.pickAndUploadImages();
 
-      expect(presenter.uploadedImages.value, hasLength(2));
+      expect(presenter.uploadedImages.value, hasLength(1));
+      expect(presenter.uploadedImages.value.first.name, 'image.png');
       expect(presenter.generalError.value, isNull);
       expect(presenter.isUploadingImages.value, isFalse);
     });
 
-    test('should set error when upload fails', () async {
-      when(
-        () => mediaPickerDriver.pickImages(maxImages: any(named: 'maxImages')),
-      ).thenAnswer((_) async => <File>[File('image.png')]);
-      when(
-        () => fileStorageService.uploadImageFiles(files: any(named: 'files')),
-      ).thenAnswer(
-        (_) async => RestResponse<List<ImageDto>>(
-          statusCode: 400,
-          errorMessage: 'Falha no upload',
-        ),
-      );
+    test(
+      'should not call storage service during pickAndUploadImages',
+      () async {
+        when(
+          () =>
+              mediaPickerDriver.pickImages(maxImages: any(named: 'maxImages')),
+        ).thenAnswer((_) async => <File>[File('image.png')]);
 
-      await presenter.pickAndUploadImages();
+        await presenter.pickAndUploadImages();
 
-      expect(presenter.generalError.value, 'Falha no upload');
-      expect(presenter.isUploadingImages.value, isFalse);
-    });
+        verifyNever(
+          () => fileStorageService.generateUploadUrlsForHorseGallery(
+            horseId: any(named: 'horseId'),
+            imagesNames: any(named: 'imagesNames'),
+          ),
+        );
+      },
+    );
 
     test('should set error when platform does not support picker', () async {
       when(
@@ -197,54 +200,169 @@ void main() {
       );
     });
 
-    test('should submit onboarding successfully', () async {
-      fillValidForm();
-      presenter.uploadedImages.value = ImageFaker.fakeManyDto(length: 1);
-      await Future<void>.delayed(Duration.zero);
+    test(
+      'should submit onboarding successfully (images pre-set, no pending files)',
+      () async {
+        fillValidForm();
+        // Simulate images already set (e.g., re-entry scenario — no pending files).
+        presenter.uploadedImages.value = ImageFaker.fakeManyDto(length: 1);
+        await Future<void>.delayed(Duration.zero);
 
-      when(
-        () => profilingService.createHorse(horse: any(named: 'horse')),
-      ).thenAnswer(
-        (_) async =>
-            RestResponse<HorseDto>(body: HorsesFaker.fakeDto(id: 'horse-1')),
-      );
-      when(
-        () => profilingService.createHorseGallery(
-          horseId: any(named: 'horseId'),
-          gallery: any(named: 'gallery'),
-        ),
-      ).thenAnswer(
-        (_) async => RestResponse<GalleryDto>(
-          body: GalleryFaker.fakeDto(horseId: 'horse-1'),
-        ),
-      );
+        when(
+          () => profilingService.createHorse(horse: any(named: 'horse')),
+        ).thenAnswer(
+          (_) async =>
+              RestResponse<HorseDto>(body: HorsesFaker.fakeDto(id: 'horse-1')),
+        );
+        when(
+          () => profilingService.createHorseGallery(
+            horseId: any(named: 'horseId'),
+            gallery: any(named: 'gallery'),
+          ),
+        ).thenAnswer(
+          (_) async => RestResponse<GalleryDto>(
+            body: GalleryFaker.fakeDto(horseId: 'horse-1'),
+          ),
+        );
 
-      await presenter.submitOnboarding();
+        await presenter.submitOnboarding();
 
-      final HorseDto horse =
-          verify(
-                () => profilingService.createHorse(
-                  horse: captureAny(named: 'horse'),
-                ),
-              ).captured.single
-              as HorseDto;
-      expect(horse.name, 'Trovador');
-      expect(horse.location.city, 'Sao Paulo');
-      expect(horse.location.state, 'SP');
+        final HorseDto horse =
+            verify(
+                  () => profilingService.createHorse(
+                    horse: captureAny(named: 'horse'),
+                  ),
+                ).captured.single
+                as HorseDto;
+        expect(horse.name, 'Trovador');
+        expect(horse.location.city, 'Sao Paulo');
+        expect(horse.location.state, 'SP');
 
-      verify(
-        () => profilingService.createHorseGallery(
-          horseId: 'horse-1',
-          gallery: any(named: 'gallery'),
-        ),
-      ).called(1);
-      verify(
-        () => cacheDriver.set(CacheKeys.onboardingCompleted, 'true'),
-      ).called(1);
-      verify(() => navigationDriver.goTo(Routes.home)).called(1);
-      expect(presenter.generalError.value, isNull);
-      expect(presenter.isSubmitting.value, isFalse);
-    });
+        verify(
+          () => profilingService.createHorseGallery(
+            horseId: 'horse-1',
+            gallery: any(named: 'gallery'),
+          ),
+        ).called(1);
+        verify(
+          () => cacheDriver.set(CacheKeys.onboardingCompleted, 'true'),
+        ).called(1);
+        verify(() => navigationDriver.goTo(Routes.home)).called(1);
+        expect(presenter.generalError.value, isNull);
+        expect(presenter.isSubmitting.value, isFalse);
+      },
+    );
+
+    test(
+      'should upload pending files and submit onboarding successfully',
+      () async {
+        fillValidForm();
+
+        when(
+          () =>
+              mediaPickerDriver.pickImages(maxImages: any(named: 'maxImages')),
+        ).thenAnswer((_) async => <File>[File('horses/photo.jpg')]);
+
+        await presenter.pickAndUploadImages();
+        await Future<void>.delayed(Duration.zero);
+
+        final uploadUrls = <UploadUrlDto>[
+          const UploadUrlDto(
+            url: 'https://storage.example.com/upload',
+            token: 'tok-1',
+            filePath: 'horses/horse-1/photo.jpg',
+          ),
+        ];
+
+        when(
+          () => profilingService.createHorse(horse: any(named: 'horse')),
+        ).thenAnswer(
+          (_) async =>
+              RestResponse<HorseDto>(body: HorsesFaker.fakeDto(id: 'horse-1')),
+        );
+        when(
+          () => fileStorageService.generateUploadUrlsForHorseGallery(
+            horseId: any(named: 'horseId'),
+            imagesNames: any(named: 'imagesNames'),
+          ),
+        ).thenAnswer(
+          (_) async => RestResponse<List<UploadUrlDto>>(body: uploadUrls),
+        );
+        when(
+          () => fileStorageDriver.uploadFiles(any(), any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => profilingService.createHorseGallery(
+            horseId: any(named: 'horseId'),
+            gallery: any(named: 'gallery'),
+          ),
+        ).thenAnswer(
+          (_) async => RestResponse<GalleryDto>(
+            body: GalleryFaker.fakeDto(horseId: 'horse-1'),
+          ),
+        );
+
+        await presenter.submitOnboarding();
+
+        verify(
+          () => fileStorageService.generateUploadUrlsForHorseGallery(
+            horseId: 'horse-1',
+            imagesNames: any(named: 'imagesNames'),
+          ),
+        ).called(1);
+        verify(() => fileStorageDriver.uploadFiles(any(), any())).called(1);
+        verify(
+          () => profilingService.createHorseGallery(
+            horseId: 'horse-1',
+            gallery: any(named: 'gallery'),
+          ),
+        ).called(1);
+        verify(() => navigationDriver.goTo(Routes.home)).called(1);
+        expect(presenter.generalError.value, isNull);
+      },
+    );
+
+    test(
+      'should set error when generate upload URLs fails during submission',
+      () async {
+        fillValidForm();
+
+        when(
+          () =>
+              mediaPickerDriver.pickImages(maxImages: any(named: 'maxImages')),
+        ).thenAnswer((_) async => <File>[File('photo.jpg')]);
+        await presenter.pickAndUploadImages();
+        await Future<void>.delayed(Duration.zero);
+
+        when(
+          () => profilingService.createHorse(horse: any(named: 'horse')),
+        ).thenAnswer(
+          (_) async =>
+              RestResponse<HorseDto>(body: HorsesFaker.fakeDto(id: 'horse-1')),
+        );
+        when(
+          () => fileStorageService.generateUploadUrlsForHorseGallery(
+            horseId: any(named: 'horseId'),
+            imagesNames: any(named: 'imagesNames'),
+          ),
+        ).thenAnswer(
+          (_) async => RestResponse<List<UploadUrlDto>>(
+            statusCode: 500,
+            errorMessage: 'Erro ao gerar URLs',
+          ),
+        );
+
+        await presenter.submitOnboarding();
+
+        expect(presenter.generalError.value, 'Erro ao gerar URLs');
+        verifyNever(
+          () => profilingService.createHorseGallery(
+            horseId: any(named: 'horseId'),
+            gallery: any(named: 'gallery'),
+          ),
+        );
+      },
+    );
 
     test('should set error when create horse fails', () async {
       fillValidForm();

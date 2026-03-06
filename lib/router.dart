@@ -5,15 +5,16 @@ import 'package:equiny/core/shared/constants/cache_keys.dart';
 import 'package:equiny/core/profiling/dtos/structures/feed_horse_dto.dart';
 import 'package:equiny/drivers/cache-driver/index.dart';
 import 'package:equiny/shared/widgets/components/tab_navigation/index.dart';
-import 'package:equiny/ui/conversations/widgets/screens/conversations_screen/index.dart';
+import 'package:equiny/ui/conversation/widgets/screens/chat_screen/index.dart';
+import 'package:equiny/ui/conversation/widgets/screens/inbox_screen/index.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_in_screen/index.dart';
 import 'package:equiny/ui/auth/widgets/screens/sign_up_screen/index.dart';
-import 'package:equiny/ui/feed/widgets/screens/feed_horse_details_screen/index.dart';
-import 'package:equiny/ui/feed/widgets/screens/feed_screen/index.dart';
+import 'package:equiny/ui/profiling/widgets/screens/feed_horse_details_screen/index.dart';
+import 'package:equiny/ui/profiling/widgets/screens/feed_screen/index.dart';
+import 'package:equiny/ui/profiling/widgets/screens/onboarding_screen/index.dart';
+import 'package:equiny/ui/profiling/widgets/screens/profile_screen/index.dart';
 import 'package:equiny/ui/matches/widgets/screens/matches_screen/index.dart';
 import 'package:equiny/rest/services.dart';
-import 'package:equiny/ui/profiling/widgets/screens/profile_screen/index.dart';
-import 'package:equiny/ui/profiling/widgets/screens/onboarding_screen/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -22,36 +23,46 @@ final routerProvider = Provider<GoRouter>((ref) {
   final cacheDriver = ref.watch(cacheDriverProvider);
   final profilingService = ref.watch(profilingServiceProvider);
 
+  Future<String?> handleRedirect(
+    BuildContext context,
+    GoRouterState state,
+  ) async {
+    final String currentRoute = state.matchedLocation;
+    final bool isAuthenticated =
+        (cacheDriver.get(CacheKeys.accessToken) ?? '').isNotEmpty;
+
+    final bool isSignIn = currentRoute == Routes.signIn;
+    final bool isSignUp = currentRoute == Routes.signUp;
+
+    if (!isAuthenticated) {
+      if (isSignIn || isSignUp) {
+        return null;
+      }
+      return Routes.signIn;
+    }
+
+    if (isSignIn || isSignUp) {
+      return Routes.feed;
+    }
+
+    final ownerResponse = await profilingService.fetchOwner();
+    if (ownerResponse.isFailure) {
+      unawaited(cacheDriver.set(CacheKeys.accessToken, ''));
+      unawaited(cacheDriver.set(CacheKeys.onboardingCompleted, ''));
+      return isSignIn || isSignUp ? null : Routes.signIn;
+    }
+
+    final hasCompletedOnboarding = ownerResponse.body.hasCompletedOnboarding;
+    if (hasCompletedOnboarding) {
+      return null;
+    }
+
+    return Routes.onboarding;
+  }
+
   return GoRouter(
     initialLocation: Routes.signIn,
-    redirect: (BuildContext context, GoRouterState state) async {
-      final String currentRoute = state.matchedLocation;
-      final bool isAuthenticated =
-          (cacheDriver.get(CacheKeys.accessToken) ?? '').isNotEmpty;
-
-      final bool isSignIn = currentRoute == Routes.signIn;
-      final bool isSignUp = currentRoute == Routes.signUp;
-
-      if (!isAuthenticated) {
-        if (isSignIn || isSignUp) {
-          return null;
-        }
-        return Routes.signIn;
-      }
-
-      if (isSignIn || isSignUp) {
-        return Routes.feed;
-      }
-
-      final ownerResponse = await profilingService.fetchOwner();
-      if (ownerResponse.isFailure) {
-        unawaited(cacheDriver.set(CacheKeys.accessToken, ''));
-        unawaited(cacheDriver.set(CacheKeys.onboardingCompleted, ''));
-        return isSignIn || isSignUp ? null : Routes.signIn;
-      }
-
-      return null;
-    },
+    redirect: handleRedirect,
     routes: <RouteBase>[
       GoRoute(
         path: Routes.signIn,
@@ -80,6 +91,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           );
         },
+        redirect: handleRedirect,
         routes: <RouteBase>[
           GoRoute(
             path: Routes.feed,
@@ -94,9 +106,9 @@ final routerProvider = Provider<GoRouter>((ref) {
             },
           ),
           GoRoute(
-            path: Routes.conversations,
+            path: Routes.inbox,
             builder: (BuildContext context, GoRouterState state) {
-              return const ConversationsScreen();
+              return const InboxScreen();
             },
           ),
           GoRoute(
@@ -116,6 +128,16 @@ final routerProvider = Provider<GoRouter>((ref) {
           }
 
           return FeedHorseDetailsScreen(horse: extra);
+        },
+      ),
+      GoRoute(
+        path: Routes.chat,
+        builder: (BuildContext context, GoRouterState state) {
+          final Object? extra = state.extra;
+          if (extra is String) {
+            return ChatScreen(chatId: extra);
+          }
+          return const InboxScreen();
         },
       ),
     ],

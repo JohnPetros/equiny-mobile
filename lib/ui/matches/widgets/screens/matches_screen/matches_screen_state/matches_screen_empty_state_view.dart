@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class MatchesScreenEmptyStateView extends StatelessWidget {
   final VoidCallback onGoToFeed;
 
-  const MatchesScreenEmptyStateView({
-    required this.onGoToFeed,
-    super.key,
-  });
+  const MatchesScreenEmptyStateView({required this.onGoToFeed, super.key});
 
   @override
   Widget build(BuildContext context) {

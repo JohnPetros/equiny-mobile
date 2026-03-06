@@ -1,12 +1,15 @@
+import 'package:equiny/core/profiling/dtos/structures/image_dto.dart';
+
 class OwnerDto {
   final String? id;
   final String name;
   final String email;
   final String accountId;
   final bool hasCompletedOnboarding;
-  final String? avatar;
+  final ImageDto? avatar;
   final String? phone;
   final String? bio;
+  final DateTime? lastPresenceAt;
 
   const OwnerDto({
     this.id,
@@ -17,5 +20,6 @@ class OwnerDto {
     this.avatar,
     this.phone,
     this.bio,
+    this.lastPresenceAt,
   });
 }
