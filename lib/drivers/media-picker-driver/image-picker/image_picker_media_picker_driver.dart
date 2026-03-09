@@ -24,6 +24,24 @@ class ImagePickerMediaPickerDriver implements MediaPickerDriver {
     return selectedFiles.map((XFile file) => File(file.path)).toList();
   }
 
+  @override
+  Future<File?> pickImageFromCamera() async {
+    try {
+      final XFile? file = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 90,
+      );
+
+      if (file == null) {
+        return null;
+      }
+
+      return File(file.path);
+    } on Exception {
+      throw UnsupportedError('media-picker-plugin-not-available');
+    }
+  }
+
   Future<List<XFile>> _pickMultipleImages(int maxImages) async {
     try {
       return await _imagePicker.pickMultiImage(
