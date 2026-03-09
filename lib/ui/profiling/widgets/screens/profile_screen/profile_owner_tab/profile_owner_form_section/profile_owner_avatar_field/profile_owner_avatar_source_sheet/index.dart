@@ -1,0 +1,3 @@
+import 'profile_owner_avatar_source_sheet_view.dart';
+
+typedef ProfileOwnerAvatarSourceSheet = ProfileOwnerAvatarSourceSheetView;

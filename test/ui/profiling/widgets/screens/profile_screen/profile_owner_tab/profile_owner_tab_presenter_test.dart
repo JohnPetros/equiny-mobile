@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:equiny/core/profiling/dtos/entities/owner_dto.dart';
 import 'package:equiny/core/profiling/interfaces/profiling_service.dart';
 import 'package:equiny/core/shared/interfaces/media_picker_driver.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
+import 'package:equiny/core/storage/dtos/structures/upload_url_dto.dart';
 import 'package:equiny/core/storage/interfaces/file_storage_driver.dart';
 import 'package:equiny/core/storage/interfaces/file_storage_service.dart';
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_owner_tab/profile_owner_form_section/profile_owner_form_section_presenter.dart';
@@ -9,6 +12,7 @@ import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_owner
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../../../fakers/profiling/image_faker.dart';
 import '../../../../../../fakers/profiling/owner_faker.dart';
 
 class MockProfilingService extends Mock implements ProfilingService {}
@@ -177,5 +181,129 @@ void main() {
 
       expect(presenter.generalError.value, isNull);
     });
+
+    test('should capture image from camera and sync owner avatar', () async {
+      final owner = OwnerFaker.fakeDto();
+      final imageFile = File('camera/avatar.jpg');
+      const uploadUrl = UploadUrlDto(
+        url: 'https://storage.example.com/upload',
+        token: 'token-1',
+        filePath: 'owners/owner-1/avatar.jpg',
+      );
+      final syncedOwner = OwnerDto(
+        id: owner.id,
+        name: owner.name,
+        email: owner.email,
+        accountId: owner.accountId,
+        hasCompletedOnboarding: owner.hasCompletedOnboarding,
+        avatar: ImageFaker.fakeDto(key: uploadUrl.filePath, name: 'avatar.jpg'),
+        phone: owner.phone,
+        bio: owner.bio,
+      );
+
+      when(
+        () => profilingService.fetchOwner(),
+      ).thenAnswer((_) async => RestResponse<OwnerDto>(body: owner));
+      when(
+        () => mediaPickerDriver.pickImageFromCamera(),
+      ).thenAnswer((_) async => imageFile);
+      when(
+        () => fileStorageService.generateUploadUrlForOwnerAvatar(
+          ownerId: any(named: 'ownerId'),
+          fileName: any(named: 'fileName'),
+        ),
+      ).thenAnswer((_) async => RestResponse<UploadUrlDto>(body: uploadUrl));
+      when(
+        () => fileStorageDriver.uploadFile(imageFile, uploadUrl),
+      ).thenAnswer((_) async {});
+      when(
+        () => fileStorageDriver.getFileUrl(uploadUrl.filePath),
+      ).thenReturn('https://cdn.example.com/${uploadUrl.filePath}');
+      when(
+        () => profilingService.updateOwner(owner: any(named: 'owner')),
+      ).thenAnswer((_) async => RestResponse<OwnerDto>(body: syncedOwner));
+
+      await presenter.loadOwner();
+      await presenter.captureAndUploadAvatar();
+
+      verify(() => mediaPickerDriver.pickImageFromCamera()).called(1);
+      verify(
+        () => fileStorageService.generateUploadUrlForOwnerAvatar(
+          ownerId: 'owner-1',
+          fileName: 'avatar.jpg',
+        ),
+      ).called(1);
+      verify(
+        () => fileStorageDriver.uploadFile(imageFile, uploadUrl),
+      ).called(1);
+
+      final OwnerDto sentOwner =
+          verify(
+                () => profilingService.updateOwner(
+                  owner: captureAny(named: 'owner'),
+                ),
+              ).captured.single
+              as OwnerDto;
+      expect(sentOwner.avatar?.key, uploadUrl.filePath);
+      expect(
+        presenter.ownerAvatarUrl.value,
+        'https://cdn.example.com/${uploadUrl.filePath}',
+      );
+      expect(presenter.avatarError.value, isNull);
+      expect(presenter.isUploadingAvatar.value, isFalse);
+    });
+
+    test(
+      'should not sync owner avatar when camera picker is cancelled',
+      () async {
+        final owner = OwnerFaker.fakeDto();
+
+        when(
+          () => profilingService.fetchOwner(),
+        ).thenAnswer((_) async => RestResponse<OwnerDto>(body: owner));
+        when(
+          () => mediaPickerDriver.pickImageFromCamera(),
+        ).thenAnswer((_) async => null);
+
+        await presenter.loadOwner();
+        await presenter.captureAndUploadAvatar();
+
+        verify(() => mediaPickerDriver.pickImageFromCamera()).called(1);
+        verifyNever(
+          () => fileStorageService.generateUploadUrlForOwnerAvatar(
+            ownerId: any(named: 'ownerId'),
+            fileName: any(named: 'fileName'),
+          ),
+        );
+        verifyNever(
+          () => profilingService.updateOwner(owner: any(named: 'owner')),
+        );
+        expect(presenter.avatarError.value, isNull);
+        expect(presenter.isUploadingAvatar.value, isFalse);
+      },
+    );
+
+    test(
+      'should set camera error when platform does not support capture',
+      () async {
+        final owner = OwnerFaker.fakeDto();
+
+        when(
+          () => profilingService.fetchOwner(),
+        ).thenAnswer((_) async => RestResponse<OwnerDto>(body: owner));
+        when(
+          () => mediaPickerDriver.pickImageFromCamera(),
+        ).thenThrow(UnsupportedError('camera-not-supported'));
+
+        await presenter.loadOwner();
+        await presenter.captureAndUploadAvatar();
+
+        expect(
+          presenter.avatarError.value,
+          'Camera nao suportada nesta plataforma/dispositivo.',
+        );
+        expect(presenter.isUploadingAvatar.value, isFalse);
+      },
+    );
   });
 }

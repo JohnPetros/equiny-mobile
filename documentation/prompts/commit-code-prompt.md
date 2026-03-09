@@ -1,8 +1,14 @@
-# Prompt: Fazer Commits no Código (Executando Commits Reais)
+---
+description: Prompt para analisar alteracoes e executar commits reais com padrao de mensagens definido.
+---
+
+# Prompt: Fazer Commits no Código
 
 **Objetivo Principal**
 
-Criar **e executar commits reais** no repositório para todas as alterações detectadas no código, com mensagens altamente descritivas e padronizadas, seguindo rigorosamente as diretrizes de contribuição do projeto.
+Criar **e executar commits reais** no repositório para todas as alterações
+detectadas no código, com mensagens altamente descritivas e padronizadas,
+seguindo rigorosamente as diretrizes de contribuição do projeto.
 
 Você **deve executar comandos git**, não apenas sugerir mensagens.
 
@@ -12,13 +18,12 @@ Você **deve executar comandos git**, não apenas sugerir mensagens.
 
 Se existirem arquivos modificados, você é obrigado a:
 
-* executar `git add`
-* executar `git commit`
-* repetir o processo até não restarem mudanças pendentes
+- executar `git add`
+- executar `git commit`
+- repetir o processo até não restarem mudanças pendentes
 
-Nunca apenas sugira commits.
-Nunca pare somente na mensagem.
-**Sempre execute os comandos.**
+Nunca apenas sugira commits. Nunca pare somente na mensagem. **Sempre execute os
+comandos.**
 
 ---
 
@@ -30,17 +35,18 @@ Execute primeiro:
 
 git status --porcelain
 
-* Se vazio → responda: `No changes to commit`
-* Se houver alterações → continue
+- Se vazio → responda: `No changes to commit`
+- Se houver alterações → continue
 
 ---
 
 ### 2️⃣ Análise do Contexto
 
-* Analise **somente o nome e caminho dos arquivos alterados**
-* Não analise o conteúdo
-* Agrupe por responsabilidade
-* Se houver mudanças em camadas diferentes (ex: UI e REST), crie commits separados
+- Analise **somente o nome e caminho dos arquivos alterados**
+- Não analise o conteúdo
+- Agrupe por responsabilidade
+- Se houver mudanças em camadas diferentes (ex: UI e REST), crie commits
+  separados
 
 ---
 
@@ -50,32 +56,42 @@ Cada commit deve seguir o formato:
 
 emoji prefix: concise description in English
 
-* Mensagem **obrigatoriamente em Inglês**
-* Use apenas prefixos da tabela
-* Um commit por responsabilidade
+- Mensagem **obrigatoriamente em Inglês**
+- Use apenas prefixos da tabela
+- Um commit por responsabilidade
 
 ---
 
 ## 📋 Tabela de Prefixos (MANTIDA)
 
-| Tipo                     | Prefixo   | Emoji |
-| :----------------------- | :-------- | :---- |
-| Camada de domínio        | domain    | 🌐     |
-| Camada de API REST       | rest      | 📶     |
-| Camada de UI             | ui        | 🖥️     |
-| Camada de banco de dados | db        | 💾     |
-| Use cases                | use case  | ✨     |
-| Interfaces               | interface | 📑     |
-| Tipagem                  | type      | 🏷️     |
-| Documentação             | docs      | 📚     |
-| Correção de bug          | fix       | 🐛     |
-| Refatoração              | refactor  | ♻️     |
-| Teste                    | test      | 🧪     |
-| Release                  | release   | 🔖     |
-| Configuração/Infra       | config    | ⚙️     |
-| Dependências             | deps      | 📦     |
-| Estrutura de pastas      | ftree     | 🗃️     |
-| Trabalho em progresso    | wip       | 🚧     |
+| Type                            | Prefix      | Emoji |
+| :------------------------------ | :---------- | :---- |
+| Domain layer                    | domain      | 🌐    |
+| REST API layer                  | rest        | 📶    |
+| UI layer                        | ui          | 🖥️    |
+| Database layer                  | db          | 💾    |
+| Work in progress                | wip         | 🚧    |
+| Artificial intelligence layer   | ai          | 🤖    |
+| RPC layer                       | rpc         | 📟    |
+| Use cases                       | use case    | ✨    |
+| Interfaces                      | interface   | 📑    |
+| Typings                         | type        | 🏷️    |
+| Documentation                   | docs        | 📚    |
+| Bug fix                         | fix         | 🐛    |
+| Refactoring                     | refactor    | ♻️    |
+| Test                            | test        | 🧪    |
+| Config/Infrastructure           | config      | ⚙️    |
+| Dependencies                    | deps        | 📦    |
+| Folder structure                | ftree       | 🗃️    |
+| Provision layer                 | provision   | 🧰    |
+| Response                        | response    | 📤    |
+| Certificates/Licensing          | cert        | 📜    |
+| Validation schema               | validation  | 📮    |
+| Emergency hotfix                | hotfix      | 🚑    |
+| Continuous delivery             | cd          | 🚚    |
+| Continuous integration          | ci          | 🏎️    |
+| New release                     | release     | 🔖    |
+| Docker files                    | docker      | 🐳    |
 
 ---
 
@@ -83,32 +99,28 @@ emoji prefix: concise description in English
 
 Para cada grupo de arquivos identificado, execute:
 
-git add <arquivos-do-grupo>
-git commit -m "emoji prefix: concise description in English"
+git add <arquivos-do-grupo> git commit -m "emoji prefix: concise description in
+English"
 
-Não peça confirmação.
-Não explique antes.
-Não gere apenas sugestão.
-**Execute.**
+Não peça confirmação. Não explique antes. Não gere apenas sugestão. **Execute.**
 
 ---
 
 ### 5️⃣ Exemplos de Referência
 
-🐛 fix(server): ensure only one achievement is unlocked at once
-📑 interface: add AchievementsRepository
-✨ use case: list all challenges
-🧪 test: list all challenges use case
+🐛 fix(server): ensure only one achievement is unlocked at once 📑 interface:
+add AchievementsRepository ✨ use case: list all challenges 🧪 test: list all
+challenges use case
 
 ---
 
 ### 6️⃣ Verificação Final (Antes de cada commit)
 
-* mensagem curta e direta
-* emoji corresponde ao prefixo
-* prefixo está na tabela
-* descrição em inglês
-* representa corretamente o grupo
+- mensagem curta e direta
+- emoji corresponde ao prefixo
+- prefixo está na tabela
+- descrição em inglês
+- representa corretamente o grupo
 
 ---
 
@@ -116,14 +128,7 @@ Não gere apenas sugestão.
 
 Mostre apenas comandos executados:
 
-EXECUTING:
-git add src/domain/user.ts
-git commit -m "🌐 domain: add user aggregate"
+EXECUTING: git add src/domain/user.ts git commit -m "🌐 domain: add user
+aggregate"
 
-Sem explicações longas.
-Sem “sugestões”.
-Sem parar antes de commitar.
-
----
-
-Se você quiser, eu também consigo adaptar esse prompt especificamente para **gh agent**, **codex**, ou **serena**, porque cada um obedece gatilhos diferentes de execução.
+Sem explicações longas. Sem “sugestões”. Sem parar antes de commitar.

@@ -191,14 +191,14 @@ class ProfileOwnerTabPresenter {
   }
 
   Future<void> pickAndUploadAvatar() async {
-    await _pickAndUploadAvatar();
+    await _pickAndUploadAvatar(_AvatarUploadSource.gallery);
   }
 
-  Future<void> replaceAvatar() async {
-    await _pickAndUploadAvatar();
+  Future<void> captureAndUploadAvatar() async {
+    await _pickAndUploadAvatar(_AvatarUploadSource.camera);
   }
 
-  Future<void> _pickAndUploadAvatar() async {
+  Future<void> _pickAndUploadAvatar(_AvatarUploadSource source) async {
     if (isUploadingAvatar.value) {
       return;
     }
@@ -215,9 +215,9 @@ class ProfileOwnerTabPresenter {
     avatarError.value = null;
 
     try {
-      final List<File> files = await _mediaPickerDriver.pickImages(
-        maxImages: 1,
-      );
+      final List<File> files = source == _AvatarUploadSource.gallery
+          ? await _mediaPickerDriver.pickImages(maxImages: 1)
+          : await _pickSingleImageFromCamera();
       if (files.isEmpty) {
         return;
       }
@@ -247,13 +247,23 @@ class ProfileOwnerTabPresenter {
         ownerAvatarUrl.value = _resolveAvatarUrl(previousAvatar);
       }
     } on UnsupportedError {
-      avatarError.value =
-          'Selecao de imagem nao suportada nesta plataforma/dispositivo.';
+      avatarError.value = source == _AvatarUploadSource.camera
+          ? 'Camera nao suportada nesta plataforma/dispositivo.'
+          : 'Selecao de imagem nao suportada nesta plataforma/dispositivo.';
     } catch (error) {
       avatarError.value = error.toString();
     } finally {
       isUploadingAvatar.value = false;
     }
+  }
+
+  Future<List<File>> _pickSingleImageFromCamera() async {
+    final File? cameraFile = await _mediaPickerDriver.pickImageFromCamera();
+    if (cameraFile == null) {
+      return <File>[];
+    }
+
+    return <File>[cameraFile];
   }
 
   Future<void> removeAvatar() async {
@@ -394,6 +404,8 @@ class ProfileOwnerTabPresenter {
     generalError.value = null;
   }
 }
+
+enum _AvatarUploadSource { camera, gallery }
 
 final profileOwnerTabPresenterProvider =
     Provider.autoDispose<ProfileOwnerTabPresenter>((ref) {

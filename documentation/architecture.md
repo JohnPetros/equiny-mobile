@@ -1,8 +1,8 @@
-# Arquitetura do Projeto Sertton
+# Arquitetura do Equiny Mobile
 
 ## Visao Geral
 
-O Sertton usa arquitetura em camadas inspirada em Clean Architecture para reduzir acoplamento e facilitar testes. E um app de e-commerce em Flutter/Dart integrado a uma API RESTful chamdo Equiny Server.
+O Equiny usa arquitetura em camadas inspirada em Clean Architecture para reduzir acoplamento e facilitar testes. E um app de e-commerce em Flutter/Dart integrado a uma API RESTful chamdo Equiny Server.
 
 ## Camadas
 
