@@ -1,8 +1,8 @@
 ---
 title: Opcao de camera para avatar do dono
 prd: documentation\features\profiling\profile\prd.md
-status: em progresso
-last_updated_at: 2026-03-01
+status: concluido
+last_updated_at: 2026-03-09
 ---
 
 # 1. Objetivo
@@ -17,6 +17,7 @@ Entregar a evolucao do upload de avatar da aba `Dono` na `ProfileScreen` para pe
 - Manter a acao de remover avatar e os estados de erro/carregamento ja existentes.
 - Garantir compatibilidade com o autosave da aba `Dono`, sem corrida entre sync de formulario e upload de avatar.
 - Ajustar configuracao iOS para permissao de camera no `Info.plist`.
+- Consolidar cobertura automatizada para o fluxo de camera/source sheet e validar a feature com `dart format .`, `flutter analyze` e `flutter test`.
 
 ## 2.2 Out-of-scope
 - Crop, edicao, filtros, compressao customizada ou rotacao de imagem.
@@ -77,16 +78,16 @@ Entregar a evolucao do upload de avatar da aba `Dono` na `ProfileScreen` para pe
 
 ### 5.1.1 Presenters/Stores
 - **Arquivo (novo):** `lib/ui/profiling/widgets/screens/profile_screen/profile_owner_tab/profile_owner_form_section/profile_owner_avatar_field/profile_owner_avatar_source_sheet/profile_owner_avatar_source_sheet_presenter.dart`
-  - **Responsabilidade:** definir opcoes de origem de avatar (`camera` e `gallery`) e labels de exibicao para o bottom sheet.
+  - **Responsabilidade:** definir opcoes de origem de avatar (`camera` e `gallery`), opcao destrutiva de remocao e labels de exibicao para o bottom sheet.
   - **Dependencias:** somente tipos Dart puros.
   - **Estado (`signals`/providers):** nao se aplica.
   - **Computeds:** nao se aplica.
-  - **Metodos:** `buildOptions({required bool showGalleryOption})`, `resolveTitle()`.
+  - **Metodos:** `buildOptions({required bool showGalleryOption, required bool showRemoveOption})`, `resolveTitle()`.
 
 ### 5.1.2 Views
 - **Arquivo (novo):** `lib/ui/profiling/widgets/screens/profile_screen/profile_owner_tab/profile_owner_form_section/profile_owner_avatar_field/profile_owner_avatar_source_sheet/profile_owner_avatar_source_sheet_view.dart`
-  - **Responsabilidade:** exibir `showModalBottomSheet` com opcoes `Tirar foto` e `Escolher da galeria` e retornar acao selecionada para a view do avatar.
-  - **Props:** `onPickFromCamera`, `onPickFromGallery`.
+  - **Responsabilidade:** exibir `showModalBottomSheet` com opcoes `Tirar foto`, `Escolher da galeria` e, quando houver avatar atual, `Remover foto`, retornando a acao selecionada para a view do avatar.
+  - **Props:** `onPickFromCamera`, `onPickFromGallery`, `showRemoveOption`, `onRemovePhoto`.
   - **Dependencias de UI:** `flutter/material.dart`, `AppTheme`.
 
 ### 5.1.3 Widgets
@@ -141,7 +142,7 @@ profile_owner_avatar_source_sheet/
   - **Camada:** `ui`
 
 - **Arquivo:** `lib/ui/profiling/widgets/screens/profile_screen/profile_owner_tab/profile_owner_form_section/profile_owner_avatar_field/profile_owner_avatar_field_view.dart`
-  - **Mudanca:** trocar acao direta de upload por abertura de source sheet e acionar callbacks distintos (`camera` ou `gallery`).
+  - **Mudanca:** trocar acao direta de upload por abertura de source sheet e acionar callbacks distintos (`camera`, `gallery` ou `remover`).
   - **Justificativa:** atender requisito de UX com duas opcoes de origem sem acoplamento de plugin na UI.
   - **Camada:** `ui`
 
@@ -171,7 +172,7 @@ profile_owner_avatar_source_sheet/
 ## 8.1 Fluxo de dados (ASCII)
 ```text
 ProfileOwnerAvatarFieldView
-  -> ProfileOwnerAvatarSourceSheetView (camera | gallery)
+  -> ProfileOwnerAvatarSourceSheetView (camera | gallery | remove)
     -> ProfileOwnerTabPresenter
       -> MediaPickerDriver (camera/gallery)
       -> FileStorageService.generateUploadUrlForOwnerAvatar(...)
@@ -191,23 +192,44 @@ ProfileOwnerTab
   |   |   `- CTA (Adicionar/Trocar)
   |   `- Avatar Source Sheet (on tap)
   |       |- Tirar foto
-  |       `- Escolher da galeria
+   |       |- Escolher da galeria
+   |       `- Remover foto (quando houver avatar)
   `- Demais campos (nome, email, telefone, bio)
 ```
 
-## 8.3 Referencias internas
+## 8.3 Sequencia final de captura por camera (ASCII)
+```ASCII
+Usuario
+  -> Avatar Field tap
+  -> Source Sheet escolhe "Tirar foto"
+  -> ProfileOwnerTabPresenter.captureAndUploadAvatar()
+  -> MediaPickerDriver.pickImageFromCamera()
+  -> FileStorageService.generateUploadUrlForOwnerAvatar()
+  -> FileStorageDriver.uploadFile()
+  -> ProfilingService.updateOwner()
+  -> UI atualiza avatarUrl / estados de sync
+```
+
+## 8.4 Referencias internas
 - `lib/ui/profiling/widgets/screens/profile_screen/profile_owner_tab/profile_owner_tab_presenter.dart` (fluxo atual de upload/sync do avatar)
 - `lib/ui/conversation/widgets/screens/chat_screen/chat_attachment_picker/chat_attachment_picker_view.dart` (padrao de bottom sheet com acoes)
 - `lib/drivers/media-picker-driver/image-picker/image_picker_media_picker_driver.dart` (integracao atual com `image_picker`)
 - `lib/rest/services/file_storage_service.dart` (geracao de signed URL de avatar)
 
-## 8.4 Referencias de tela (quando houver)
+## 8.5 Referencias de tela (quando houver)
 - **Google Stitch screen id:** `projects/15865350654253776765/screens/f4cfe7687bd448bca78b5ce672360e86`
 - **Decisoes de UI extraidas:**
   - Avatar permanece como elemento de destaque no topo da secao `Dados Pessoais`.
   - Badge de camera no avatar deve ser preservada como affordance principal de troca de foto.
   - Nova escolha de origem entra como interacao complementar (bottom sheet), sem alterar hierarquia da tela base.
+  - A acao de remover foto foi consolidada dentro do source sheet e mantida como CTA dedicado abaixo do avatar para reduzir friccao em cenarios recorrentes.
 
-# 9. Perguntas em aberto
-- Confirmar com Produto/Design se a acao `Remover foto` tambem deve aparecer dentro do source sheet (alem do botao dedicado ja existente). R: Sim
-- Confirmar copy final para `NSCameraUsageDescription` (texto tecnico atual pode ser substituido por copy de privacidade revisada). R: OK
+# 9. Validacao final
+- `dart format .` executado com sucesso para garantir padrao Dart nos arquivos da feature e testes relacionados.
+- `flutter analyze` executado sem warnings ou erros remanescentes.
+- `flutter test` executado com sucesso, incluindo cobertura adicional para camera/source sheet.
+- Cobertura automatizada consolidada em `test/ui/profiling/widgets/screens/profile_screen/profile_owner_tab/profile_owner_tab_presenter_test.dart` e `test/ui/profiling/widgets/screens/profile_screen/profile_owner_tab/profile_owner_form_section/profile_owner_avatar_field/profile_owner_avatar_source_sheet/profile_owner_avatar_source_sheet_view_test.dart`.
+
+# 10. Decisoes registradas
+- `Remover foto` permanece disponivel tanto no CTA dedicado quanto dentro do source sheet para manter descoberta e rapidez de uso.
+- `NSCameraUsageDescription` final definido como copy objetiva focada em avatar de perfil.
