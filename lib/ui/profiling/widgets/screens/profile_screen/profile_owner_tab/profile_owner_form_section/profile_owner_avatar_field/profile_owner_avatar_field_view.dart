@@ -1,4 +1,5 @@
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_owner_tab/profile_owner_form_section/profile_owner_avatar_field/profile_owner_avatar_field_presenter.dart';
+import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_owner_tab/profile_owner_form_section/profile_owner_avatar_field/profile_owner_avatar_source_sheet/index.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
@@ -6,8 +7,8 @@ class ProfileOwnerAvatarFieldView extends StatelessWidget {
   final String? avatarUrl;
   final bool isUploading;
   final String? errorMessage;
-  final VoidCallback onPickAvatar;
-  final VoidCallback onReplaceAvatar;
+  final VoidCallback onPickAvatarFromCamera;
+  final VoidCallback onPickAvatarFromGallery;
   final VoidCallback onRemoveAvatar;
   final ProfileOwnerAvatarFieldPresenter _presenter;
 
@@ -15,8 +16,8 @@ class ProfileOwnerAvatarFieldView extends StatelessWidget {
     required this.avatarUrl,
     required this.isUploading,
     required this.errorMessage,
-    required this.onPickAvatar,
-    required this.onReplaceAvatar,
+    required this.onPickAvatarFromCamera,
+    required this.onPickAvatarFromGallery,
     required this.onRemoveAvatar,
     super.key,
   }) : _presenter = const ProfileOwnerAvatarFieldPresenter();
@@ -33,9 +34,13 @@ class ProfileOwnerAvatarFieldView extends StatelessWidget {
           borderRadius: BorderRadius.circular(999),
           onTap: isUploading
               ? null
-              : hasAvatar
-              ? onReplaceAvatar
-              : onPickAvatar,
+              : () => ProfileOwnerAvatarSourceSheet.show(
+                  context,
+                  onPickFromCamera: onPickAvatarFromCamera,
+                  onPickFromGallery: onPickAvatarFromGallery,
+                  showRemoveOption: hasAvatar,
+                  onRemovePhoto: onRemoveAvatar,
+                ),
           child: Stack(
             clipBehavior: Clip.none,
             children: <Widget>[
@@ -108,9 +113,13 @@ class ProfileOwnerAvatarFieldView extends StatelessWidget {
         TextButton(
           onPressed: isUploading
               ? null
-              : hasAvatar
-              ? onReplaceAvatar
-              : onPickAvatar,
+              : () => ProfileOwnerAvatarSourceSheet.show(
+                  context,
+                  onPickFromCamera: onPickAvatarFromCamera,
+                  onPickFromGallery: onPickAvatarFromGallery,
+                  showRemoveOption: hasAvatar,
+                  onRemovePhoto: onRemoveAvatar,
+                ),
           child: Text(
             _presenter.resolveActionLabel(
               avatarUrl: resolvedAvatarUrl,

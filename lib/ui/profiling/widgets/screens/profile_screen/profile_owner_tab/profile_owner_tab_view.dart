@@ -11,8 +11,8 @@ class ProfileOwnerTabView extends StatelessWidget {
   final String? avatarUrl;
   final bool isUploadingAvatar;
   final String? avatarError;
-  final VoidCallback onPickAvatar;
-  final VoidCallback onReplaceAvatar;
+  final VoidCallback onPickAvatarFromCamera;
+  final VoidCallback onPickAvatarFromGallery;
   final VoidCallback onRemoveAvatar;
 
   const ProfileOwnerTabView({
@@ -22,8 +22,8 @@ class ProfileOwnerTabView extends StatelessWidget {
     required this.avatarUrl,
     required this.isUploadingAvatar,
     required this.avatarError,
-    required this.onPickAvatar,
-    required this.onReplaceAvatar,
+    required this.onPickAvatarFromCamera,
+    required this.onPickAvatarFromGallery,
     required this.onRemoveAvatar,
     super.key,
   });
@@ -61,8 +61,8 @@ class ProfileOwnerTabView extends StatelessWidget {
               avatarUrl: avatarUrl,
               isUploadingAvatar: isUploadingAvatar,
               avatarError: avatarError,
-              onPickAvatar: onPickAvatar,
-              onReplaceAvatar: onReplaceAvatar,
+              onPickAvatarFromCamera: onPickAvatarFromCamera,
+              onPickAvatarFromGallery: onPickAvatarFromGallery,
               onRemoveAvatar: onRemoveAvatar,
             ),
             const SizedBox(height: AppSpacing.lg),
