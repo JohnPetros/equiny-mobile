@@ -94,6 +94,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
 
     return MaterialApp.router(
       title: 'Equiny',
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.dark,
