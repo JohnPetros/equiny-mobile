@@ -247,8 +247,7 @@ class ProfileOwnerTabPresenter {
         ownerAvatarUrl.value = _resolveAvatarUrl(previousAvatar);
       }
     } on UnsupportedError {
-      avatarError.value =
-          source == _AvatarUploadSource.camera
+      avatarError.value = source == _AvatarUploadSource.camera
           ? 'Camera nao suportada nesta plataforma/dispositivo.'
           : 'Selecao de imagem nao suportada nesta plataforma/dispositivo.';
     } catch (error) {

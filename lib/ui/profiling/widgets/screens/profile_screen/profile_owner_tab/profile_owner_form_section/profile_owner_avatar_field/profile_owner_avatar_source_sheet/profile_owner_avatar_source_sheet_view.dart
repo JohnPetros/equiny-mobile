@@ -45,10 +45,11 @@ class ProfileOwnerAvatarSourceSheetView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<ProfileOwnerAvatarSourceOption> options = _presenter.buildOptions(
-      showGalleryOption: true,
-      showRemoveOption: showRemoveOption,
-    );
+    final List<ProfileOwnerAvatarSourceOption> options = _presenter
+        .buildOptions(
+          showGalleryOption: true,
+          showRemoveOption: showRemoveOption,
+        );
 
     return SafeArea(
       child: Column(
