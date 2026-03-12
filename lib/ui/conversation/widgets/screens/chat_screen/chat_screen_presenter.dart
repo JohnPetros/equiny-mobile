@@ -115,7 +115,6 @@ class ChatScreenPresenter {
       return !isLoadingInitial.value &&
           messages.value.isEmpty &&
           chat.value != null &&
-          _resolveCurrentOwnerId().isNotEmpty &&
           (chat.value?.recipient.id ?? '').isNotEmpty;
     });
     showSuggestionChips = computed(
@@ -334,35 +333,37 @@ class ChatScreenPresenter {
       return;
     }
 
-    final String senderId = _resolveCurrentOwnerId();
     final String recipientId = chat.value?.recipient.id ?? '';
-    if (senderId.isEmpty || recipientId.isEmpty) {
+    if (recipientId.isEmpty) {
       return;
     }
 
     isGeneratingIcebreaker.value = true;
     icebreakerErrorMessage.value = null;
 
-    final response = await _profilingService.generateIcebreaker(
-      senderId: senderId,
-      recipientId: recipientId,
-    );
+    try {
+      final response = await _profilingService.generateIcebreaker(
+        recipientOwnerId: recipientId,
+      );
 
-    isGeneratingIcebreaker.value = false;
+      if (response.isFailure) {
+        icebreakerErrorMessage.value = response.errorMessage;
+        return;
+      }
 
-    if (response.isFailure) {
-      icebreakerErrorMessage.value = response.errorMessage;
-      return;
-    }
+      final String suggestion = response.body.content.trim();
+      if (suggestion.isEmpty) {
+        icebreakerErrorMessage.value = 'Nao foi possivel gerar sugestao agora.';
+        return;
+      }
 
-    final String suggestion = response.body.content.trim();
-    if (suggestion.isEmpty) {
+      prefillDraft(suggestion);
+      hasGeneratedIcebreaker.value = true;
+    } catch (_) {
       icebreakerErrorMessage.value = 'Nao foi possivel gerar sugestao agora.';
-      return;
+    } finally {
+      isGeneratingIcebreaker.value = false;
     }
-
-    prefillDraft(suggestion);
-    hasGeneratedIcebreaker.value = true;
   }
 
   String resolveFileUrl(String key) {
