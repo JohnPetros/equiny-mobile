@@ -32,8 +32,7 @@ abstract class ProfilingService {
     required String toHorseId,
   });
   Future<RestResponse<IcebreakerDto>> generateIcebreaker({
-    required String senderId,
-    required String recipientId,
+    required String recipientOwnerId,
   });
   Future<RestResponse<List<String>>> fetchBreeds();
   Future<RestResponse<OwnerDto>> updateOwner({required OwnerDto owner});
