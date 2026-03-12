@@ -773,25 +773,22 @@ void main() {
 
         verifyNever(
           () => profilingService.generateIcebreaker(
-            senderId: any(named: 'senderId'),
-            recipientId: any(named: 'recipientId'),
+            recipientOwnerId: any(named: 'recipientId'),
           ),
         );
       });
 
-      test('should not generate when sender id is empty', () async {
-        when(() => cacheDriver.get(any())).thenReturn('');
+      test('should not generate when recipient id is empty', () async {
         presenter.chat.value = ChatFaker.fakeDto(
           id: chatId,
-          recipient: RecipientFaker.fakeDto(id: 'recipient-id'),
+          recipient: RecipientFaker.fakeDto(id: ''),
         );
 
         await presenter.generateIcebreaker();
 
         verifyNever(
           () => profilingService.generateIcebreaker(
-            senderId: any(named: 'senderId'),
-            recipientId: any(named: 'recipientId'),
+            recipientOwnerId: any(named: 'recipientId'),
           ),
         );
       });
@@ -805,8 +802,7 @@ void main() {
           );
           when(
             () => profilingService.generateIcebreaker(
-              senderId: 'owner-id',
-              recipientId: 'recipient-id',
+              recipientOwnerId: 'recipient-id',
             ),
           ).thenAnswer(
             (_) async => RestResponse<IcebreakerDto>(
@@ -830,8 +826,7 @@ void main() {
         );
         when(
           () => profilingService.generateIcebreaker(
-            senderId: 'owner-id',
-            recipientId: 'recipient-id',
+            recipientOwnerId: 'recipient-id',
           ),
         ).thenAnswer(
           (_) async => RestResponse<IcebreakerDto>(
@@ -849,6 +844,29 @@ void main() {
           'Erro ao gerar mensagem',
         );
       });
+
+      test(
+        'should reset loading and set generic error on unexpected throw',
+        () async {
+          presenter.chat.value = ChatFaker.fakeDto(
+            id: chatId,
+            recipient: RecipientFaker.fakeDto(id: 'recipient-id'),
+          );
+          when(
+            () => profilingService.generateIcebreaker(
+              recipientOwnerId: 'recipient-id',
+            ),
+          ).thenThrow(Exception('unexpected'));
+
+          await presenter.generateIcebreaker();
+
+          expect(presenter.isGeneratingIcebreaker.value, isFalse);
+          expect(
+            presenter.icebreakerErrorMessage.value,
+            'Nao foi possivel gerar sugestao agora.',
+          );
+        },
+      );
     });
 
     group('sendMessage with attachments', () {
