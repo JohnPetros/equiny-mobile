@@ -3,6 +3,7 @@ import 'package:equiny/core/profiling/dtos/entities/horse_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/gallery_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/owner_presence_dto.dart';
 import 'package:equiny/core/profiling/dtos/entities/owner_dto.dart';
+import 'package:equiny/core/profiling/dtos/structures/icebreaker_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/age_range_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/horse_match_dto.dart';
@@ -17,6 +18,7 @@ import 'package:equiny/rest/services/service.dart';
 import 'package:equiny/rest/mappers/profiling/gallery_mapper.dart';
 import 'package:equiny/rest/mappers/profiling/horse_mapper.dart';
 import 'package:equiny/rest/mappers/profiling/horse_match_mapper.dart';
+import 'package:equiny/rest/mappers/profiling/icebreaker_suggestion_mapper.dart';
 
 class ProfilingService extends Service
     implements profiling_service.ProfilingService {
@@ -181,6 +183,33 @@ class ProfilingService extends Service
     }
 
     return RestResponse<void>(statusCode: response.statusCode, body: null);
+  }
+
+  @override
+  Future<RestResponse<IcebreakerDto>> generateIcebreaker({
+    required String recipientOwnerId,
+  }) async {
+    super.setAuthHeader();
+    final RestResponse<Json> response = await super.restClient.post(
+      '/profiling/icebreaker',
+      body: <String, dynamic>{'recipient_owner_id': recipientOwnerId},
+    );
+
+    if (response.isFailure) {
+      return RestResponse<IcebreakerDto>(
+        statusCode: response.statusCode,
+        errorMessage: response.errorMessage,
+      );
+    }
+
+    try {
+      return response.mapBody(IcebreakerSuggestionMapper.toDto);
+    } catch (_) {
+      return RestResponse<IcebreakerDto>(
+        statusCode: response.statusCode,
+        errorMessage: 'Nao foi possivel processar a resposta do icebreaker.',
+      );
+    }
   }
 
   @override

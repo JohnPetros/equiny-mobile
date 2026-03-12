@@ -58,6 +58,9 @@ class ChatScreenPresenter {
   final Signal<String> draft = signal('');
   final Signal<String?> nextCursor = signal(null);
   final Signal<String?> errorMessage = signal(null);
+  final Signal<bool> isGeneratingIcebreaker = signal(false);
+  final Signal<String?> icebreakerErrorMessage = signal(null);
+  final Signal<bool> hasGeneratedIcebreaker = signal(false);
   final Signal<bool> isRecipientOnline = signal(false);
   final Signal<List<PendingAttachment>> pendingAttachments = signal(
     <PendingAttachment>[],
@@ -70,6 +73,8 @@ class ChatScreenPresenter {
   late final ReadonlySignal<bool> showEmptyState;
   late final ReadonlySignal<bool> canLoadMore;
   late final ReadonlySignal<bool> canSend;
+  late final ReadonlySignal<bool> showIcebreakerCta;
+  late final ReadonlySignal<bool> showSuggestionChips;
   late final ReadonlySignal<List<ChatDateSectionDto>> groupedMessages;
   late final ReadonlySignal<String> headerSubtitle;
 
@@ -105,6 +110,15 @@ class ChatScreenPresenter {
           (draft.value.trim().isNotEmpty ||
               pendingAttachments.value.isNotEmpty) &&
           isSocketConnected.value,
+    );
+    showIcebreakerCta = computed(() {
+      return !isLoadingInitial.value &&
+          messages.value.isEmpty &&
+          chat.value != null &&
+          (chat.value?.recipient.id ?? '').isNotEmpty;
+    });
+    showSuggestionChips = computed(
+      () => showIcebreakerCta.value && !hasGeneratedIcebreaker.value,
     );
     groupedMessages = computed(_buildGroupedMessages);
     headerSubtitle = computed(() {
@@ -212,6 +226,19 @@ class ChatScreenPresenter {
 
   void onDraftChanged(String value) {
     draft.value = value;
+    if (icebreakerErrorMessage.value != null && value.trim().isNotEmpty) {
+      icebreakerErrorMessage.value = null;
+    }
+  }
+
+  void prefillDraft(String text) {
+    final String nextDraft = text.trim();
+    if (nextDraft.isEmpty) {
+      return;
+    }
+
+    draft.value = nextDraft;
+    icebreakerErrorMessage.value = null;
   }
 
   Future<void> pickImageAttachments() async {
@@ -296,7 +323,47 @@ class ChatScreenPresenter {
   }
 
   Future<void> sendSuggestedMessage(String content) async {
-    await sendMessage(content: content);
+    prefillDraft(content);
+  }
+
+  Future<void> generateIcebreaker() async {
+    if (!showIcebreakerCta.value ||
+        isGeneratingIcebreaker.value ||
+        messages.value.isNotEmpty) {
+      return;
+    }
+
+    final String recipientId = chat.value?.recipient.id ?? '';
+    if (recipientId.isEmpty) {
+      return;
+    }
+
+    isGeneratingIcebreaker.value = true;
+    icebreakerErrorMessage.value = null;
+
+    try {
+      final response = await _profilingService.generateIcebreaker(
+        recipientOwnerId: recipientId,
+      );
+
+      if (response.isFailure) {
+        icebreakerErrorMessage.value = response.errorMessage;
+        return;
+      }
+
+      final String suggestion = response.body.content.trim();
+      if (suggestion.isEmpty) {
+        icebreakerErrorMessage.value = 'Nao foi possivel gerar sugestao agora.';
+        return;
+      }
+
+      prefillDraft(suggestion);
+      hasGeneratedIcebreaker.value = true;
+    } catch (_) {
+      icebreakerErrorMessage.value = 'Nao foi possivel gerar sugestao agora.';
+    } finally {
+      isGeneratingIcebreaker.value = false;
+    }
   }
 
   String resolveFileUrl(String key) {

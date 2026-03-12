@@ -11,6 +11,7 @@ import 'package:equiny/core/conversation/events/message_sent_event.dart';
 import 'package:equiny/core/conversation/interfaces/conversation_channel.dart';
 import 'package:equiny/core/conversation/interfaces/conversation_service.dart';
 import 'package:equiny/core/profiling/dtos/structures/image_dto.dart';
+import 'package:equiny/core/profiling/dtos/structures/icebreaker_dto.dart';
 import 'package:equiny/core/shared/constants/routes.dart';
 import 'package:equiny/core/profiling/dtos/structures/owner_presence_dto.dart';
 import 'package:equiny/core/profiling/interfaces/profiling_service.dart';
@@ -122,6 +123,9 @@ void main() {
         expect(presenter.draft.value, isEmpty);
         expect(presenter.nextCursor.value, isNull);
         expect(presenter.errorMessage.value, isNull);
+        expect(presenter.isGeneratingIcebreaker.value, isFalse);
+        expect(presenter.icebreakerErrorMessage.value, isNull);
+        expect(presenter.hasGeneratedIcebreaker.value, isFalse);
         expect(presenter.isRecipientOnline.value, isFalse);
         expect(presenter.pendingAttachments.value, isEmpty);
         expect(presenter.uploadStatusMap.value, isEmpty);
@@ -750,22 +754,119 @@ void main() {
 
     group('sendSuggestedMessage', () {
       test('should delegate to sendMessage with content', () async {
-        presenter.isSocketConnected.value = true;
-
-        when(
-          () => conversationChannel.emitMessageSentEvent(any()),
-        ).thenAnswer((_) async {});
-
         await presenter.sendSuggestedMessage('Ola!');
 
-        final MessageSentEvent captured =
-            verify(
-                  () => conversationChannel.emitMessageSentEvent(captureAny()),
-                ).captured.first
-                as MessageSentEvent;
-
-        expect(captured.messageContent, 'Ola!');
+        expect(presenter.draft.value, 'Ola!');
+        verifyNever(() => conversationChannel.emitMessageSentEvent(any()));
       });
+    });
+
+    group('generateIcebreaker', () {
+      test('should not generate when chat has messages', () async {
+        presenter.chat.value = ChatFaker.fakeDto(
+          id: chatId,
+          recipient: RecipientFaker.fakeDto(id: 'recipient-id'),
+        );
+        presenter.messages.value = <MessageDto>[MessageFaker.fakeDto()];
+
+        await presenter.generateIcebreaker();
+
+        verifyNever(
+          () => profilingService.generateIcebreaker(
+            recipientOwnerId: any(named: 'recipientId'),
+          ),
+        );
+      });
+
+      test('should not generate when recipient id is empty', () async {
+        presenter.chat.value = ChatFaker.fakeDto(
+          id: chatId,
+          recipient: RecipientFaker.fakeDto(id: ''),
+        );
+
+        await presenter.generateIcebreaker();
+
+        verifyNever(
+          () => profilingService.generateIcebreaker(
+            recipientOwnerId: any(named: 'recipientId'),
+          ),
+        );
+      });
+
+      test(
+        'should set draft and hide chips on successful generation',
+        () async {
+          presenter.chat.value = ChatFaker.fakeDto(
+            id: chatId,
+            recipient: RecipientFaker.fakeDto(id: 'recipient-id'),
+          );
+          when(
+            () => profilingService.generateIcebreaker(
+              recipientOwnerId: 'recipient-id',
+            ),
+          ).thenAnswer(
+            (_) async => RestResponse<IcebreakerDto>(
+              body: const IcebreakerDto(content: 'Mensagem gerada'),
+            ),
+          );
+
+          await presenter.generateIcebreaker();
+
+          expect(presenter.draft.value, 'Mensagem gerada');
+          expect(presenter.hasGeneratedIcebreaker.value, isTrue);
+          expect(presenter.showSuggestionChips.value, isFalse);
+          expect(presenter.icebreakerErrorMessage.value, isNull);
+        },
+      );
+
+      test('should set inline error when generation fails', () async {
+        presenter.chat.value = ChatFaker.fakeDto(
+          id: chatId,
+          recipient: RecipientFaker.fakeDto(id: 'recipient-id'),
+        );
+        when(
+          () => profilingService.generateIcebreaker(
+            recipientOwnerId: 'recipient-id',
+          ),
+        ).thenAnswer(
+          (_) async => RestResponse<IcebreakerDto>(
+            statusCode: 500,
+            errorMessage: 'Erro ao gerar mensagem',
+          ),
+        );
+
+        await presenter.generateIcebreaker();
+
+        expect(presenter.draft.value, isEmpty);
+        expect(presenter.hasGeneratedIcebreaker.value, isFalse);
+        expect(
+          presenter.icebreakerErrorMessage.value,
+          'Erro ao gerar mensagem',
+        );
+      });
+
+      test(
+        'should reset loading and set generic error on unexpected throw',
+        () async {
+          presenter.chat.value = ChatFaker.fakeDto(
+            id: chatId,
+            recipient: RecipientFaker.fakeDto(id: 'recipient-id'),
+          );
+          when(
+            () => profilingService.generateIcebreaker(
+              recipientOwnerId: 'recipient-id',
+            ),
+          ).thenThrow(Exception('unexpected'));
+
+          await presenter.generateIcebreaker();
+
+          expect(presenter.isGeneratingIcebreaker.value, isFalse);
+          expect(
+            presenter.icebreakerErrorMessage.value,
+            'Nao foi possivel gerar sugestao agora.',
+          );
+        },
+      );
     });
 
     group('sendMessage with attachments', () {

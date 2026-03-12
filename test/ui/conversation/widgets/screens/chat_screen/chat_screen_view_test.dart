@@ -39,6 +39,9 @@ void main() {
   late Signal<String> draft;
   late Signal<String?> nextCursor;
   late Signal<String?> errorMessage;
+  late Signal<bool> isGeneratingIcebreaker;
+  late Signal<String?> icebreakerErrorMessage;
+  late Signal<bool> hasGeneratedIcebreaker;
   late Signal<bool> isRecipientOnline;
   late Signal<List<PendingAttachment>> pendingAttachments;
   late Signal<Map<String, AttachmentUploadStatus>> uploadStatusMap;
@@ -46,6 +49,8 @@ void main() {
   late Signal<bool> showEmptyState;
   late Signal<bool> canLoadMore;
   late Signal<bool> canSend;
+  late Signal<bool> showIcebreakerCta;
+  late Signal<bool> showSuggestionChips;
   late Signal<List<ChatDateSectionDto>> groupedMessages;
   late Signal<String> headerSubtitle;
 
@@ -84,6 +89,9 @@ void main() {
     draft = signal('');
     nextCursor = signal<String?>(null);
     errorMessage = signal<String?>(null);
+    isGeneratingIcebreaker = signal(false);
+    icebreakerErrorMessage = signal<String?>(null);
+    hasGeneratedIcebreaker = signal(false);
     isRecipientOnline = signal(false);
     pendingAttachments = signal<List<PendingAttachment>>(<PendingAttachment>[]);
     uploadStatusMap = signal<Map<String, AttachmentUploadStatus>>(
@@ -93,6 +101,8 @@ void main() {
     showEmptyState = signal(true);
     canLoadMore = signal(false);
     canSend = signal(false);
+    showIcebreakerCta = signal(true);
+    showSuggestionChips = signal(true);
     groupedMessages = signal<List<ChatDateSectionDto>>(<ChatDateSectionDto>[]);
     headerSubtitle = signal('');
 
@@ -108,6 +118,15 @@ void main() {
     when(() => presenter.draft).thenReturn(draft);
     when(() => presenter.nextCursor).thenReturn(nextCursor);
     when(() => presenter.errorMessage).thenReturn(errorMessage);
+    when(
+      () => presenter.isGeneratingIcebreaker,
+    ).thenReturn(isGeneratingIcebreaker);
+    when(
+      () => presenter.icebreakerErrorMessage,
+    ).thenReturn(icebreakerErrorMessage);
+    when(
+      () => presenter.hasGeneratedIcebreaker,
+    ).thenReturn(hasGeneratedIcebreaker);
     when(() => presenter.isRecipientOnline).thenReturn(isRecipientOnline);
     when(() => presenter.pendingAttachments).thenReturn(pendingAttachments);
     when(() => presenter.uploadStatusMap).thenReturn(uploadStatusMap);
@@ -115,6 +134,8 @@ void main() {
     when(() => presenter.showEmptyState).thenReturn(showEmptyState);
     when(() => presenter.canLoadMore).thenReturn(canLoadMore);
     when(() => presenter.canSend).thenReturn(canSend);
+    when(() => presenter.showIcebreakerCta).thenReturn(showIcebreakerCta);
+    when(() => presenter.showSuggestionChips).thenReturn(showSuggestionChips);
     when(() => presenter.groupedMessages).thenReturn(groupedMessages);
     when(() => presenter.headerSubtitle).thenReturn(headerSubtitle);
 
@@ -123,6 +144,7 @@ void main() {
     when(() => presenter.onDraftChanged(any())).thenReturn(null);
     when(() => presenter.sendMessage()).thenAnswer((_) async {});
     when(() => presenter.sendSuggestedMessage(any())).thenAnswer((_) async {});
+    when(() => presenter.generateIcebreaker()).thenAnswer((_) async {});
     when(() => presenter.loadMoreMessages()).thenAnswer((_) async {});
     when(() => presenter.loadInitialMessages()).thenAnswer((_) async {});
     when(() => presenter.connectChannel()).thenAnswer((_) async {});

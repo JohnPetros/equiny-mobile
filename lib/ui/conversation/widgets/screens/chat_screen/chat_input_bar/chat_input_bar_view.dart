@@ -77,6 +77,10 @@ class _ChatInputBarViewState extends State<ChatInputBarView> {
               Expanded(
                 child: TextField(
                   controller: _controller,
+                  keyboardType: TextInputType.multiline,
+                  textInputAction: TextInputAction.newline,
+                  minLines: 1,
+                  maxLines: 5,
                   onChanged: widget.onChanged,
                   decoration: const InputDecoration(
                     hintText: 'Digite uma mensagem',
