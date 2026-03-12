@@ -108,6 +108,14 @@ class _ChatScreenViewState extends ConsumerState<ChatScreenView> {
                 child: presenter.showEmptyState.value
                     ? ChatEmptyState(
                         onSuggestionTap: presenter.sendSuggestedMessage,
+                        onGenerateIcebreaker: presenter.generateIcebreaker,
+                        isGeneratingIcebreaker:
+                            presenter.isGeneratingIcebreaker.value,
+                        showIcebreakerCta: presenter.showIcebreakerCta.value,
+                        showSuggestionChips:
+                            presenter.showSuggestionChips.value,
+                        icebreakerErrorMessage:
+                            presenter.icebreakerErrorMessage.value,
                       )
                     : ChatMessagesList(
                         sections: presenter.groupedMessages.value,

@@ -3,8 +3,21 @@ import 'package:flutter/material.dart';
 
 class ChatEmptyStateView extends StatelessWidget {
   final Future<void> Function(String text) onSuggestionTap;
+  final Future<void> Function() onGenerateIcebreaker;
+  final bool isGeneratingIcebreaker;
+  final bool showIcebreakerCta;
+  final bool showSuggestionChips;
+  final String? icebreakerErrorMessage;
 
-  const ChatEmptyStateView({required this.onSuggestionTap, super.key});
+  const ChatEmptyStateView({
+    required this.onSuggestionTap,
+    required this.onGenerateIcebreaker,
+    required this.isGeneratingIcebreaker,
+    required this.showIcebreakerCta,
+    required this.showSuggestionChips,
+    required this.icebreakerErrorMessage,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -38,17 +51,55 @@ class ChatEmptyStateView extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(color: AppThemeColors.textSecondary),
             ),
-            const SizedBox(height: AppSpacing.md),
-            Wrap(
-              spacing: AppSpacing.xs,
-              runSpacing: AppSpacing.xs,
-              children: suggestions.map((String text) {
-                return ActionChip(
-                  label: Text(text),
-                  onPressed: () => onSuggestionTap(text),
-                );
-              }).toList(),
-            ),
+            if (showSuggestionChips) ...<Widget>[
+              const SizedBox(height: AppSpacing.md),
+              Wrap(
+                spacing: AppSpacing.xs,
+                runSpacing: AppSpacing.xs,
+                children: suggestions.map((String text) {
+                  return ActionChip(
+                    label: Text(text),
+                    onPressed: () => onSuggestionTap(text),
+                  );
+                }).toList(),
+              ),
+            ],
+            if (showIcebreakerCta) ...<Widget>[
+              const SizedBox(height: AppSpacing.md),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isGeneratingIcebreaker
+                      ? null
+                      : onGenerateIcebreaker,
+                  child: isGeneratingIcebreaker
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('Gerar mensagem quebra-gelo'),
+                            const SizedBox(width: AppSpacing.xxs),
+                            const Icon(Icons.auto_awesome),
+                          ],
+                        ),
+                ),
+              ),
+              if ((icebreakerErrorMessage ?? '').isNotEmpty) ...<Widget>[
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  icebreakerErrorMessage!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppThemeColors.error,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ],
           ],
         ),
       ),
