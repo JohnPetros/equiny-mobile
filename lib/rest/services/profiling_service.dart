@@ -187,16 +187,12 @@ class ProfilingService extends Service
 
   @override
   Future<RestResponse<IcebreakerDto>> generateIcebreaker({
-    required String senderId,
-    required String recipientId,
+    required String recipientOwnerId,
   }) async {
     super.setAuthHeader();
     final RestResponse<Json> response = await super.restClient.post(
       '/profiling/icebreaker',
-      body: <String, dynamic>{
-        'sender_id': senderId,
-        'recipient_id': recipientId,
-      },
+      body: <String, dynamic>{'recipient_owner_id': recipientOwnerId},
     );
 
     if (response.isFailure) {
@@ -206,7 +202,14 @@ class ProfilingService extends Service
       );
     }
 
-    return response.mapBody(IcebreakerSuggestionMapper.toDto);
+    try {
+      return response.mapBody(IcebreakerSuggestionMapper.toDto);
+    } catch (_) {
+      return RestResponse<IcebreakerDto>(
+        statusCode: response.statusCode,
+        errorMessage: 'Nao foi possivel processar a resposta do icebreaker.',
+      );
+    }
   }
 
   @override
