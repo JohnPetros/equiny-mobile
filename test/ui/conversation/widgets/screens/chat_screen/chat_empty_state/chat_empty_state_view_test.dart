@@ -4,18 +4,32 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   late List<String> tappedSuggestions;
+  var generateTapCount = 0;
 
   setUp(() {
     tappedSuggestions = <String>[];
+    generateTapCount = 0;
   });
 
-  Widget createWidget() {
+  Widget createWidget({
+    bool isGeneratingIcebreaker = false,
+    bool showIcebreakerCta = true,
+    bool showSuggestionChips = true,
+    String? icebreakerErrorMessage,
+  }) {
     return MaterialApp(
       home: Scaffold(
         body: ChatEmptyStateView(
           onSuggestionTap: (String text) async {
             tappedSuggestions.add(text);
           },
+          onGenerateIcebreaker: () async {
+            generateTapCount++;
+          },
+          isGeneratingIcebreaker: isGeneratingIcebreaker,
+          showIcebreakerCta: showIcebreakerCta,
+          showSuggestionChips: showSuggestionChips,
+          icebreakerErrorMessage: icebreakerErrorMessage,
         ),
       ),
     );
@@ -81,6 +95,52 @@ void main() {
         'Podemos falar sobre localizacao?',
         'Tem disponibilidade esta semana?',
       ]);
+    });
+
+    testWidgets('should render icebreaker button when enabled', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(createWidget());
+
+      expect(find.text('Gerar mensagem quebra-gelo'), findsOneWidget);
+    });
+
+    testWidgets('should hide chips when showSuggestionChips is false', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(createWidget(showSuggestionChips: false));
+
+      expect(find.byType(ActionChip), findsNothing);
+    });
+
+    testWidgets('should call onGenerateIcebreaker when button is tapped', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(createWidget());
+
+      await tester.tap(find.text('Gerar mensagem quebra-gelo'));
+      await tester.pump();
+
+      expect(generateTapCount, 1);
+    });
+
+    testWidgets('should disable button and show loading while generating', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(createWidget(isGeneratingIcebreaker: true));
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text('Gerar mensagem quebra-gelo'), findsNothing);
+    });
+
+    testWidgets('should show inline error message when provided', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        createWidget(icebreakerErrorMessage: 'Falha ao gerar sugestao'),
+      );
+
+      expect(find.text('Falha ao gerar sugestao'), findsOneWidget);
     });
   });
 }
