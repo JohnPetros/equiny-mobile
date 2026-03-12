@@ -130,7 +130,7 @@ Use frontmatter e hierarquia de cabeçalhos sem pular níveis.
 ---
 title: <Título claro>
 prd: <caminho para o PRD referente à spec, localizado um nível acima do diretório da spec>
-status: <em_progresso|concluido>
+status: <open|closed>
 last_updated_at: <YYYY-MM-DD>
 ---
 ```
