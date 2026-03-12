@@ -1,13 +1,13 @@
 ---
 title: Widget de Icebreaker com IA no Chat
 prd: documentation/features/profiling/icebreaker/prd.md
-status: concluido
+status: closed
 last_updated_at: 2026-03-12
 ---
 
 # 1. Objetivo
 
-Concluir o fluxo de `icebreaker` no estado vazio do `chat` para gerar uma primeira mensagem personalizada via `ProfilingService.generateIcebreaker`, preencher o `draft` do `ChatInputBar` para revisao manual e manter o envio real apenas quando o owner tocar em enviar. A solucao final centraliza o estado no `ChatScreenPresenter`, reutiliza apenas `senderId` e `recipientId` para a chamada HTTP e substitui o comportamento anterior dos chips estaticos, que enviavam a mensagem automaticamente, por preenchimento manual do campo. O CTA de `icebreaker` permanece disponivel enquanto o `chat` nao tiver nenhuma mensagem enviada de nenhum lado.
+Concluir o fluxo de `icebreaker` no estado vazio do `chat` para gerar uma primeira mensagem personalizada via `ProfilingService.generateIcebreaker`, preencher o `draft` do `ChatInputBar` para revisao manual e manter o envio real apenas quando o owner tocar em enviar. A solucao final centraliza o estado no `ChatScreenPresenter`, reutiliza apenas `recipientId` para a chamada HTTP e substitui o comportamento anterior dos chips estaticos, que enviavam a mensagem automaticamente, por preenchimento manual do campo. O CTA de `icebreaker` permanece disponivel enquanto o `chat` nao tiver nenhuma mensagem enviada de nenhum lado.
 
 # 2. Escopo
 
@@ -19,7 +19,7 @@ Concluir o fluxo de `icebreaker` no estado vazio do `chat` para gerar uma primei
 - Manter o CTA visivel enquanto `messages.isEmpty`, inclusive apos gerar sugestoes que ainda nao foram enviadas.
 - Ocultar os chips estaticos apos geracao bem-sucedida do `icebreaker`.
 - Alterar os chips estaticos para apenas preencher o `draft`, exigindo envio manual.
-- Resolver apenas `senderId` e `recipientId` no mobile para acionar a geracao do `icebreaker`.
+- Resolver apenas `recipientId` no mobile para acionar a geracao do `icebreaker`.
 - Implementar a chamada `REST` de `generateIcebreaker` com retorno tipado via `IcebreakerDto`, suportando modo `draft` antes do envio.
 
 ## 2.2 Out-of-scope
@@ -28,16 +28,16 @@ Concluir o fluxo de `icebreaker` no estado vazio do `chat` para gerar uma primei
 - Exibir multiplas sugestoes geradas por IA.
 - Persistir historico local das mensagens geradas e descartadas.
 - Alterar fluxo de `chat` com mensagens existentes.
-- Expandir cadastro/edicao de perfil do cavalo ou exigir contexto adicional alem de `senderId` e `recipientId` para a geracao.
+- Expandir cadastro/edicao de perfil do cavalo ou exigir contexto adicional alem de `recipientId` para a geracao.
 
 # 3. Requisitos
 
 ## 3.1 Funcionais
 
-- **RF-01:** exibir o CTA `Gerar mensagem quebra-gelo` somente quando `messages.isEmpty`, o `chat` estiver carregado e houver `senderId` e `recipientId` disponiveis.
-- **RF-02:** obter `senderId` a partir do owner autenticado ja persistido no app (`CacheKeys.ownerId`).
-- **RF-03:** obter `recipientId` a partir de `chat.recipient.id` carregado no `ChatScreenPresenter`.
-- **RF-04:** ao tocar no CTA, chamar `ProfilingService.generateIcebreaker` sempre que o `chat` continuar vazio e nao houver requisicao em andamento, enviando apenas `senderId` e `recipientId`.
+- **RF-01:** exibir o CTA `Gerar mensagem quebra-gelo` somente quando `messages.isEmpty`, o `chat` estiver carregado e houver `recipientId` disponivel.
+- **RF-02:** obter `recipientId` a partir de `chat.recipient.id` carregado no `ChatScreenPresenter`.
+- **RF-03:** nao depender de `senderId` para habilitar o CTA ou disparar a chamada de `icebreaker`.
+- **RF-04:** ao tocar no CTA, chamar `ProfilingService.generateIcebreaker` sempre que o `chat` continuar vazio e nao houver requisicao em andamento, enviando apenas `recipientId`.
 - **RF-05:** enquanto a geracao estiver em andamento, desabilitar o CTA e exibir indicador visual de `loading`.
 - **RF-06:** em sucesso, preencher `draft` com a mensagem retornada em `IcebreakerDto`, manter o texto editavel e nao enviar nada automaticamente.
 - **RF-07:** em sucesso, preencher `draft`, ocultar apenas os chips estaticos e manter o CTA visivel; o `chat` continua em estado vazio ate o owner enviar a mensagem.
@@ -65,11 +65,10 @@ Concluir o fluxo de `icebreaker` no estado vazio do `chat` para gerar uma primei
 - **`ChatScreenView`** (`lib/ui/conversation/widgets/screens/chat_screen/chat_screen_view.dart`) - ja liga `ChatEmptyState`, `ChatMessagesList` e `ChatInputBar`; precisa apenas repassar novos estados e callbacks.
 - **`ChatEmptyStateView`** (`lib/ui/conversation/widgets/screens/chat_screen/chat_empty_state/chat_empty_state_view.dart`) - hoje renderiza apenas titulo, copy e 3 chips estaticos; sera reutilizado para inserir CTA, `loading` e erro inline.
 - **`ChatInputBarView`** (`lib/ui/conversation/widgets/screens/chat_screen/chat_input_bar/chat_input_bar_view.dart`) - ja sincroniza `TextEditingController` com `draft`; o prefill do `icebreaker` deve refletir sem nova logica local.
-- **`CacheKeys`** (`lib/core/shared/constants/cache_keys.dart`) - ja expoe `ownerId`, que deve ser reutilizado como `senderId` da chamada de `icebreaker`.
 
 ## 4.2 Core (`lib/core/`)
 
-- **`ProfilingService`** (`lib/core/profiling/interfaces/profiling_service.dart`) - ja declara `generateIcebreaker` com `senderId` e `recipientId`; agora o contrato precisa apenas retornar `IcebreakerDto` para suportar o modo `draft`.
+- **`ProfilingService`** (`lib/core/profiling/interfaces/profiling_service.dart`) - declara `generateIcebreaker` com `recipientId`; o contrato precisa retornar `IcebreakerDto` para suportar o modo `draft`.
 - **`ConversationService`** (`lib/core/conversation/interfaces/conversation_service.dart`) - possui `fetchChats`, `fetchChat(recipientId)` e `fetchMessagesList`; o `ChatScreenPresenter` precisa garantir que `chat.recipient.id` esteja disponivel antes de habilitar o CTA.
 - **`RecipientDto`** (`lib/core/conversation/dtos/entities/recipient_dto.dart`) - ja contem `id`, suficiente para montar a chamada do `icebreaker`.
 
@@ -117,7 +116,7 @@ Concluir o fluxo de `icebreaker` no estado vazio do `chat` para gerar uma primei
 > Liste apenas arquivos existentes. Mudancas em arquivo novo ficam na secao 5.
 
 - **Arquivo:** `lib/ui/conversation/widgets/screens/chat_screen/chat_screen_presenter.dart`
-  - **Mudanca:** adicionar estado de `icebreaker` (`isGeneratingIcebreaker`, `icebreakerErrorMessage`, `hasGeneratedIcebreaker`), computeds de elegibilidade baseados em `messages.isEmpty` + disponibilidade de `senderId`/`recipientId`, e metodos como `generateIcebreaker()` e `prefillDraft(String text)`; trocar o fluxo dos chips de `sendSuggestedMessage` para preenchimento de `draft`.
+  - **Mudanca:** adicionar estado de `icebreaker` (`isGeneratingIcebreaker`, `icebreakerErrorMessage`, `hasGeneratedIcebreaker`), computeds de elegibilidade baseados em `messages.isEmpty` + disponibilidade de `recipientId`, e metodos como `generateIcebreaker()` e `prefillDraft(String text)`; trocar o fluxo dos chips de `sendSuggestedMessage` para preenchimento de `draft`.
   - **Justificativa:** centralizar a regra de negocio da feature e manter o envio manual como comportamento unico da thread.
   - **Camada:** `ui`
 
@@ -132,17 +131,17 @@ Concluir o fluxo de `icebreaker` no estado vazio do `chat` para gerar uma primei
   - **Camada:** `ui`
 
 - **Arquivo:** `lib/core/profiling/interfaces/profiling_service.dart`
-  - **Mudanca:** manter `generateIcebreaker` baseado em `senderId` e `recipientId`, ajustando o retorno para `RestResponse<IcebreakerDto>`.
-  - **Justificativa:** o servidor precisa apenas dos ids dos owners, e o mobile precisa do retorno tipado para preencher o input.
+  - **Mudanca:** manter `generateIcebreaker` baseado em `recipientId`, ajustando o retorno para `RestResponse<IcebreakerDto>`.
+  - **Justificativa:** o servidor precisa apenas do id do destinatario, e o mobile precisa do retorno tipado para preencher o input.
   - **Camada:** `core`
 
 - **Arquivo:** `lib/rest/services/profiling_service.dart`
-  - **Mudanca:** implementar `POST /profiling/icebreaker`, enviando apenas `senderId` e `recipientId`, mapear resposta com `IcebreakerSuggestionMapper` para `IcebreakerDto` e manter `auth header` via `Service.setAuthHeader()`.
+  - **Mudanca:** implementar `POST /profiling/icebreaker`, enviando apenas `recipientId`, mapear resposta com `IcebreakerSuggestionMapper` para `IcebreakerDto` e manter `auth header` via `Service.setAuthHeader()`.
   - **Justificativa:** materializar a integracao HTTP da feature na camada correta.
   - **Camada:** `rest`
 
 - **Arquivo:** `lib/ui/conversation/widgets/screens/chat_screen/chat_screen_presenter.dart`
-  - **Mudanca:** reutilizar `CacheKeys.ownerId` como `senderId` e `chat.value?.recipient.id` como `recipientId`, sem depender de novos contratos de `conversation`.
+  - **Mudanca:** reutilizar `chat.value?.recipient.id` como `recipientId`, sem depender de novos contratos de `conversation`.
   - **Justificativa:** a API do servidor nao precisa mais de contexto adicional para gerar o `icebreaker`.
   - **Camada:** `ui`
 
@@ -164,7 +163,7 @@ ChatScreenView
 Icebreaker flow:
 ChatEmptyStateView.onGenerateIcebreaker
   -> ChatScreenPresenter.generateIcebreaker()
-    -> ProfilingService.generateIcebreaker(senderId, recipientId)
+    -> ProfilingService.generateIcebreaker(recipientId)
       -> RestClient.post('/profiling/icebreaker')
         -> API
     -> draft = response.content (`IcebreakerDto`)
@@ -198,7 +197,6 @@ ChatScreen
 - `lib/ui/conversation/widgets/screens/chat_screen/chat_screen_presenter.dart` (fonte atual de estado da thread)
 - `lib/ui/conversation/widgets/screens/chat_screen/chat_empty_state/chat_empty_state_view.dart` (estado vazio atual a ser evoluido)
 - `lib/rest/services/profiling_service.dart` (base das integracoes `profiling`)
-- `lib/core/shared/constants/cache_keys.dart` (origem do `senderId` persistido)
 
 ## 8.4 Referencias de tela (quando houver)
 
