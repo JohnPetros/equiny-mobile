@@ -36,16 +36,22 @@ class _OnboardingStepLocationViewState
     _stateController.text = widget.form.control('state').value as String? ?? '';
     _cityController.text = widget.form.control('city').value as String? ?? '';
 
-    _stateController.addListener(_onStateChanged);
+    _cityController.addListener(_onCityChanged);
   }
 
-  void _onStateChanged() {
-    final String state = _stateController.text;
+  void _onStateInputChanged(String state) {
+    final String previousState =
+        widget.form.control('state').value as String? ?? '';
     widget.form.control('state').value = state;
 
-    if (state.isNotEmpty) {
-      ref.read(onboardingStepLocationPresenterProvider).loadCities(state);
+    if (state != previousState) {
+      _cityController.text = '';
+      widget.form.control('city').value = '';
     }
+  }
+
+  void _onCityChanged() {
+    widget.form.control('city').value = _cityController.text;
   }
 
   Future<void> _detectCurrentLocation(
@@ -75,6 +81,7 @@ class _OnboardingStepLocationViewState
 
   @override
   void dispose() {
+    _cityController.removeListener(_onCityChanged);
     _stateController.dispose();
     _cityController.dispose();
     super.dispose();
@@ -183,6 +190,7 @@ class _OnboardingStepLocationViewState
                           _stateController.text = value;
                           _stateController.selection =
                               fieldTextEditingController.selection;
+                          _onStateInputChanged(value);
                         },
                       );
                     },

@@ -5,6 +5,7 @@ import 'package:equiny/core/shared/constants/routes.dart';
 import 'package:equiny/core/shared/interfaces/cache_driver.dart';
 import 'package:equiny/core/shared/interfaces/navigation_driver.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
+import 'package:dio/dio.dart';
 import 'package:equiny/drivers/cache-driver/index.dart';
 import 'package:equiny/drivers/navigation-driver/index.dart';
 import 'package:equiny/rest/services.dart';
@@ -96,6 +97,26 @@ class SignInScreenPresenter {
     form.value.control('email').updateValue(normalizedEmail);
   }
 
+  Future<bool> testInternetWithCepApi() async {
+    try {
+      final Response<Map<String, dynamic>> response = await Dio()
+          .get<Map<String, dynamic>>(
+            'https://viacep.com.br/ws/01001000/json/',
+            options: Options(
+              sendTimeout: const Duration(seconds: 5),
+              receiveTimeout: const Duration(seconds: 5),
+            ),
+          );
+
+      print('response.statusCode: ${response.statusCode}');
+      print('response.data: ${response.data}');
+      final String? cep = response.data?['cep'] as String?;
+      return response.statusCode == 200 && cep != null && cep.isNotEmpty;
+    } on DioException {
+      return false;
+    }
+  }
+
   Future<void> submit() async {
     submitAttempted.value = true;
     generalError.value = null;
@@ -107,6 +128,14 @@ class SignInScreenPresenter {
 
     normalizeBeforeSubmit();
     isLoading.value = true;
+
+    final bool hasInternet = await testInternetWithCepApi();
+    if (!hasInternet) {
+      isLoading.value = false;
+      generalError.value =
+          'Sem internet no momento. Verifique sua conexao e tente novamente.';
+      return;
+    }
 
     final response = await _authService.signIn(
       accountEmail: form.value.control('email').value as String,

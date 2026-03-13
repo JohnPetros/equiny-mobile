@@ -1,5 +1,7 @@
 import 'package:equiny/core/profiling/dtos/structures/feed_horse_dto.dart';
+import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
 import 'package:equiny/core/storage/interfaces/file_storage_driver.dart';
+import 'package:equiny/ui/profiling/widgets/screens/feed_screen/feed_horse_card/feed_horse_distance_badge/index.dart';
 import 'package:equiny/ui/profiling/widgets/screens/feed_screen/feed_horse_card/feed_horse_card_gallery/index.dart';
 import 'package:equiny/ui/profiling/widgets/screens/feed_screen/feed_horse_card/feed_horse_card_presenter.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
@@ -12,6 +14,7 @@ class FeedHorseCardView extends StatefulWidget {
   final VoidCallback onLike;
   final VoidCallback onDislike;
   final VoidCallback onDetails;
+  final LocationDto? currentHorseLocation;
 
   const FeedHorseCardView({
     required this.horse,
@@ -19,6 +22,7 @@ class FeedHorseCardView extends StatefulWidget {
     required this.onLike,
     required this.onDislike,
     required this.onDetails,
+    required this.currentHorseLocation,
     super.key,
   });
 
@@ -124,6 +128,18 @@ class _FeedHorseCardViewState extends State<FeedHorseCardView> {
                                     icon: Icons.location_on_outlined,
                                     label: _locationLabel(),
                                   ),
+                                  if (widget.currentHorseLocation != null)
+                                    FeedHorseDistanceBadge(
+                                      originLatitude:
+                                          widget.currentHorseLocation!.latitude,
+                                      originLongitude: widget
+                                          .currentHorseLocation!
+                                          .longitude,
+                                      destinationLatitude:
+                                          widget.horse.location.latitude,
+                                      destinationLongitude:
+                                          widget.horse.location.longitude,
+                                    ),
                                   _StatPill(
                                     icon: Icons.straighten,
                                     label:

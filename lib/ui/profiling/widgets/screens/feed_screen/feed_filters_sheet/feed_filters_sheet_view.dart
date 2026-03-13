@@ -2,9 +2,8 @@ import 'package:equiny/core/profiling/dtos/structures/horse_feed_filters_dto.dar
 import 'package:equiny/rest/services.dart';
 import 'package:equiny/ui/profiling/widgets/screens/feed_screen/feed_filters_sheet/age_range_slider/index.dart';
 import 'package:equiny/ui/profiling/widgets/screens/feed_screen/feed_filters_sheet/breed_chip/index.dart';
-import 'package:equiny/ui/profiling/widgets/screens/feed_screen/feed_filters_sheet/city_dropdown/index.dart';
+import 'package:equiny/ui/profiling/widgets/screens/feed_screen/feed_filters_sheet/max_distance_slider/index.dart';
 import 'package:equiny/ui/profiling/widgets/screens/feed_screen/feed_filters_sheet/feed_filters_sheet_presenter.dart';
-import 'package:equiny/ui/profiling/widgets/screens/feed_screen/feed_filters_sheet/state_dropdown/index.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -86,7 +85,7 @@ class _FeedFiltersSheetViewState extends ConsumerState<FeedFiltersSheetView> {
   int _getActiveFiltersCount() {
     int count = 0;
     final filters = _presenter.toDto();
-    if (filters.location.city.isNotEmpty || filters.location.state.isNotEmpty) {
+    if (filters.maxDistanceInKm != 350) {
       count++;
     }
     if (filters.ageRange.min != 1 || filters.ageRange.max != 30) count++;
@@ -98,6 +97,12 @@ class _FeedFiltersSheetViewState extends ConsumerState<FeedFiltersSheetView> {
     final minAge = _presenter.form.value.control('minAge').value as int? ?? 2;
     final maxAge = _presenter.form.value.control('maxAge').value as int? ?? 12;
     return '$minAge - $maxAge anos';
+  }
+
+  String _getMaxDistanceLabel() {
+    final int value =
+        _presenter.form.value.control('maxDistanceInKm').value as int? ?? 350;
+    return '$value km';
   }
 
   @override
@@ -198,42 +203,37 @@ class _FeedFiltersSheetViewState extends ConsumerState<FeedFiltersSheetView> {
             ),
 
             const SizedBox(height: AppSpacing.lg),
-            const Text(
-              'Localização',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: AppSpacing.sm),
             Row(
-              children: <Widget>[
-                Expanded(
-                  child: StateDropdown(
-                    value:
-                        (_presenter.form.value.control('state').value
-                            as String?) ??
-                        '',
-                    onChanged: (value) {
-                      _presenter.form.value.control('state').updateValue(value);
-                      _presenter.form.value.control('city').updateValue('');
-                    },
-                  ),
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Distancia maxima',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
                 ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: CityDropdown(
-                    stateUF:
-                        (_presenter.form.value.control('state').value
-                            as String?) ??
-                        '',
-                    value:
-                        (_presenter.form.value.control('city').value
-                            as String?) ??
-                        '',
-                    onChanged: (value) => _presenter.form.value
-                        .control('city')
-                        .updateValue(value),
+                Text(
+                  _getMaxDistanceLabel(),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppThemeColors.primary,
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            MaxDistanceSlider(
+              value:
+                  (_presenter.form.value.control('maxDistanceInKm').value
+                              as int? ??
+                          350)
+                      .toDouble(),
+              onChanged: (double value) {
+                setState(() {
+                  _presenter.form.value
+                      .control('maxDistanceInKm')
+                      .updateValue(value.round());
+                });
+              },
             ),
 
             const SizedBox(height: AppSpacing.lg),

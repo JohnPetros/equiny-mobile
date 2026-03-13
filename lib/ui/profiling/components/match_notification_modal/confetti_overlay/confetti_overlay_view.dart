@@ -1,5 +1,5 @@
+import 'package:equiny/ui/global/widgets/lottie/index.dart' as global_lottie;
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 
 class ConfettiOverlayView extends StatelessWidget {
   const ConfettiOverlayView({super.key});
@@ -10,8 +10,8 @@ class ConfettiOverlayView extends StatelessWidget {
       child: SizedBox.expand(
         child: Opacity(
           opacity: 0.85,
-          child: Lottie.asset(
-            'assets/lotties/confetti.json',
+          child: global_lottie.Lottie(
+            assetPath: 'assets/lotties/confetti.lottie',
             fit: BoxFit.cover,
             repeat: false,
           ),

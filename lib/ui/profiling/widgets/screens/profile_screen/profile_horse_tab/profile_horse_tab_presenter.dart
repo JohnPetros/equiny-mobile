@@ -6,10 +6,13 @@ import 'package:equiny/core/profiling/dtos/structures/gallery_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/image_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
 import 'package:equiny/core/profiling/interfaces/profiling_service.dart';
+import 'package:equiny/core/shared/interfaces/geolocation_driver.dart';
+import 'package:equiny/core/shared/interfaces/location_service.dart';
 import 'package:equiny/core/shared/interfaces/media_picker_driver.dart';
 import 'package:equiny/core/storage/interfaces/file_storage_driver.dart';
 import 'package:equiny/core/storage/interfaces/file_storage_service.dart';
 import 'package:equiny/drivers/file-storage-driver/index.dart';
+import 'package:equiny/drivers/geolocation-driver/index.dart';
 import 'package:equiny/drivers/media-picker-driver/index.dart';
 import 'package:equiny/rest/services.dart';
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_horse_tab/profile_horse_active_section/profile_horse_active_section_presenter.dart';
@@ -36,6 +39,8 @@ class ProfileHorseTabPresenter {
   final FileStorageService _fileStorageService;
   final FileStorageDriver _fileStorageDriver;
   final MediaPickerDriver _mediaPickerDriver;
+  final GeolocationDriver _geolocationDriver;
+  final LocationService _locationService;
   final ProfileHorseFormSectionPresenter _formSectionPresenter;
   final ProfileHorseFeedReadinessSectionPresenter _feedReadinessPresenter;
   final ProfileHorseActiveSectionPresenter _activeSectionPresenter;
@@ -52,6 +57,14 @@ class ProfileHorseTabPresenter {
   final Signal<String?> generalError = signal(null);
   final Signal<String?> galleryError = signal(null);
   final Signal<DateTime?> lastSyncAt = signal(null);
+  final Signal<bool> isDetectingLocation = signal(false);
+  final Signal<String?> geolocationMessage = signal(null);
+  final Signal<bool> canOpenGeolocationSettings = signal(false);
+  final Signal<bool> shouldOpenAppSettings = signal(false);
+  final Signal<List<String>> states = signal(<String>[]);
+  final Signal<List<String>> cities = signal(<String>[]);
+  final Signal<bool> isLoadingStates = signal(false);
+  final Signal<bool> isLoadingCities = signal(false);
 
   final Signal<String?> _horseId = signal(null);
   final Signal<bool> _isHydratingForm = signal(false);
@@ -69,6 +82,8 @@ class ProfileHorseTabPresenter {
     this._fileStorageService,
     this._fileStorageDriver,
     this._mediaPickerDriver,
+    this._geolocationDriver,
+    this._locationService,
     this._formSectionPresenter,
     this._feedReadinessPresenter,
     this._activeSectionPresenter,
@@ -86,12 +101,178 @@ class ProfileHorseTabPresenter {
 
   void init() {
     _startHorseAutosaveListener();
+    unawaited(loadStates());
     unawaited(loadHorseProfile());
   }
 
   void dispose() {
     _horseFormSub?.cancel();
     _autosaveDebounce?.cancel();
+  }
+
+  Future<void> loadStates() async {
+    isLoadingStates.value = true;
+    try {
+      final response = await _locationService.fetchStates();
+      if (response.isSuccessful) {
+        states.value = response.body;
+      }
+    } catch (_) {
+      states.value = <String>[];
+    } finally {
+      isLoadingStates.value = false;
+    }
+  }
+
+  Future<void> loadCities(String state) async {
+    final String normalizedState = state.trim();
+    if (normalizedState.isEmpty) {
+      cities.value = <String>[];
+      return;
+    }
+
+    isLoadingCities.value = true;
+    try {
+      final response = await _locationService.fetchCities(normalizedState);
+      if (response.isSuccessful) {
+        cities.value = response.body;
+      } else {
+        cities.value = <String>[];
+      }
+    } catch (_) {
+      cities.value = <String>[];
+    } finally {
+      isLoadingCities.value = false;
+    }
+  }
+
+  Future<void> setStateAndReloadCities(String state) async {
+    final String normalizedState = state.trim();
+    final String currentState =
+        (horseForm.value.control('state').value as String? ?? '').trim();
+    horseForm.value.control('state').value = normalizedState;
+    if (normalizedState != currentState) {
+      horseForm.value.control('city').value = '';
+      horseForm.value.control('latitude').value = 0.0;
+      horseForm.value.control('longitude').value = 0.0;
+    }
+    await loadCities(normalizedState);
+    await _refreshCoordinatesFromSelectedLocation();
+  }
+
+  Future<void> setCityAndRecalculateCoordinates(String city) async {
+    horseForm.value.control('city').value = city.trim();
+    await _refreshCoordinatesFromSelectedLocation();
+  }
+
+  Future<void> _refreshCoordinatesFromSelectedLocation() async {
+    final String city =
+        (horseForm.value.control('city').value as String? ?? '').trim();
+    final String state =
+        (horseForm.value.control('state').value as String? ?? '').trim();
+
+    if (city.isEmpty || state.isEmpty) {
+      return;
+    }
+
+    final LocationDto? resolved = await _geolocationDriver.resolveCoordinates(
+      city: city,
+      state: state,
+    );
+    if (resolved == null) {
+      return;
+    }
+
+    horseForm.value.control('latitude').value = resolved.latitude;
+    horseForm.value.control('longitude').value = resolved.longitude;
+  }
+
+  Future<void> detectAndApplyCurrentLocation() async {
+    if (isDetectingLocation.value) {
+      return;
+    }
+
+    isDetectingLocation.value = true;
+    geolocationMessage.value = null;
+    canOpenGeolocationSettings.value = false;
+    shouldOpenAppSettings.value = false;
+
+    try {
+      final LocationDto location = await _geolocationDriver
+          .detectCurrentLocation();
+
+      horseForm.value.control('state').value = location.state;
+      await loadCities(location.state);
+      horseForm.value.control('city').value = location.city;
+      horseForm.value.control('latitude').value = location.latitude;
+      horseForm.value.control('longitude').value = location.longitude;
+
+      geolocationMessage.value =
+          'Localizacao detectada. Confira e ajuste se necessario.';
+    } on GeolocationFailure catch (error) {
+      _handleGeolocationFailure(error.reason);
+    } catch (_) {
+      geolocationMessage.value =
+          'Nao foi possivel detectar sua localizacao agora. Tente novamente.';
+      canOpenGeolocationSettings.value = false;
+      shouldOpenAppSettings.value = false;
+    } finally {
+      isDetectingLocation.value = false;
+    }
+  }
+
+  Future<void> openRelevantGeolocationSettings() async {
+    if (!canOpenGeolocationSettings.value) {
+      return;
+    }
+
+    if (shouldOpenAppSettings.value) {
+      await _geolocationDriver.openAppSettings();
+      return;
+    }
+
+    await _geolocationDriver.openLocationSettings();
+  }
+
+  void _handleGeolocationFailure(GeolocationFailureReason reason) {
+    switch (reason) {
+      case GeolocationFailureReason.serviceDisabled:
+        geolocationMessage.value =
+            'Ative o servico de localizacao para atualizar cidade e estado.';
+        canOpenGeolocationSettings.value = true;
+        shouldOpenAppSettings.value = false;
+        break;
+      case GeolocationFailureReason.permissionDenied:
+        geolocationMessage.value =
+            'Permissao de localizacao negada. Voce pode tentar novamente.';
+        canOpenGeolocationSettings.value = false;
+        shouldOpenAppSettings.value = false;
+        break;
+      case GeolocationFailureReason.permissionDeniedForever:
+        geolocationMessage.value =
+            'Permissao de localizacao bloqueada. Abra as configuracoes do app para liberar o acesso.';
+        canOpenGeolocationSettings.value = true;
+        shouldOpenAppSettings.value = true;
+        break;
+      case GeolocationFailureReason.locationUnavailable:
+        geolocationMessage.value =
+            'Nao foi possivel obter sua posicao atual. Tente novamente em instantes.';
+        canOpenGeolocationSettings.value = false;
+        shouldOpenAppSettings.value = false;
+        break;
+      case GeolocationFailureReason.reverseGeocodingFailed:
+        geolocationMessage.value =
+            'Localizacao obtida, mas nao foi possivel identificar cidade e estado automaticamente.';
+        canOpenGeolocationSettings.value = false;
+        shouldOpenAppSettings.value = false;
+        break;
+      case GeolocationFailureReason.unknown:
+        geolocationMessage.value =
+            'Nao foi possivel detectar sua localizacao agora. Tente novamente.';
+        canOpenGeolocationSettings.value = false;
+        shouldOpenAppSettings.value = false;
+        break;
+    }
   }
 
   Future<void> loadHorseProfile() async {
@@ -146,12 +327,18 @@ class ProfileHorseTabPresenter {
         'height': horse.height,
         'city': horse.location.city,
         'state': horse.location.state,
+        'latitude': horse.location.latitude,
+        'longitude': horse.location.longitude,
         'description': horse.description,
       },
       updateParent: false,
       emitEvent: false,
     );
     final String horseId = _horseId.value ?? '';
+    final String horseState = horse.location.state.trim();
+    if (horseState.isNotEmpty) {
+      unawaited(loadCities(horseState));
+    }
     if (horseId.isNotEmpty) {
       final HorseDto hydratedHorse = _buildHorseFromForm(horseId: horseId);
       _lastSyncedHorseSignature = _buildHorseSignature(hydratedHorse);
@@ -234,9 +421,9 @@ class ProfileHorseTabPresenter {
       height: horseForm.value.control('height').value as double? ?? 0,
       location: LocationDto(
         city: (horseForm.value.control('city').value as String? ?? '').trim(),
-        state: (horseForm.value.control('state').value as String? ?? '')
-            .trim()
-            .toUpperCase(),
+        state: (horseForm.value.control('state').value as String? ?? '').trim(),
+        latitude: horseForm.value.control('latitude').value as double? ?? 0,
+        longitude: horseForm.value.control('longitude').value as double? ?? 0,
       ),
       description:
           (horseForm.value.control('description').value as String? ?? '')
@@ -269,6 +456,8 @@ class ProfileHorseTabPresenter {
       horse.height,
       horse.location.city,
       horse.location.state,
+      horse.location.latitude,
+      horse.location.longitude,
       horse.description,
       horse.isActive,
     ].join('|');
@@ -403,6 +592,8 @@ final profileHorseTabPresenterProvider =
         ref.watch(fileStorageServiceProvider),
         ref.watch(fileStorageDriverProvider),
         ref.watch(mediaPickerDriverProvider),
+        ref.watch(geolocationDriverProvider),
+        ref.watch(locationServiceProvider),
         ProfileHorseFormSectionPresenter(),
         ProfileHorseFeedReadinessSectionPresenter(),
         ProfileHorseActiveSectionPresenter(),

@@ -1,5 +1,6 @@
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_horse_tab/profile_horse_form_section/field_label/index.dart';
 import 'package:equiny/ui/profiling/widgets/screens/profile_screen/profile_horse_tab/profile_horse_form_section/sex_button/index.dart';
+import 'package:equiny/ui/profiling/widgets/screens/onboarding_screen/onboarding_step_location/location_autofill_cta/index.dart';
 import 'package:equiny/ui/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:reactive_forms/reactive_forms.dart';
@@ -25,7 +26,32 @@ const List<DropdownMenuItem<String>> _breedOptions = <DropdownMenuItem<String>>[
 ];
 
 class ProfileHorseFormSectionView extends StatelessWidget {
-  const ProfileHorseFormSectionView({super.key});
+  final List<String> states;
+  final List<String> cities;
+  final bool isLoadingStates;
+  final bool isLoadingCities;
+  final bool isDetectingLocation;
+  final String? geolocationMessage;
+  final bool canOpenGeolocationSettings;
+  final ValueChanged<String> onStateChanged;
+  final ValueChanged<String> onCityChanged;
+  final VoidCallback onTapDetectLocation;
+  final VoidCallback onTapOpenGeolocationSettings;
+
+  const ProfileHorseFormSectionView({
+    required this.states,
+    required this.cities,
+    required this.isLoadingStates,
+    required this.isLoadingCities,
+    required this.isDetectingLocation,
+    required this.geolocationMessage,
+    required this.canOpenGeolocationSettings,
+    required this.onStateChanged,
+    required this.onCityChanged,
+    required this.onTapDetectLocation,
+    required this.onTapOpenGeolocationSettings,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -244,20 +270,100 @@ class ProfileHorseFormSectionView extends StatelessWidget {
           Row(
             children: <Widget>[
               Expanded(
-                child: ReactiveTextField<String>(
+                child: ReactiveDropdownField<String>(
                   formControlName: 'city',
-                  decoration: _pillDecoration(hintText: 'Cidade'),
+                  isExpanded: true,
+                  items: cities
+                      .map(
+                        (String city) => DropdownMenuItem<String>(
+                          value: city,
+                          child: Text(city),
+                        ),
+                      )
+                      .toList(),
+                  decoration: _pillDecoration(
+                    hintText: isLoadingCities ? 'Carregando...' : 'Cidade',
+                    suffixIcon: isLoadingCities
+                        ? const Padding(
+                            padding: EdgeInsets.all(14),
+                            child: SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : const Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: AppThemeColors.textSecondary,
+                          ),
+                  ),
+                  onChanged: (control) {
+                    final String selectedCity = control.value ?? '';
+                    onCityChanged(selectedCity);
+                  },
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: ReactiveTextField<String>(
-                  formControlName: 'state',
-                  decoration: _pillDecoration(hintText: 'Estado'),
-                  textCapitalization: TextCapitalization.words,
+                child: ReactiveValueListenableBuilder<String>(
+                  formControlName: 'city',
+                  builder:
+                      (
+                        BuildContext context,
+                        AbstractControl<String> cityControl,
+                        Widget? child,
+                      ) {
+                        return ReactiveDropdownField<String>(
+                          formControlName: 'state',
+                          isExpanded: true,
+                          items: states
+                              .map(
+                                (String state) => DropdownMenuItem<String>(
+                                  value: state,
+                                  child: Text(state),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (control) {
+                            final String selectedState = control.value ?? '';
+                            onStateChanged(selectedState);
+                            if (selectedState.isNotEmpty &&
+                                cityControl.value?.isNotEmpty == true) {
+                              cityControl.value = '';
+                            }
+                          },
+                          decoration: _pillDecoration(
+                            hintText:
+                                isLoadingStates ? 'Carregando...' : 'Estado',
+                            suffixIcon: isLoadingStates
+                                ? const Padding(
+                                    padding: EdgeInsets.all(14),
+                                    child: SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    color: AppThemeColors.textSecondary,
+                                  ),
+                          ),
+                        );
+                      },
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          LocationAutofillCta(
+            isLoading: isDetectingLocation,
+            message: geolocationMessage,
+            showSettingsAction: canOpenGeolocationSettings,
+            onTapDetect: onTapDetectLocation,
+            onTapOpenSettings: onTapOpenGeolocationSettings,
           ),
           const SizedBox(height: AppSpacing.sm),
           ReactiveTextField<String>(

@@ -1,6 +1,5 @@
 import 'package:equiny/core/profiling/dtos/structures/age_range_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/horse_feed_filters_dto.dart';
-import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 import 'package:signals/signals.dart';
 
@@ -22,11 +21,9 @@ class FeedFiltersSheetPresenter {
       if (selectedBreeds.value.isNotEmpty) {
         count += 1;
       }
-      final String city = (form.value.control('city').value as String? ?? '')
-          .trim();
-      final String state = (form.value.control('state').value as String? ?? '')
-          .trim();
-      if (city.isNotEmpty || state.isNotEmpty) {
+      final int maxDistanceInKm =
+          form.value.control('maxDistanceInKm').value as int? ?? 350;
+      if (maxDistanceInKm != 350) {
         count += 1;
       }
       final int minAge = form.value.control('minAge').value as int? ?? 1;
@@ -49,8 +46,14 @@ class FeedFiltersSheetPresenter {
         value: initialFilters.ageRange.max,
         validators: <Validator<dynamic>>[Validators.required],
       ),
-      'city': FormControl<String>(value: initialFilters.location.city),
-      'state': FormControl<String>(value: initialFilters.location.state),
+      'maxDistanceInKm': FormControl<int>(
+        value: initialFilters.maxDistanceInKm,
+        validators: <Validator<dynamic>>[
+          Validators.required,
+          Validators.min(25),
+          Validators.max(500),
+        ],
+      ),
     });
   }
 
@@ -69,12 +72,8 @@ class FeedFiltersSheetPresenter {
         min: form.value.control('minAge').value as int? ?? 1,
         max: form.value.control('maxAge').value as int? ?? 30,
       ),
-      location: LocationDto(
-        city: (form.value.control('city').value as String? ?? '').trim(),
-        state: (form.value.control('state').value as String? ?? '')
-            .trim()
-            .toUpperCase(),
-      ),
+      maxDistanceInKm:
+          form.value.control('maxDistanceInKm').value as int? ?? 350,
       limit: 10,
     );
   }
@@ -84,8 +83,7 @@ class FeedFiltersSheetPresenter {
       'sex': filters.sex,
       'minAge': filters.ageRange.min,
       'maxAge': filters.ageRange.max,
-      'city': filters.location.city,
-      'state': filters.location.state,
+      'maxDistanceInKm': filters.maxDistanceInKm,
     });
     selectedBreeds.value = <String>[...filters.breeds];
   }

@@ -82,6 +82,8 @@ class OnboardingStepLocationPresenter {
       form.control('state').value = location.state;
       await loadCities(location.state);
       form.control('city').value = location.city;
+      form.control('latitude').value = location.latitude;
+      form.control('longitude').value = location.longitude;
 
       geolocationMessage.value =
           'Localizacao detectada. Confira e ajuste se necessario.';

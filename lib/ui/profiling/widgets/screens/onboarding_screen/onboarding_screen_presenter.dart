@@ -169,6 +169,20 @@ class OnboardingScreenPresenter {
           Validators.maxLength(60),
         ],
       ),
+      'latitude': FormControl<double>(
+        validators: <Validator<dynamic>>[
+          Validators.required,
+          Validators.min(-90),
+          Validators.max(90),
+        ],
+      ),
+      'longitude': FormControl<double>(
+        validators: <Validator<dynamic>>[
+          Validators.required,
+          Validators.min(-180),
+          Validators.max(180),
+        ],
+      ),
     });
   }
 
@@ -288,9 +302,9 @@ class OnboardingScreenPresenter {
         height: form.value.control('height').value as double? ?? 0,
         location: LocationDto(
           city: (form.value.control('city').value as String? ?? '').trim(),
-          state: (form.value.control('state').value as String? ?? '')
-              .trim()
-              .toUpperCase(),
+          state: (form.value.control('state').value as String? ?? '').trim(),
+          latitude: form.value.control('latitude').value as double? ?? 0,
+          longitude: form.value.control('longitude').value as double? ?? 0,
         ),
       );
 
@@ -384,7 +398,7 @@ class OnboardingScreenPresenter {
       case 4:
         return <String>['height'];
       case 5:
-        return <String>['city', 'state'];
+        return <String>['city', 'state', 'latitude', 'longitude'];
       case 6:
         return <String>[];
       default:

@@ -19,7 +19,18 @@ class ProfileHorseTabView extends StatelessWidget {
   final List<String> feedReadinessChecklist;
   final String? horseErrorMessage;
   final String? galleryErrorMessage;
+  final bool isDetectingLocation;
+  final List<String> states;
+  final List<String> cities;
+  final bool isLoadingStates;
+  final bool isLoadingCities;
+  final String? geolocationMessage;
+  final bool canOpenGeolocationSettings;
+  final ValueChanged<String> onStateChanged;
+  final ValueChanged<String> onCityChanged;
   final VoidCallback onAddImages;
+  final VoidCallback onDetectLocation;
+  final VoidCallback onOpenGeolocationSettings;
   final void Function(ImageDto image) onSetPrimary;
   final void Function(ImageDto image) onRemoveImage;
   final VoidCallback onRetryGallerySync;
@@ -36,7 +47,18 @@ class ProfileHorseTabView extends StatelessWidget {
     required this.feedReadinessChecklist,
     required this.horseErrorMessage,
     required this.galleryErrorMessage,
+    required this.isDetectingLocation,
+    required this.states,
+    required this.cities,
+    required this.isLoadingStates,
+    required this.isLoadingCities,
+    required this.geolocationMessage,
+    required this.canOpenGeolocationSettings,
+    required this.onStateChanged,
+    required this.onCityChanged,
     required this.onAddImages,
+    required this.onDetectLocation,
+    required this.onOpenGeolocationSettings,
     required this.onSetPrimary,
     required this.onRemoveImage,
     required this.onRetryGallerySync,
@@ -78,7 +100,19 @@ class ProfileHorseTabView extends StatelessWidget {
               ),
             ],
             const SizedBox(height: AppSpacing.md),
-            const ProfileHorseFormSection(),
+            ProfileHorseFormSection(
+              states: states,
+              cities: cities,
+              isLoadingStates: isLoadingStates,
+              isLoadingCities: isLoadingCities,
+              isDetectingLocation: isDetectingLocation,
+              geolocationMessage: geolocationMessage,
+              canOpenGeolocationSettings: canOpenGeolocationSettings,
+              onStateChanged: onStateChanged,
+              onCityChanged: onCityChanged,
+              onTapDetectLocation: onDetectLocation,
+              onTapOpenGeolocationSettings: onOpenGeolocationSettings,
+            ),
             const SizedBox(height: AppSpacing.md),
             ProfileHorseFeedReadinessSection(
               feedReadinessChecklist: feedReadinessChecklist,

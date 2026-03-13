@@ -101,8 +101,30 @@ class ProfileScreenView extends ConsumerWidget {
                                   horseTabPresenter.generalError.value,
                               galleryErrorMessage:
                                   horseTabPresenter.galleryError.value,
+                              isDetectingLocation:
+                                  horseTabPresenter.isDetectingLocation.value,
+                              states: horseTabPresenter.states.value,
+                              cities: horseTabPresenter.cities.value,
+                              isLoadingStates:
+                                  horseTabPresenter.isLoadingStates.value,
+                              isLoadingCities:
+                                  horseTabPresenter.isLoadingCities.value,
+                              geolocationMessage:
+                                  horseTabPresenter.geolocationMessage.value,
+                              canOpenGeolocationSettings: horseTabPresenter
+                                  .canOpenGeolocationSettings
+                                  .value,
+                              onStateChanged:
+                                  horseTabPresenter.setStateAndReloadCities,
+                              onCityChanged:
+                                  horseTabPresenter
+                                      .setCityAndRecalculateCoordinates,
                               onAddImages:
                                   horseTabPresenter.pickAndUploadImages,
+                              onDetectLocation: horseTabPresenter
+                                  .detectAndApplyCurrentLocation,
+                              onOpenGeolocationSettings: horseTabPresenter
+                                  .openRelevantGeolocationSettings,
                               onSetPrimary: horseTabPresenter.setPrimaryImage,
                               onRemoveImage: horseTabPresenter.removeImage,
                               onRetryGallerySync: () =>

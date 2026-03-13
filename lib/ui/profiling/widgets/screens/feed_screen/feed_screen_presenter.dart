@@ -30,6 +30,7 @@ class FeedScreenPresenter {
   final Signal<int> currentIndex = signal(0);
   final Signal<String> nextCursor = signal('');
   final Signal<String?> currentHorseId = signal(null);
+  final Signal<LocationDto?> currentHorseLocation = signal(null);
   final Signal<bool> isLoadingInitial = signal(false);
   final Signal<bool> isLoadingMore = signal(false);
   final Signal<bool> isApplyingFilters = signal(false);
@@ -69,8 +70,7 @@ class FeedScreenPresenter {
       if (value.breeds.isNotEmpty) {
         count += 1;
       }
-      if (value.location.city.trim().isNotEmpty ||
-          value.location.state.trim().isNotEmpty) {
+      if (value.maxDistanceInKm != 50) {
         count += 1;
       }
       if (value.ageRange.min != 1 || value.ageRange.max != 30) {
@@ -99,6 +99,7 @@ class FeedScreenPresenter {
     blockedMessage.value = null;
     nextCursor.value = '';
     currentIndex.value = 0;
+    currentHorseLocation.value = null;
 
     final horseResponse = await _profilingService.fetchOwnerHorses();
     if (horseResponse.isFailure) {
@@ -124,6 +125,7 @@ class FeedScreenPresenter {
     }
 
     currentHorseId.value = horseId;
+    currentHorseLocation.value = horse.location;
 
     if (horse.name.trim().isEmpty ||
         horse.sex.trim().isEmpty ||
@@ -266,7 +268,7 @@ class FeedScreenPresenter {
       sex: value.sex,
       breeds: value.breeds,
       ageRange: value.ageRange,
-      location: value.location,
+      maxDistanceInKm: value.maxDistanceInKm,
       limit: value.limit,
       cursor: nextCursor.value,
     );
@@ -288,12 +290,21 @@ class FeedScreenPresenter {
       sex: _oppositeSex(horse.sex),
       breeds: const <String>[],
       ageRange: const AgeRangeDto(min: 1, max: 30),
-      location: LocationDto(
-        city: horse.location.city,
-        state: horse.location.state,
-      ),
+      maxDistanceInKm: 350,
       limit: 10,
     );
+  }
+
+  int _toInt(dynamic value) {
+    if (value is int) {
+      return value;
+    }
+
+    if (value is num) {
+      return value.toInt();
+    }
+
+    return int.tryParse(value?.toString() ?? '') ?? 350;
   }
 
   String _oppositeSex(String sex) {
@@ -328,10 +339,7 @@ class FeedScreenPresenter {
               int.tryParse(raw['ageMax']?.toString() ?? '') ??
               fallback.ageRange.max,
         ),
-        location: LocationDto(
-          city: raw['city']?.toString() ?? fallback.location.city,
-          state: raw['state']?.toString() ?? fallback.location.state,
-        ),
+        maxDistanceInKm: _toInt(raw['maxDistanceInKm']),
         cursor: null,
         limit: 10,
       );
@@ -346,8 +354,7 @@ class FeedScreenPresenter {
       'breeds': value.breeds,
       'ageMin': value.ageRange.min,
       'ageMax': value.ageRange.max,
-      'city': value.location.city,
-      'state': value.location.state,
+      'maxDistanceInKm': value.maxDistanceInKm,
     };
 
     await _cacheDriver.set(CacheKeys.feedFilters, jsonEncode(payload));

@@ -42,6 +42,20 @@ class ProfileHorseFormSectionPresenter {
           Validators.maxLength(60),
         ],
       ),
+      'latitude': FormControl<double>(
+        validators: <Validator<dynamic>>[
+          Validators.required,
+          Validators.min(-90),
+          Validators.max(90),
+        ],
+      ),
+      'longitude': FormControl<double>(
+        validators: <Validator<dynamic>>[
+          Validators.required,
+          Validators.min(-180),
+          Validators.max(180),
+        ],
+      ),
       'description': FormControl<String>(),
     });
   }
