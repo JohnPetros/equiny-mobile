@@ -29,6 +29,7 @@ Entregar a primeira iteracao da tela de perfil com foco na tab `Cavalo`, permiti
 - A tela deve exibir estrutura com abas `Cavalo` e `Dono` conforme referencia visual do Stitch.
 - Ao abrir a tab `Cavalo`, o app deve hidratar formulario e galeria com dados vindos da API.
 - Campos do cavalo devem permitir edicao de `nome`, `sexo`, `nascimento/idade`, `raca`, `altura`, `localizacao` e `descricao` (quando suportado pelo contrato atual).
+- A secao de localizacao da tab `Cavalo` deve expor CTA de geolocalizacao para preencher `cidade`, `estado`, `latitude` e `longitude` automaticamente.
 - Ao alterar qualquer dado de `HorseDto`, o presenter deve acionar `ProfilingService.updateHorse` com `debounce` curto, validacao previa e deduplicacao de payload para evitar chamadas redundantes.
 - A galeria deve suportar adicionar, remover e reordenar imagens para definir a principal, respeitando maximo de 6.
 - Durante upload de imagens e sincronizacao da galeria, a UI deve exibir skeleton loading nos slots de imagem.

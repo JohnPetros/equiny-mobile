@@ -50,7 +50,7 @@ Implementar o fluxo de onboarding obrigatorio do primeiro cavalo no app mobile e
 
 ## 4.2 Core (`lib/core/`)
 - **`HorseDto`** (`lib/core/profiling/dtos/entities/horse_dto.dart`) - DTO com campos necessarios do cavalo para onboarding.
-- **`LocationDto`** (`lib/core/profiling/dtos/structures/location_dto.dart`) - cidade/estado para payload do cavalo.
+- **`LocationDto`** (`lib/core/profiling/dtos/structures/location_dto.dart`) - cidade/estado para payload do cavalo, com `latitude` e `longitude` obrigatorias.
 - **`ImageDto`** (`lib/core/profiling/dtos/structures/image_dto.dart`) - metadados basicos de imagem.
 - **`GalleryDto`** (`lib/core/profiling/dtos/structures/gallery_dto.dart`) - contrato de galeria existente para evolucao.
 - **`ProfilingService`** (`lib/core/profiling/interfaces/profiling_service.dart`) - contrato para criar cavalo/galeria.

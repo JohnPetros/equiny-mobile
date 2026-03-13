@@ -51,7 +51,7 @@ Implementar preenchimento assistido de `cidade` e `estado` no passo de localizac
 - **`OnboardingScreenPresenter`** (`lib/ui/profiling/widgets/screens/onboarding_screen/onboarding_screen_presenter.dart`) - controla validacao do passo (`city` e `state`) e envio final do onboarding.
 
 ## 4.2 Core (`lib/core/`)
-- **`LocationDto`** (`lib/core/profiling/dtos/structures/location_dto.dart`) - contrato de `cidade` e `estado` usado no onboarding.
+- **`LocationDto`** (`lib/core/profiling/dtos/structures/location_dto.dart`) - contrato de `cidade` e `estado`, com `latitude`/`longitude` obrigatorios no onboarding.
 - **`LocationService`** (`lib/core/shared/interfaces/location_service.dart`) - contrato de busca de estados e cidades.
 - **`RestResponse`** (`lib/core/shared/responses/rest_response.dart`) - padrao de resposta usado na camada de service.
 

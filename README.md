@@ -97,4 +97,3 @@ O projeto utiliza `flutter_test`, `mocktail` e `network_image_mock` para testes 
 ```bash
 flutter test
 ```
-

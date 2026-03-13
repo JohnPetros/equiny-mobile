@@ -14,7 +14,7 @@ Entregar a primeira versao funcional da `FeedScreen` no `equiny_mobile`, substit
 - Substituir o placeholder de `lib/ui/feed/widgets/screens/feed_screen/feed_screen_view.dart` por tela de feed funcional.
 - Implementar `Presenter` da feed para orquestrar carregamento inicial, filtros, paginação por cursor e controle do card atual.
 - Implementar consumo do endpoint de feed no `ProfilingService` da camada `rest`, com mapeamento para DTO dedicado de item de feed.
-- Implementar painel/modal de filtros com `idade`, `raca` (multi-select) e `localizacao`, incluindo `Aplicar` e `Limpar`.
+- Implementar painel/modal de filtros com `idade`, `raca` (multi-select) e `distancia maxima (km)`, incluindo `Aplicar` e `Limpar`.
 - Persistir filtros da feed em sessao via `CacheDriver` (chave dedicada em `CacheKeys`).
 - Implementar registro de decisao de swipe (`like`/`dislike`) via `POST /matching/swipes` usando os contratos novos da camada `core/matching`.
 - Implementar tela de detalhe do cavalo aberta a partir do card, preservando continuidade do fluxo ao voltar para o feed.
@@ -30,7 +30,7 @@ Entregar a primeira versao funcional da `FeedScreen` no `equiny_mobile`, substit
 
 ## 3.1 Funcionais
 - A `FeedScreen` deve carregar cards de cavalos a partir do endpoint de feed e renderizar informacoes minimas: foto principal, nome, idade, sexo, localizacao, altura e raca.
-- O carregamento inicial deve usar filtros base derivados do cavalo do usuario (sexo complementar, localizacao e faixa de idade padrao).
+- O carregamento inicial deve usar filtros base derivados do cavalo do usuario (sexo complementar, distancia maxima padrao e faixa de idade padrao).
 - A feed deve suportar paginacao por `cursor`, carregando proxima pagina conforme o usuario avancar nos cards.
 - A acao de `like/dislike` deve chamar `POST /matching/swipes` com `from_horse_id` e `to_horse_id`, removendo o card atual da pilha apenas em sucesso.
 - O painel de filtros deve permitir editar filtros, aplicar alteracoes com recarga da feed e limpar para o padrao.
@@ -61,7 +61,7 @@ Entregar a primeira versao funcional da `FeedScreen` no `equiny_mobile`, substit
 - **`ProfilingService`** (`lib/core/profiling/interfaces/profiling_service.dart`) - contrato com assinatura de `fetchHorseFeed` ja prevista, porem com tipagem de retorno incorreta para uso em feed.
 - **`HorseDto`** (`lib/core/profiling/dtos/entities/horse_dto.dart`) - base de atributos do cavalo reutilizavel para composicao do item de feed.
 - **`AgeRangeDto`** (`lib/core/profiling/dtos/structures/age_range_dto.dart`) - estrutura existente para filtro de faixa etaria.
-- **`LocationDto`** (`lib/core/profiling/dtos/structures/location_dto.dart`) - estrutura existente para filtro/localizacao.
+- **`HorseFeedFiltersDto`** (`lib/core/profiling/dtos/structures/horse_feed_filters_dto.dart`) - estrutura de filtros da feed com `maxDistanceInKm`.
 - **`PaginationResponse`** (`lib/core/shared/responses/pagination_response.dart`) - wrapper de paginação por `items`, `nextCursor` e `limit`.
 
 ## 4.3 REST (`lib/rest/`)
@@ -104,7 +104,7 @@ Entregar a primeira versao funcional da `FeedScreen` no `equiny_mobile`, substit
 
 ### 5.1.2 Views
 - **Arquivo:** `lib/ui/feed/widgets/screens/feed_screen/feed_filters_sheet/feed_filters_sheet_view.dart` (**novo arquivo**)
-  - **Responsabilidade:** renderizar painel de filtros conforme Stitch (`Faixa de idade`, `Localizacao`, `Raca`, `Aplicar`, `Limpar`).
+  - **Responsabilidade:** renderizar painel de filtros conforme Stitch (`Faixa de idade`, `Distancia maxima`, `Raca`, `Aplicar`, `Limpar`).
   - **Props:** `initialFilters`, `onApply`, `onClear`, `onClose`.
   - **Dependencias de UI:** `flutter/material.dart`, `flutter_riverpod`, `signals_flutter`, `reactive_forms`, tema (`AppTheme`).
 
@@ -159,7 +159,7 @@ feed_horse_details_screen/
 ## 5.2 Core
 - **Arquivo:** `lib/core/profiling/dtos/structures/horse_feed_filters_dto.dart` (**novo arquivo**)
   - **Tipo:** `dto`
-  - **Contratos/assinaturas:** `HorseFeedFiltersDto({required String sex, required List<String> breeds, required AgeRangeDto ageRange, required LocationDto location, required int limit, String? cursor})`.
+  - **Contratos/assinaturas:** `HorseFeedFiltersDto({required String sex, required List<String> breeds, required AgeRangeDto ageRange, required int maxDistanceInKm, required int limit, String? cursor})`.
   - **Responsabilidade:** consolidar filtros do feed em um contrato unico reutilizavel entre UI e REST.
 
 - **Arquivo:** `lib/core/profiling/dtos/structures/horse_feed_item_dto.dart` (**novo arquivo**)
@@ -295,9 +295,9 @@ FeedFiltersSheet
   - Header da feed com titulo `DESCOBERTA` e entrada de `Filtros` com contador de ativos.
   - Card central com imagem grande, navegacao entre fotos e CTA explicito de `DETALHES`.
   - Barra de acao inferior com tres acoes visuais (`dislike`, `detalhes`, `like`).
-  - Modal de filtros com controle de faixa de idade, localizacao e racas selecionadas.
+- Modal de filtros com controle de faixa de idade, distancia maxima (km) e racas selecionadas.
 
 # 9. Perguntas em aberto
 - Confirmar conjunto canonico de valores para `decision` em `SwipeDto` (`like/dislike` ou outro enum oficial).
-- Confirmar granularidade oficial do filtro de localizacao na API (`estado` apenas ou `cidade + estado`).
+- Confirmar limite oficial aceito pela API para `max_distance_in_km`.
 
