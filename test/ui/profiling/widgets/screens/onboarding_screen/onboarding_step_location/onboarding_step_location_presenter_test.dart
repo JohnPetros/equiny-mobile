@@ -1,9 +1,11 @@
+import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
 import 'package:equiny/core/shared/interfaces/location_service.dart';
 import 'package:equiny/core/shared/interfaces/geolocation_driver.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/ui/profiling/widgets/screens/onboarding_screen/onboarding_step_location/onboarding_step_location_presenter.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 class MockLocationService extends Mock implements LocationService {}
 
@@ -186,6 +188,36 @@ void main() {
         final result = presenter.filterCities('  campinas  ');
 
         expect(result, <String>['Campinas']);
+      });
+    });
+
+    group('detectAndApplyCurrentLocation', () {
+      test('should fill city, state and coordinates in form', () async {
+        final form = FormGroup(<String, AbstractControl<Object?>>{
+          'city': FormControl<String>(),
+          'state': FormControl<String>(),
+          'latitude': FormControl<double>(),
+          'longitude': FormControl<double>(),
+        });
+
+        when(() => geolocationDriver.detectCurrentLocation()).thenAnswer(
+          (_) async => const LocationDto(
+            city: 'Sao Paulo',
+            state: 'SP',
+            latitude: -23.5505,
+            longitude: -46.6333,
+          ),
+        );
+        when(() => locationService.fetchCities('SP')).thenAnswer(
+          (_) async => RestResponse<List<String>>(body: <String>['Sao Paulo']),
+        );
+
+        await presenter.detectAndApplyCurrentLocation(form);
+
+        expect(form.control('state').value, 'SP');
+        expect(form.control('city').value, 'Sao Paulo');
+        expect(form.control('latitude').value, -23.5505);
+        expect(form.control('longitude').value, -46.6333);
       });
     });
   });

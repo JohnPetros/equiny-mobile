@@ -78,6 +78,8 @@ void main() {
     presenter.form.value.control('height').value = 1.7;
     presenter.form.value.control('city').value = ' Sao Paulo ';
     presenter.form.value.control('state').value = 'sp';
+    presenter.form.value.control('latitude').value = -23.5505;
+    presenter.form.value.control('longitude').value = -46.6333;
     presenter.form.value.markAllAsTouched();
   }
 
@@ -237,6 +239,8 @@ void main() {
         expect(horse.name, 'Trovador');
         expect(horse.location.city, 'Sao Paulo');
         expect(horse.location.state, 'SP');
+        expect(horse.location.latitude, -23.5505);
+        expect(horse.location.longitude, -46.6333);
 
         verify(
           () => profilingService.createHorseGallery(

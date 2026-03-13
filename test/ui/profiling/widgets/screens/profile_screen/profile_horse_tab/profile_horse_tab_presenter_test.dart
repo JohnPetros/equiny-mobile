@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:equiny/core/profiling/dtos/entities/horse_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/gallery_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/image_dto.dart';
+import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
 import 'package:equiny/core/profiling/interfaces/profiling_service.dart';
+import 'package:equiny/core/shared/interfaces/geolocation_driver.dart';
 import 'package:equiny/core/shared/interfaces/media_picker_driver.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/core/storage/dtos/structures/upload_url_dto.dart';
@@ -28,11 +30,14 @@ class MockFileStorageDriver extends Mock implements FileStorageDriver {}
 
 class MockMediaPickerDriver extends Mock implements MediaPickerDriver {}
 
+class MockGeolocationDriver extends Mock implements GeolocationDriver {}
+
 void main() {
   late MockProfilingService profilingService;
   late MockFileStorageService fileStorageService;
   late MockFileStorageDriver fileStorageDriver;
   late MockMediaPickerDriver mediaPickerDriver;
+  late MockGeolocationDriver geolocationDriver;
   late ProfileHorseTabPresenter presenter;
 
   setUpAll(() {
@@ -48,11 +53,13 @@ void main() {
     fileStorageService = MockFileStorageService();
     fileStorageDriver = MockFileStorageDriver();
     mediaPickerDriver = MockMediaPickerDriver();
+    geolocationDriver = MockGeolocationDriver();
     presenter = ProfileHorseTabPresenter(
       profilingService,
       fileStorageService,
       fileStorageDriver,
       mediaPickerDriver,
+      geolocationDriver,
       ProfileHorseFormSectionPresenter(),
       ProfileHorseFeedReadinessSectionPresenter(),
       ProfileHorseActiveSectionPresenter(),
@@ -365,6 +372,27 @@ void main() {
       verifyNever(
         () => profilingService.updateHorse(horse: any(named: 'horse')),
       );
+    });
+
+    test('should detect and apply current location into horse form', () async {
+      await loadHorseWithId('horse-1');
+
+      when(() => geolocationDriver.detectCurrentLocation()).thenAnswer(
+        (_) async => const LocationDto(
+          city: 'Campinas',
+          state: 'SP',
+          latitude: -22.9056,
+          longitude: -47.0608,
+        ),
+      );
+
+      await presenter.detectAndApplyCurrentLocation();
+
+      expect(presenter.horseForm.value.control('city').value, 'Campinas');
+      expect(presenter.horseForm.value.control('state').value, 'SP');
+      expect(presenter.horseForm.value.control('latitude').value, -22.9056);
+      expect(presenter.horseForm.value.control('longitude').value, -47.0608);
+      expect(presenter.geolocationMessage.value, isNotNull);
     });
   });
 }
