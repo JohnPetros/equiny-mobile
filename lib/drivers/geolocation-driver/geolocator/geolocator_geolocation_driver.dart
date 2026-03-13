@@ -4,35 +4,66 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
 class GeolocatorGeolocationDriver implements GeolocationDriver {
-  static const Map<String, String> _brazilianStateToUf = <String, String>{
-    'Acre': 'AC',
-    'Alagoas': 'AL',
-    'Amapa': 'AP',
-    'Amazonas': 'AM',
-    'Bahia': 'BA',
-    'Ceara': 'CE',
-    'Distrito Federal': 'DF',
-    'Espirito Santo': 'ES',
-    'Goias': 'GO',
-    'Maranhao': 'MA',
-    'Mato Grosso': 'MT',
-    'Mato Grosso do Sul': 'MS',
-    'Minas Gerais': 'MG',
-    'Para': 'PA',
-    'Paraiba': 'PB',
-    'Parana': 'PR',
-    'Pernambuco': 'PE',
-    'Piaui': 'PI',
-    'Rio de Janeiro': 'RJ',
-    'Rio Grande do Norte': 'RN',
-    'Rio Grande do Sul': 'RS',
-    'Rondonia': 'RO',
-    'Roraima': 'RR',
-    'Santa Catarina': 'SC',
-    'Sao Paulo': 'SP',
-    'Sergipe': 'SE',
-    'Tocantins': 'TO',
+  static const Map<String, String> _ufToBrazilianState = <String, String>{
+    'AC': 'Acre',
+    'AL': 'Alagoas',
+    'AP': 'Amapá',
+    'AM': 'Amazonas',
+    'BA': 'Bahia',
+    'CE': 'Ceará',
+    'DF': 'Distrito Federal',
+    'ES': 'Espírito Santo',
+    'GO': 'Goiás',
+    'MA': 'Maranhão',
+    'MT': 'Mato Grosso',
+    'MS': 'Mato Grosso do Sul',
+    'MG': 'Minas Gerais',
+    'PA': 'Pará',
+    'PB': 'Paraíba',
+    'PR': 'Paraná',
+    'PE': 'Pernambuco',
+    'PI': 'Piauí',
+    'RJ': 'Rio de Janeiro',
+    'RN': 'Rio Grande do Norte',
+    'RS': 'Rio Grande do Sul',
+    'RO': 'Rondônia',
+    'RR': 'Roraima',
+    'SC': 'Santa Catarina',
+    'SP': 'São Paulo',
+    'SE': 'Sergipe',
+    'TO': 'Tocantins',
   };
+
+  static const Map<String, String> _normalizedStateToAccented =
+      <String, String>{
+        'Acre': 'Acre',
+        'Alagoas': 'Alagoas',
+        'Amapa': 'Amapá',
+        'Amazonas': 'Amazonas',
+        'Bahia': 'Bahia',
+        'Ceara': 'Ceará',
+        'Distrito Federal': 'Distrito Federal',
+        'Espirito Santo': 'Espírito Santo',
+        'Goias': 'Goiás',
+        'Maranhao': 'Maranhão',
+        'Mato Grosso': 'Mato Grosso',
+        'Mato Grosso do Sul': 'Mato Grosso do Sul',
+        'Minas Gerais': 'Minas Gerais',
+        'Para': 'Pará',
+        'Paraiba': 'Paraíba',
+        'Parana': 'Paraná',
+        'Pernambuco': 'Pernambuco',
+        'Piaui': 'Piauí',
+        'Rio de Janeiro': 'Rio de Janeiro',
+        'Rio Grande do Norte': 'Rio Grande do Norte',
+        'Rio Grande do Sul': 'Rio Grande do Sul',
+        'Rondonia': 'Rondônia',
+        'Roraima': 'Roraima',
+        'Santa Catarina': 'Santa Catarina',
+        'Sao Paulo': 'São Paulo',
+        'Sergipe': 'Sergipe',
+        'Tocantins': 'Tocantins',
+      };
 
   @override
   Future<LocationDto> detectCurrentLocation() async {
@@ -85,11 +116,49 @@ class GeolocatorGeolocationDriver implements GeolocationDriver {
       );
     }
 
-    return LocationDto(city: city, state: state);
+    return LocationDto(
+      city: city,
+      state: state,
+      latitude: position.latitude,
+      longitude: position.longitude,
+    );
+  }
+
+  @override
+  Future<LocationDto?> resolveCoordinates({
+    required String city,
+    required String state,
+  }) async {
+    final String normalizedCity = city.trim();
+    final String normalizedState = state.trim();
+    if (normalizedCity.isEmpty || normalizedState.isEmpty) {
+      return null;
+    }
+
+    final List<Location> locations;
+    try {
+      locations = await locationFromAddress(
+        '$normalizedCity, $normalizedState, Brasil',
+      );
+    } on Exception {
+      return null;
+    }
+
+    if (locations.isEmpty) {
+      return null;
+    }
+
+    final Location location = locations.first;
+    return LocationDto(
+      city: normalizedCity,
+      state: normalizedState,
+      latitude: location.latitude,
+      longitude: location.longitude,
+    );
   }
 
   String _resolveCity(Placemark placemark) {
-    return (placemark.locality ?? placemark.subAdministrativeArea ?? '').trim();
+    return (placemark.subAdministrativeArea ?? '').trim();
   }
 
   String _resolveState(Placemark placemark) {
@@ -100,10 +169,10 @@ class GeolocatorGeolocationDriver implements GeolocationDriver {
 
     final String normalized = _normalizeStateName(state);
     if (normalized.length == 2) {
-      return normalized;
+      return _ufToBrazilianState[normalized] ?? '';
     }
 
-    return _brazilianStateToUf[normalized] ?? '';
+    return _normalizedStateToAccented[normalized] ?? '';
   }
 
   String _normalizeStateName(String state) {

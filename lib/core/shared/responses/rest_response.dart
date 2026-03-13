@@ -11,6 +11,8 @@ class RestResponse<Body> {
       _errorMessage = errorMessage;
 
   Body get body {
+    print('_statusCode: ${_statusCode}');
+
     if (isFailure || _errorMessage != null) {
       throw Exception('Rest Response failed: $statusCode');
     }
