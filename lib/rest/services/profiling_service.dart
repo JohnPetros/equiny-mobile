@@ -5,7 +5,6 @@ import 'package:equiny/core/profiling/dtos/structures/owner_presence_dto.dart';
 import 'package:equiny/core/profiling/dtos/entities/owner_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/icebreaker_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/age_range_dto.dart';
-import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/horse_match_dto.dart';
 import 'package:equiny/core/shared/responses/pagination_response.dart';
 import 'package:equiny/core/profiling/interfaces/profiling_service.dart'
@@ -115,7 +114,7 @@ class ProfilingService extends Service
     required String sex,
     required List<String> breeds,
     required AgeRangeDto ageRange,
-    required LocationDto location,
+    required int maxDistanceInKm,
     required int limit,
     required String? cursor,
   }) async {
@@ -125,8 +124,7 @@ class ProfilingService extends Service
       'breeds': breeds,
       'min_age': ageRange.min,
       'max_age': ageRange.max,
-      'city': location.city,
-      'state': location.state,
+      'max_distance_in_km': maxDistanceInKm,
       'limit': limit,
       if ((cursor ?? '').isNotEmpty) 'cursor': cursor,
     };
@@ -281,6 +279,8 @@ class ProfilingService extends Service
         errorMessage: 'Nao foi possivel atualizar o cavalo sem id.',
       );
     }
+
+    print(HorseMapper.toJson(horse));
 
     final RestResponse<Json> response = await super.restClient.put(
       '/profiling/horses/$horseId',

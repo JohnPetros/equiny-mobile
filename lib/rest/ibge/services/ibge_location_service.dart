@@ -30,13 +30,20 @@ class IbgeLocationService extends Service implements LocationService {
 
   @override
   Future<RestResponse<List<String>>> fetchCities(String state) async {
-    if (!stateCodes.containsKey(state)) {
+    final String normalizedState = _normalizeStateName(state);
+    final String matchedState = stateCodes.keys.firstWhere(
+      (String candidate) => _normalizeStateName(candidate) == normalizedState,
+      orElse: () => '',
+    );
+
+    if (matchedState.isEmpty) {
       return RestResponse<List<String>>(
         statusCode: HttpStatus.badRequest,
         errorMessage: 'State not found',
       );
     }
-    final String stateCode = stateCodes[state]!;
+
+    final String stateCode = stateCodes[matchedState]!;
     final RestResponse<Json> response = await super.restClient.get(
       '/localidades/estados/$stateCode/municipios',
     );
@@ -49,5 +56,34 @@ class IbgeLocationService extends Service implements LocationService {
     }
 
     return response.mapBody(IbgeLocationMapper.toCityList);
+  }
+
+  String _normalizeStateName(String value) {
+    return value
+        .trim()
+        .toLowerCase()
+        .replaceAll('á', 'a')
+        .replaceAll('à', 'a')
+        .replaceAll('â', 'a')
+        .replaceAll('ã', 'a')
+        .replaceAll('ä', 'a')
+        .replaceAll('é', 'e')
+        .replaceAll('è', 'e')
+        .replaceAll('ê', 'e')
+        .replaceAll('ë', 'e')
+        .replaceAll('í', 'i')
+        .replaceAll('ì', 'i')
+        .replaceAll('î', 'i')
+        .replaceAll('ï', 'i')
+        .replaceAll('ó', 'o')
+        .replaceAll('ò', 'o')
+        .replaceAll('ô', 'o')
+        .replaceAll('õ', 'o')
+        .replaceAll('ö', 'o')
+        .replaceAll('ú', 'u')
+        .replaceAll('ù', 'u')
+        .replaceAll('û', 'u')
+        .replaceAll('ü', 'u')
+        .replaceAll('ç', 'c');
   }
 }

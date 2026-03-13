@@ -15,6 +15,7 @@ class AuthService extends Service implements auth_service.AuthService {
     required String accountEmail,
     required String accountPassword,
   }) async {
+    print("getBaseUrl: ${super.restClient.getBaseUrl()}");
     final RestResponse<Json> response = await super.restClient.post(
       '/auth/sign-in',
       body: <String, dynamic>{

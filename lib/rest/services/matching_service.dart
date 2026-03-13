@@ -16,7 +16,7 @@ class MatchingService extends Service
   }) async {
     super.setAuthHeader();
     final RestResponse<Json> response = await super.restClient.post(
-      '/matching/swipes',
+      '/matching/swipes/',
       body: SwipeMapper.toJson(swipeDto),
     );
 

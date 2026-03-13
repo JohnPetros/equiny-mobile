@@ -8,5 +8,6 @@ final restClientProvider = Provider<RestClient>((ref) {
   final envDriver = ref.read(envDriverProvider);
   final restClient = DioRestClient();
   restClient.setBaseUrl(envDriver.get(EnvKeys.equinyRestUrl));
+  print("restClientProvider: ${restClient.getBaseUrl()}");
   return restClient;
 });

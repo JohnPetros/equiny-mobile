@@ -3,6 +3,14 @@ import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
 import 'package:equiny/core/shared/types/json.dart';
 
 class HorseMapper {
+  static double _toDouble(dynamic value) {
+    if (value is num) {
+      return value.toDouble();
+    }
+
+    return double.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
   static Json toJson(HorseDto horse) {
     return <String, dynamic>{
       'name': horse.name,
@@ -13,9 +21,13 @@ class HorseMapper {
       'height': horse.height,
       'description': horse.description,
       'is_active': horse.isActive,
+      'latitude': horse.location.latitude,
+      'longitude': horse.location.longitude,
       'location': <String, dynamic>{
         'city': horse.location.city,
         'state': horse.location.state,
+        'latitude': horse.location.latitude,
+        'longitude': horse.location.longitude,
       },
     };
   }
@@ -33,6 +45,8 @@ class HorseMapper {
       location: LocationDto(
         city: location['city']?.toString() ?? '',
         state: location['state']?.toString() ?? '',
+        latitude: _toDouble(location['latitude']),
+        longitude: _toDouble(location['longitude']),
       ),
       description: body['description']?.toString() ?? '',
       isActive: body['is_active'] as bool? ?? false,

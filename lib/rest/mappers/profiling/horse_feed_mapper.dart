@@ -8,14 +8,34 @@ import 'package:equiny/core/shared/responses/pagination_response.dart';
 import 'package:equiny/core/shared/types/json.dart';
 
 class HorseFeedMapper {
+  static double? _toNullableDouble(dynamic value) {
+    if (value is num) {
+      return value.toDouble();
+    }
+
+    final String raw = value?.toString() ?? '';
+    if (raw.trim().isEmpty) {
+      return null;
+    }
+
+    return double.tryParse(raw);
+  }
+
+  static double _toDouble(dynamic value) {
+    if (value is num) {
+      return value.toDouble();
+    }
+
+    return double.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
   static Json toJson(HorseFeedFiltersDto filters) {
     return <String, dynamic>{
       'sex': filters.sex,
       'breeds': filters.breeds,
       'min_age': filters.ageRange.min,
       'max_age': filters.ageRange.max,
-      'city': filters.location.city,
-      'state': filters.location.state,
+      'max_distance_in_km': filters.maxDistanceInKm,
       'limit': filters.limit,
       if ((filters.cursor ?? '').isNotEmpty) 'cursor': filters.cursor,
     };
@@ -57,6 +77,14 @@ class HorseFeedMapper {
 
     final String horseId = horse['id']?.toString() ?? '';
 
+    final double? distanceInKm =
+        _toNullableDouble(body['distance_in_km']) ??
+        _toNullableDouble(body['distance_km']) ??
+        _toNullableDouble(body['distance']) ??
+        _toNullableDouble(horse['distance_in_km']) ??
+        _toNullableDouble(horse['distance_km']) ??
+        _toNullableDouble(horse['distance']);
+
     return FeedHorseDto(
       horse: HorseDto(
         id: horseId.isEmpty ? null : horseId,
@@ -69,11 +97,14 @@ class HorseFeedMapper {
         location: LocationDto(
           city: location['city']?.toString() ?? '',
           state: location['state']?.toString() ?? '',
+          latitude: _toDouble(location['latitude']),
+          longitude: _toDouble(location['longitude']),
         ),
         description: horse['description']?.toString() ?? '',
         isActive: horse['is_active'] as bool? ?? false,
       ),
       gallery: GalleryDto(horseId: horseId, images: images),
+      distanceInKm: distanceInKm,
     );
   }
 }

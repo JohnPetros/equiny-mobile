@@ -4,6 +4,14 @@ import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
 import 'package:equiny/core/shared/types/json.dart';
 
 class HorseMatchMapper {
+  static double _toDouble(dynamic value) {
+    if (value is num) {
+      return value.toDouble();
+    }
+
+    return double.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
   static HorseMatchDto toDto(Json body) {
     final Json? ownerAvatarRaw = body['owner_avatar'] as Json?;
     final Json ownerLocation =
@@ -31,6 +39,8 @@ class HorseMatchMapper {
       ownerLocation: LocationDto(
         city: ownerLocation['city']?.toString() ?? '',
         state: ownerLocation['state']?.toString() ?? '',
+        latitude: _toDouble(ownerLocation['latitude']),
+        longitude: _toDouble(ownerLocation['longitude']),
       ),
       isViewed: body['is_viewed'] as bool? ?? false,
       createdAt:
