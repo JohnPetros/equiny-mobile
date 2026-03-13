@@ -17,6 +17,10 @@ class GeolocationFailure implements Exception {
 
 abstract class GeolocationDriver {
   Future<LocationDto> detectCurrentLocation();
+  Future<LocationDto?> resolveCoordinates({
+    required String city,
+    required String state,
+  });
   Future<void> openAppSettings();
   Future<void> openLocationSettings();
 }

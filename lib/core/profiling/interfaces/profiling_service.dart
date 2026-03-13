@@ -7,7 +7,6 @@ import 'package:equiny/core/profiling/dtos/structures/owner_presence_dto.dart';
 import 'package:equiny/core/shared/responses/pagination_response.dart';
 import 'package:equiny/core/shared/responses/rest_response.dart';
 import 'package:equiny/core/profiling/dtos/structures/age_range_dto.dart';
-import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
 import 'package:equiny/core/profiling/dtos/structures/horse_match_dto.dart';
 
 abstract class ProfilingService {
@@ -20,7 +19,7 @@ abstract class ProfilingService {
     required String sex,
     required List<String> breeds,
     required AgeRangeDto ageRange,
-    required LocationDto location,
+    required int maxDistanceInKm,
     required int limit,
     required String? cursor,
   });
