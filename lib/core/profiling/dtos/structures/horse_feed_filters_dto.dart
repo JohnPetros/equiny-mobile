@@ -1,11 +1,10 @@
 import 'package:equiny/core/profiling/dtos/structures/age_range_dto.dart';
-import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
 
 class HorseFeedFiltersDto {
   final String sex;
   final List<String> breeds;
   final AgeRangeDto ageRange;
-  final LocationDto location;
+  final int maxDistanceInKm;
   final int limit;
   final String? cursor;
 
@@ -13,7 +12,7 @@ class HorseFeedFiltersDto {
     required this.sex,
     required this.breeds,
     required this.ageRange,
-    required this.location,
+    required this.maxDistanceInKm,
     required this.limit,
     this.cursor,
   });
@@ -22,7 +21,7 @@ class HorseFeedFiltersDto {
     String? sex,
     List<String>? breeds,
     AgeRangeDto? ageRange,
-    LocationDto? location,
+    int? maxDistanceInKm,
     int? limit,
     String? cursor,
   }) {
@@ -30,7 +29,7 @@ class HorseFeedFiltersDto {
       sex: sex ?? this.sex,
       breeds: breeds ?? this.breeds,
       ageRange: ageRange ?? this.ageRange,
-      location: location ?? this.location,
+      maxDistanceInKm: maxDistanceInKm ?? this.maxDistanceInKm,
       limit: limit ?? this.limit,
       cursor: cursor ?? this.cursor,
     );

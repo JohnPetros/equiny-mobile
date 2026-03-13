@@ -6,8 +6,13 @@ import 'package:equiny/core/profiling/dtos/structures/location_dto.dart';
 class FeedHorseDto {
   final HorseDto horse;
   final GalleryDto gallery;
+  final double? distanceInKm;
 
-  const FeedHorseDto({required this.horse, required this.gallery});
+  const FeedHorseDto({
+    required this.horse,
+    required this.gallery,
+    this.distanceInKm,
+  });
 
   String get id => horse.id ?? '';
 
